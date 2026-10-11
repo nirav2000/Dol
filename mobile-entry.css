@@ -92,3 +92,40 @@
  #playView #readyPanel p{margin:7px 0}
  #playView #readyPanel .rule-row{display:none}
 }
+
+/* v2.4.4: review action stays in the thumb's bottom-right reach zone. */
+@media(max-width:700px) and (pointer:coarse){
+ #playView #finishedPanel .mobile-entry.is-finished{
+   position:fixed!important;
+   right:max(12px,env(safe-area-inset-right))!important;
+   bottom:calc(12px + env(safe-area-inset-bottom))!important;
+   z-index:1000!important;
+   display:block!important;
+   width:clamp(132px,37vw,180px)!important;
+   margin:0!important;
+   padding:0!important;
+   background:transparent!important;
+   pointer-events:none;
+ }
+ #playView #finishedPanel .mobile-entry.is-finished .mobile-keypad{
+   display:block!important;
+   width:100%!important;
+ }
+ #playView #finishedPanel .mobile-entry.is-finished .mobile-keypad button:not([data-key="action"]){
+   display:none!important;
+ }
+ #playView #finishedPanel .mobile-entry.is-finished .mobile-keypad button[data-key="action"]{
+   display:block!important;
+   width:100%!important;
+   min-height:64px!important;
+   height:auto!important;
+   font-size:16px!important;
+   line-height:1.2!important;
+   font-weight:800!important;
+   border-radius:16px!important;
+   padding:12px 8px!important;
+   pointer-events:auto;
+   box-shadow:0 6px 28px #000b;
+ }
+ #playView #finishedPanel{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+}

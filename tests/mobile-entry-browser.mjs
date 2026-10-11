@@ -34,6 +34,8 @@ try{
  await page.locator('#finishButton').click();
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
  assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
+ const actionBox=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();
+ assert.ok(actionBox && actionBox.y+actionBox.height<=844 && actionBox.y>600,'Next question must remain visible near bottom of viewport');
  assert.equal(await page.locator('#startButton').isVisible(),false);
  await page.locator('#mobileKeypad [data-key="action"]').click();
  assert.equal(await page.locator('#activePanel').isVisible(),true,'Next question must start from mobile button');

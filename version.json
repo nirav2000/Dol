@@ -1,5 +1,5 @@
 {
-  "version": "2.4.3",
+  "version": "2.4.4",
   "name": "Factor Frenzy",
-  "description": "Fix hidden Start round on iPhone focus mode; restore ready instructions without duplicating next-question controls."
+  "description": "Keep Next question docked at the original bottom-right Enter-key position while round review scrolls."
 }
