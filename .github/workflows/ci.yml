@@ -11,6 +11,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tests/logic.test.mjs
-      - run: node --check game.mjs
-      - run: node --check logic.mjs
+      - name: Verify scripts
+        run: |
+          node --check logic.mjs
+          node --check adaptive.mjs
+          node --check learning-app.mjs
+      - name: Unit tests
+        run: node --test tests/*.test.mjs

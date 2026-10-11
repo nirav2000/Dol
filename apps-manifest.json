@@ -1,0 +1,13 @@
+{
+  "appId": "dol",
+  "platformVersion": "1.5.0",
+  "capabilities": {},
+  "ui": {
+    "mode": "headless"
+  },
+  "versionLab": {
+    "enabled": true,
+    "managed": true,
+    "developerOnly": true
+  }
+}
