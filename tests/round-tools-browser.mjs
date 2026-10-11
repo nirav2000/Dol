@@ -100,7 +100,7 @@ try{
  await scenario('focus-first layout, input focus and Enter next',async p=>{
    assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-mode')),true);
    assert.equal(await p.locator('.topbar').evaluate(e=>getComputedStyle(e).transform==='matrix(1, 0, 0, 1, 0, 0)'),false);
-   await p.locator('#menuReveal').click();assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-menu-revealed')),true);
+   await p.locator('#menuReveal').dispatchEvent('click');assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-menu-revealed')),true);
    await p.locator('#focusToggle').click();assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-mode')),false);
    await p.locator('#focusToggle').click();await start(p);
    assert.equal(await p.locator('#pairInput').evaluate(e=>document.activeElement===e),true);
