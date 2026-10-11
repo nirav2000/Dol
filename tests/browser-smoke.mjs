@@ -24,8 +24,15 @@ if(await page.locator('#activePanel').isVisible()){
 assert.equal(await page.locator('#finishedPanel').isVisible(),true);
 await page.locator('[data-view="learn"]').click();
 assert.equal(await page.locator('#topicList .topic').count()>=20,true);
+assert.equal(await page.locator('.glossary-grid article').count()>=15,true);
 await page.locator('[data-view="progress"]').click();
 assert.equal(await page.locator('#statRounds').textContent(),'1');
+assert.equal(await page.locator('#insightGrid .fact-cell').count(),144);
+assert.equal(await page.locator('#conceptList .concept-button').count()>0,true);
+await page.locator('#insightGrid .fact-cell').first().click();
+assert.match(await page.locator('#factDetail').textContent(),/1 × 1/);
+await page.locator('#conceptList .concept-button').first().click();
+assert.match(await page.locator('#conceptDetail').textContent(),/recorded events/);
 await page.screenshot({path:'browser-desktop.png',fullPage:true});
 await page.setViewportSize({width:390,height:844});
 await page.locator('[data-view="play"]').click();
