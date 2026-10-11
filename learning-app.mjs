@@ -14,7 +14,7 @@ const state={
   showCount:prefs.showCount!==false,sound:prefs.sound!==false,
   round:Math.max(1,Number(old.round)||1),score:Math.max(0,Number(old.score)||0),
   target:null,previous:null,pairs:[],found:new Set(),hintedPairs:new Set(),attempted:new Set(),
-  chosenFactor:null,hintLevel:0,hintsUsed:0,startedWithScore:0,startedAt:0,
+  chosenFactor:null,hintLevel:0,hintsUsed:0,helpOpen:false,mistakes:0,startedWithScore:0,startedAt:0,
   remainingMs:60000,deadline:0,ticker:null,feedback:'',feedbackType:'',strategy:'',result:null,
   numberHistory:read('dol-number-history-v2',{})
 };
@@ -95,6 +95,9 @@ function render(){
   document.querySelectorAll('[data-mode]').forEach(el=>el.classList.toggle('active',el.dataset.mode===state.mode));
   renderClock();
   if(active){
+    $('helpToggle').hidden=state.mode==='guided';
+    $('helpToggle').textContent=state.helpOpen?'Hide hints':'Need a hint?';
+    $('helpSection').hidden=state.mode!=='guided'&&!state.helpOpen;
     $('foundHeading').textContent=state.found.size+' found';
     $('pairCount').hidden=!state.showCount;
     $('pairCount').textContent=(state.pairs.length-state.found.size)+' left';
@@ -121,7 +124,7 @@ function start(){
   state.previous=state.target;
   state.target=chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
   state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
-  state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
+  state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.helpOpen=state.mode==='guided';state.mistakes=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
   state.startedWithScore=state.score;state.startedAt=Date.now();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
   $('pairInput').value='';
@@ -149,11 +152,13 @@ function answer(event){
   const input=$('pairInput'),check=assessPair(input.value,state.target,state.found);
   state.feedback=check.message;state.feedbackType=check.status==='correct'?'success':'error';
   if(check.status!=='correct'){
+    state.mistakes++;
+    if(state.mistakes>=2&&state.mode==='practice')state.feedback+=' You can open a hint to work through this.';
     if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
     tone(false);render();input.select();input.focus({preventScroll:true});return;
   }
   const hints=state.hintsUsed>0?state.hintsUsed:0;
-  state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
+  state.mistakes=0;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
   state.score++;recordPair(check.pair,true,hints);
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
   state.feedbackType='success';
@@ -283,13 +288,14 @@ function renderProgress(){
   for(const [name,c] of due){const d=document.createElement('div');d.className='session';const a=document.createElement('span');a.textContent=name.replaceAll(':',' · ').replaceAll('x',' × ');const b=document.createElement('small');b.textContent=Math.round(c.mastery*100)+'% learning estimate · '+c.attempts+' attempts';d.append(a,b);sug.append(d);}
 }
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
-document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(['running','paused'].includes(state.phase))return;state.mode=b.dataset.mode;persist();render();}));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(['running','paused'].includes(state.phase))return;state.mode=b.dataset.mode;state.helpOpen=state.mode==='guided';persist();render();}));
 $('stageSelect').addEventListener('change',e=>{state.stage=e.target.value;persist();render();});
 $('limitSelect').addEventListener('change',e=>{state.limit=Number(e.target.value);persist();render();});
 $('durationSelect').addEventListener('change',e=>{state.duration=Number(e.target.value);state.remainingMs=state.duration*1000;persist();render();});
 $('showCount').addEventListener('change',e=>{state.showCount=e.target.checked;persist();render();});
 $('sound').addEventListener('change',e=>{state.sound=e.target.checked;persist();render();});
 $('startButton').addEventListener('click',start);$('pauseButton').addEventListener('click',pause);$('finishButton').addEventListener('click',()=>finish('manual'));$('answerForm').addEventListener('submit',answer);$('resetScores').addEventListener('click',resetScores);
+$('helpToggle').addEventListener('click',()=>{state.helpOpen=!state.helpOpen;render();});
 $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
