@@ -16,7 +16,7 @@ export function createMobileEntry({getState,submit}){
    if(key==='clear'){parts[active]=parts[active].slice(0,-1);if(!parts[active]&&active===1)active=0;sync();return;}
    if(key==='action'){
      if(active===0){if(parts[0])active=1;sync();return;}
-     if(parts[0]&&parts[1]){input.value=parts.join('x');submit();if(getState().phase==='running'&&document.getElementById('entryFeedback').classList.contains('success'))reset();else sync();}
+     if(parts[0]&&parts[1]){input.value=parts.join('x');submit();if(document.getElementById('entryFeedback').classList.contains('success'))reset();else sync();}
      return;
    }
    if(/^\d$/.test(key)){if(parts[active].length>=4)return;const value=String(Number(parts[active]+key));if(Number(value)>1024)return;parts[active]=value;if(active===0&&value.length>=3)active=1;sync();}
