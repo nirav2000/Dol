@@ -25,9 +25,9 @@ jobs:
   version-lab:
     uses: nirav2000/Apps/.github/workflows/version-lab-release.yml@main
     with:
-      title: ${{ inputs.title || 'Factor Frenzy learning edition v2.0.3' }}
+      title: ${{ inputs.title || 'Factor Frenzy learning edition v2.1.0' }}
       summary: ${{ inputs.summary || 'Black and grey redesign, three learning modes, adaptive question selection, guided hints, strategy guide, learning SDK and progress tracking.' }}
       areas: ${{ inputs.areas || 'Learning modes::feature::Guided, independent and timed|Scaffolding::feature::Progressive factor hints|Design::redesign::Monochrome responsive interface|Progress::feature::Shared Learning SDK' }}
-      product_version: ${{ inputs.product_version || '2.0.3' }}
+      product_version: ${{ inputs.product_version || '2.1.0' }}
     permissions:
       contents: write

@@ -1,7 +1,9 @@
 import {factorPairs,assessPair,formatTime} from './logic.mjs';
 import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,requiredConcepts} from './adaptive.mjs';
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
+import {createRoundTools} from './round-tools.mjs';
 const $=id=>document.getElementById(id);
+let roundTools;
 const storageKey='dol-factor-frenzy-v1',settingsKey='dol-learning-settings-v2';
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch{return fallback;}}
 const old=read(storageKey,{});
@@ -13,7 +15,7 @@ const state={
   duration:[30,60,90].includes(prefs.duration)?prefs.duration:60,
   showCount:prefs.showCount!==false,sound:prefs.sound!==false,
   round:Math.max(1,Number(old.round)||1),score:Math.max(0,Number(old.score)||0),
-  target:null,previous:null,pairs:[],found:new Set(),hintedPairs:new Set(),attempted:new Set(),
+  visualHelp:false,target:null,previous:null,pairs:[],found:new Set(),hintedPairs:new Set(),attempted:new Set(),
   chosenFactor:null,hintLevel:0,hintsUsed:0,helpOpen:false,mistakes:0,startedWithScore:0,startedAt:0,
   remainingMs:60000,deadline:0,ticker:null,feedback:'',feedbackType:'',strategy:'',result:null,
   numberHistory:read('dol-number-history-v2',{})
@@ -32,6 +34,7 @@ function setView(view){
   document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));
   if(view==='learn')renderLearn();
   if(view==='progress')renderProgress();
+  roundTools?.viewChanged();
 }
 function tone(ok){
   if(!state.sound)return;
@@ -48,7 +51,7 @@ function slots(){
   for(let i=0;i<count;i++){
     const el=document.createElement('div'),key=[...state.found][i];
     el.className='slot'+(key?' solved':'');
-    el.textContent=key?key.replace('-', ' × '):'?  ×  ?';
+    if(key){const [a,b]=key.split('-');for(const [text,cls] of [[a,'pair-number'],['×','pair-times'],[b,'pair-number']]){const part=document.createElement('span');part.className=cls;part.textContent=text;el.append(part);}}else el.textContent='? × ?';
     node.append(el);
   }
 }
@@ -111,6 +114,7 @@ function render(){
   }
   if(ready)$('difficultyDetail').textContent='';
   if(finished&&state.result)review();
+  roundTools?.render(state);
 }
 function stopTicker(){if(state.ticker!==null)clearInterval(state.ticker);state.ticker=null;}
 function tick(){
@@ -120,10 +124,11 @@ function tick(){
 }
 function start(){
   if(state.phase==='running'||state.phase==='paused')return;
+  roundTools?.beforeStart();
   if(state.phase==='finished')state.round++;
   state.previous=state.target;
   state.target=chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
-  state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
+  state.visualHelp=false;state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
   state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.helpOpen=state.mode==='guided';state.mistakes=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
   state.startedWithScore=state.score;state.startedAt=Date.now();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
@@ -157,7 +162,7 @@ function answer(event){
     if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
     tone(false);render();input.select();input.focus({preventScroll:true});return;
   }
-  const hints=state.hintsUsed>0?state.hintsUsed:0;
+  const hints=Math.max(state.hintsUsed,state.visualHelp?1:0);
   state.mistakes=0;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
   state.score++;recordPair(check.pair,true,hints);
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
@@ -174,7 +179,7 @@ function finish(reason){
   if(correct===total)state.score+=2;
   const earned=state.score-state.startedWithScore;
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
-  const session={mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size+state.hintsUsed,durationMs:Math.max(0,elapsed)};
+  const session={mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
   learning.session(session);
   const prev=state.numberHistory[state.target]||{attempts:0,correct:0};
   state.numberHistory[state.target]={attempts:prev.attempts+1,correct:prev.correct+(correct===total?1:0),nextDue:Date.now()+(correct===total?3:1)*86400000,recentlySeen:1};
@@ -183,14 +188,7 @@ function finish(reason){
   if(reason==='time')state.remainingMs=0;
   state.phase='finished';persist();render();
 }
-function review(){
-  const {reason,correct,total,earned,assisted}=state.result;
-  $('finishHeading').textContent=correct===total?'All pairs found!':reason==='time'?'Time is up!':'Round complete';
-  $('roundPoints').textContent='+'+earned+' points';
-  $('finishMessage').textContent=correct+' of '+total+' pairs found · '+assisted+' assisted · '+(correct-assisted)+' unassisted. '+(correct===total?'You earned the +2 completion bonus.':'Use the missing pairs to plan your next practice.');
-  const el=$('answerReview');el.replaceChildren();
-  for(const [a,b] of state.pairs){const k=a+'-'+b,s=document.createElement('span');s.className=state.found.has(k)?'':'missed';s.textContent=(state.found.has(k)?'✓ ':'○ ')+a+' × '+b;el.append(s);}
-}
+function review(){roundTools?.renderReview(state);}
 function testSelectedFactor(){
   if(state.phase!=='running'||!state.chosenFactor)return;
   tick();if(state.phase!=='running')return;
@@ -213,7 +211,7 @@ function testSelectedFactor(){
 }
 function resetScores(){
   if(['running','paused'].includes(state.phase)&&!confirm('End this round and reset scores?'))return;
-  stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.score=0;state.result=null;state.remainingMs=state.duration*1000;persist();render();
+  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.score=0;state.result=null;state.remainingMs=state.duration*1000;persist();render();
 }
 function hintNext(){
   if(state.phase!=='running'||!state.chosenFactor)return;
@@ -303,4 +301,8 @@ $('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser
 $('exportProgress').addEventListener('click',()=>{const blob=new Blob([learning.export()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
+roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
+  markAssisted:()=>{tick();if(state.phase==='running'){state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
+  fillPair:pair=>{tick();if(state.phase!=='running')return;state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
+});
 render();setView('play');

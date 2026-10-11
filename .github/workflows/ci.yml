@@ -16,6 +16,9 @@ jobs:
           node --check logic.mjs
           node --check adaptive.mjs
           node --check learning-app.mjs
+          node --check round-tools.mjs
+          node --check round-model.mjs
+          node --check visual-tools.mjs
       - name: Unit tests
         run: node --test tests/*.test.mjs
       - name: Install browser test dependencies
@@ -27,6 +30,7 @@ jobs:
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
           sleep 2
           node tests/browser-smoke.mjs
+          node tests/round-tools-browser.mjs
       - name: Save browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -35,4 +39,5 @@ jobs:
           path: |
             browser-desktop.png
             browser-mobile.png
+            artifacts/*.png
           if-no-files-found: ignore
