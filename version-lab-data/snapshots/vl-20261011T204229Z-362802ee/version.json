@@ -1,0 +1,5 @@
+{
+  "version": "2.4.3",
+  "name": "Factor Frenzy",
+  "description": "Fix hidden Start round on iPhone focus mode; restore ready instructions without duplicating next-question controls."
+}
