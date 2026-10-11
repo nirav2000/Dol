@@ -12,6 +12,7 @@ try{
  await page.locator('#startButton').click();
  await page.locator('#mobileEntry').waitFor({state:'visible'});
  assert.equal(await page.locator('#mobileKeypad button').count(),12);
+ assert.equal(await page.locator('#mobileKeypad [data-key="1"]').evaluate(e=>e.getBoundingClientRect().height>=56),true,'Key must be at least 56px tall');
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').getAttribute('aria-label'),'Next factor');
  assert.notEqual(await page.locator('#pairInput').evaluate(e=>document.activeElement===e),true,'Native keyboard must not be focused');
@@ -29,6 +30,13 @@ try{
  assert.equal(await page.locator('#pairSlots .slot.solved').count(),1);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
  await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
+ await page.locator('#finishButton').click();
+ assert.equal(await page.locator('#mobileNextQuestion').isVisible(),true);
+ await page.locator('#mobileNextQuestion').click();
+ assert.equal(await page.locator('#activePanel').isVisible(),true,'Next question must start from mobile button');
+ await page.locator('#finishButton').click();
+ await page.keyboard.press('Enter');
+ assert.equal(await page.locator('#activePanel').isVisible(),true,'Enter must start next question');
  await page.setViewportSize({width:320,height:680});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow at 320');
  await page.screenshot({path:'artifacts/mobile-game-320.png',fullPage:true});

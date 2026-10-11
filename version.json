@@ -1,5 +1,5 @@
 {
-  "version": "2.4.0",
+  "version": "2.4.1",
   "name": "Factor Frenzy",
-  "description": "iPhone-first compact play, fixed custom numeric keypad, two-factor entry, action key switches multiplication to submit, no QWERTY keyboard."
+  "description": "Larger reliable iPhone number keys, explicit next-question control, and Enter to advance after review."
 }

@@ -53,3 +53,21 @@
  #playView .mobile-keypad button{min-height:35px}
  #playView .slot{min-height:27px}
 }
+
+/* v2.4.1: reliable iOS touch targets and one-tap next round */
+@media(max-width:700px) and (pointer:coarse){
+ #playView .mobile-keypad{gap:8px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+ #playView .mobile-keypad button{height:clamp(56px,7dvh,72px);min-height:56px;border-radius:13px;font-size:28px;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+ #playView .mobile-keypad button:active{transform:scale(.97);filter:brightness(1.3)}
+ #playView .mobile-factors button{min-height:52px}
+ #playView .mobile-next-question{display:block;width:100%;min-height:60px;font-size:19px;margin:18px 0 8px;border-radius:14px}
+ #playView .mobile-next-question[hidden]{display:none!important}
+ #playView .work-panel{padding:10px}
+ #playView .number-tile{height:clamp(88px,16dvh,140px)}
+ #playView .slots{gap:4px}
+ #playView .slot{min-height:29px}
+}
+@media(max-width:700px) and (pointer:coarse) and (max-height:750px){
+ #playView .mobile-keypad button{height:56px;min-height:56px}
+ #playView .number-tile{height:88px}
+}
