@@ -1,0 +1,10 @@
+name: Install Version Lab
+on:
+  workflow_dispatch:
+jobs:
+  archive:
+    uses: nirav2000/Apps/.github/workflows/version-lab-install.yml@main
+    with:
+      backfill_max: 8
+    permissions:
+      contents: write
