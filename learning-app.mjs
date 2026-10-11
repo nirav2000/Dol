@@ -2,8 +2,9 @@ import {factorPairs,assessPair,formatTime} from './logic.mjs';
 import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,requiredConcepts} from './adaptive.mjs';
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
 import {createRoundTools} from './round-tools.mjs';
+import {createInsights} from './learning-insights.mjs';
 const $=id=>document.getElementById(id);
-let roundTools;
+let roundTools,insights;
 const focusKey='dol-focus-mode-v1';
 let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
@@ -122,6 +123,7 @@ function render(){
   if(ready)$('difficultyDetail').textContent='';
   if(finished&&state.result)review();
   roundTools?.render(state);
+  insights?.render();
 }
 function stopTicker(){if(state.ticker!==null)clearInterval(state.ticker);state.ticker=null;}
 function tick(){
@@ -134,12 +136,14 @@ function start(){
   roundTools?.beforeStart();
   if(state.phase==='finished')state.round++;
   state.previous=state.target;
-  state.target=chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
+  const suggestion=insights?.choose();
+  state.target=suggestion?.number||chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
   state.visualHelp=false;state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
   state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.helpOpen=state.mode==='guided';state.mistakes=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
   state.startedWithScore=state.score;state.startedAt=Date.now();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
   $('pairInput').value='';
+  insights?.start();
   persist();setPhase('running');stopTicker();
   if(state.mode==='timed')state.ticker=setInterval(tick,100);
   $('pairInput').focus({preventScroll:true});
@@ -165,12 +169,14 @@ function answer(event){
   const input=$('pairInput'),check=assessPair(input.value,state.target,state.found);
   state.feedback=check.message;state.feedbackType=check.status==='correct'?'success':'error';
   if(check.status!=='correct'){
+    if(check.status==='incorrect'){const values=input.value.match(/\d+/g);if(values?.length===2)insights?.answer(values.map(Number),'incorrect',false);}
     state.mistakes++;
     if(state.mistakes>=2&&state.mode==='practice')state.feedback+=' You can open a hint to work through this.';
     if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
     tone(false);render();input.select();input.focus({preventScroll:true});return;
   }
   const hints=Math.max(state.hintsUsed,state.visualHelp?1:0);
+  insights?.answer(check.pair,'correct',hints>0);
   state.mistakes=0;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
   state.score++;recordPair(check.pair,true,hints);
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
@@ -194,7 +200,7 @@ function finish(reason){
   for(const [key,v] of Object.entries(state.numberHistory)){if(Number(key)!==state.target)v.recentlySeen=Math.max(0,(v.recentlySeen||0)-.15);}
   state.result={reason,correct,total,earned,assisted:state.hintedPairs.size};
   if(reason==='time')state.remainingMs=0;
-  state.phase='finished';persist();render();
+  state.phase='finished';insights?.finish(state);persist();render();
 }
 function review(){roundTools?.renderReview(state);}
 function testSelectedFactor(){
@@ -202,6 +208,7 @@ function testSelectedFactor(){
   tick();if(state.phase!=='running')return;
   const k=state.chosenFactor,n=state.target;
   state.hintsUsed++;
+  insights?.help();
   if(n%k!==0){
     state.feedback=k+' is not a factor: '+n+' ÷ '+k+' leaves a remainder of '+(n%k)+'.';
     state.feedbackType='error';
@@ -210,6 +217,7 @@ function testSelectedFactor(){
   }
   const a=Math.min(k,n/k),b=Math.max(k,n/k),key=a+'-'+b;
   if(state.found.has(key)){state.feedback=a+' × '+b+' is already on your board.';state.feedbackType='error';render();return;}
+  insights?.answer([a,b],'correct',true);
   state.found.add(key);state.hintedPairs.add(key);state.score++;
   recordPair([a,b],true,state.hintsUsed);
   state.feedback=a+' × '+b+' = '+n+'. You found this pair using the factor checker.';
@@ -224,7 +232,7 @@ function resetScores(){
 function hintNext(){
   if(state.phase!=='running'||!state.chosenFactor)return;
   state.hintLevel=state.hintLevel===4?0:state.hintLevel+1;
-  if(state.hintLevel>0)state.hintsUsed++;
+  if(state.hintLevel>0){state.hintsUsed++;insights?.help();}
   renderHint();
 }
 function tip(type){
@@ -245,7 +253,7 @@ function tip(type){
     })(),
     stop:'To prove completeness, check possible first factors from 1 to '+Math.floor(Math.sqrt(n))+'. Anything beyond √'+n+' only reverses an existing pair.'
   }[type];
-  state.strategy=msg;state.hintsUsed++;render();
+  state.strategy=msg;state.hintsUsed++;insights?.help();render();
 }
 const priorities=['Essential','Important','Fast strategy','Systematic','Visual','Extension','Advanced'];
 let topicFilter='All';
@@ -292,6 +300,7 @@ function renderProgress(){
   const due=Object.entries(data.concepts||{}).sort((a,b)=>conceptPriority(data,a[0])-conceptPriority(data,b[0])).reverse().slice(0,8);
   if(!due.length)sug.textContent='Complete a few rounds to discover what needs practice.';
   for(const [name,c] of due){const d=document.createElement('div');d.className='session';const a=document.createElement('span');a.textContent=name.replaceAll(':',' · ').replaceAll('x',' × ');const b=document.createElement('small');b.textContent=Math.round(c.mastery*100)+'% learning estimate · '+c.attempts+' attempts';d.append(a,b);sug.append(d);}
+  insights?.summary();
 }
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(['running','paused'].includes(state.phase))return;state.mode=b.dataset.mode;state.helpOpen=state.mode==='guided';persist();render();}));
@@ -318,7 +327,10 @@ $('menuReveal').addEventListener('click',()=>{reveal();$('focusToggle').focus();
 document.querySelector('.topbar').addEventListener('focusin',reveal);
 document.querySelector('.topbar').addEventListener('focusout',()=>setTimeout(hide,0));
 roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
-  markAssisted:()=>{tick();if(state.phase==='running'){state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
-  fillPair:pair=>{tick();if(state.phase!=='running')return;state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
+  markAssisted:()=>{tick();if(state.phase==='running'){insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
+  fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
 });
-applyFocus();render();setView('play');
+applyFocus();insights=createInsights({getState:()=>state,refresh:render});
+$('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
+$('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
+render();setView('play');
