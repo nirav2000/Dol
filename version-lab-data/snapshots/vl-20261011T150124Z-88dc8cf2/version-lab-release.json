@@ -1,0 +1,62 @@
+{
+  "checkpointId": "vl-20261011T150124Z-88dc8cf2",
+  "appId": "dol",
+  "productVersion": "2.1.0",
+  "commit": "88dc8cf2ff57403fd62d4c1410de7555ad617e14",
+  "sourceRef": null,
+  "createdAt": "2026-10-11T15:01:24.144Z",
+  "title": "Factor Frenzy learning edition v2.1.0",
+  "summary": "Black and grey redesign, three learning modes, adaptive question selection, guided hints, strategy guide, learning SDK and progress tracking.",
+  "areas": [
+    {
+      "id": "learning-modes",
+      "title": "Learning modes",
+      "kind": "feature",
+      "summary": "Guided, independent and timed"
+    },
+    {
+      "id": "scaffolding",
+      "title": "Scaffolding",
+      "kind": "feature",
+      "summary": "Progressive factor hints"
+    },
+    {
+      "id": "design",
+      "title": "Design",
+      "kind": "redesign",
+      "summary": "Monochrome responsive interface"
+    },
+    {
+      "id": "progress",
+      "title": "Progress",
+      "kind": "feature",
+      "summary": "Shared Learning SDK"
+    }
+  ],
+  "sourceUrl": "https://github.com/nirav2000/Dol/tree/88dc8cf2ff57403fd62d4c1410de7555ad617e14",
+  "snapshotUrl": "./snapshots/vl-20261011T150124Z-88dc8cf2/index.html",
+  "snapshotSafety": "visual-only",
+  "compatibility": {
+    "frontend": "archived",
+    "source": "git",
+    "snapshot": "generated",
+    "backend": "live backend connections blocked",
+    "data": "contract recorded"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  },
+  "readOnlyAdapter": null,
+  "platform": {
+    "contract": "v1"
+  },
+  "generator": {
+    "name": "Apps Version Lab",
+    "contractVersion": 1,
+    "backfilled": false
+  }
+}

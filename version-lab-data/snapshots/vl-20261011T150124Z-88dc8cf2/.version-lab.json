@@ -1,0 +1,24 @@
+{
+  "appId": "dol",
+  "repository": "nirav2000/Dol",
+  "liveUrl": "https://nirav2000.github.io/Dol/",
+  "productVersionFile": "version.json",
+  "snapshotSafety": "visual-only",
+  "snapshot": {
+    "entry": "index.html",
+    "exclude": [
+      "tests",
+      ".github"
+    ]
+  },
+  "platform": {
+    "contract": "v1"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  }
+}
