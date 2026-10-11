@@ -11,3 +11,4 @@ jobs:
       backfill_max: 8
     permissions:
       contents: write
+# Historical source-only checkpoints are supported.
