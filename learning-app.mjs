@@ -3,14 +3,15 @@ import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,re
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
 import {createRoundTools} from './round-tools.mjs';
 import {createInsights} from './learning-insights.mjs';
+import {createMobileEntry} from './mobile-entry.mjs';
 const $=id=>document.getElementById(id);
-let roundTools,insights;
+let roundTools,insights,mobileEntry;
 const focusKey='dol-focus-mode-v1';
 let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
 function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
 function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
-function focusAnswer(){if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
+function focusAnswer(){if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const storageKey='dol-factor-frenzy-v1',settingsKey='dol-learning-settings-v2';
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch{return fallback;}}
 const old=read(storageKey,{});
@@ -124,6 +125,7 @@ function render(){
   if(finished&&state.result)review();
   roundTools?.render(state);
   insights?.render();
+  mobileEntry?.sync();
 }
 function stopTicker(){if(state.ticker!==null)clearInterval(state.ticker);state.ticker=null;}
 function tick(){
@@ -143,10 +145,11 @@ function start(){
   state.startedWithScore=state.score;state.startedAt=Date.now();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
   $('pairInput').value='';
+  mobileEntry?.reset();
   insights?.start();
   persist();setPhase('running');stopTicker();
   if(state.mode==='timed')state.ticker=setInterval(tick,100);
-  $('pairInput').focus({preventScroll:true});
+  focusAnswer();
 }
 function pause(){
   if(state.mode!=='timed')return;
@@ -184,7 +187,7 @@ function answer(event){
   // Hints are attributed to the next successful pair; reset after it is entered.
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
   persist();
-  if(state.found.size===state.pairs.length)finish('complete');else{render();input.focus({preventScroll:true});}
+  if(state.found.size===state.pairs.length)finish('complete');else{render();focusAnswer();}
 }
 function finish(reason){
   if(state.phase!=='running'&&state.phase!=='paused')return;
@@ -331,6 +334,7 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
   fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
 });
 applyFocus();insights=createInsights({getState:()=>state,refresh:render});
+mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
 render();setView('play');

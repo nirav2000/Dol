@@ -19,6 +19,7 @@ jobs:
           node --check round-tools.mjs
           node --check round-model.mjs
           node --check visual-tools.mjs
+          node --check mobile-entry.mjs
       - name: Unit tests
         run: node --test tests/*.test.mjs
       - name: Install browser test dependencies
@@ -31,6 +32,7 @@ jobs:
           sleep 2
           node tests/browser-smoke.mjs
           node tests/round-tools-browser.mjs
+          node tests/mobile-entry-browser.mjs
       - name: Save browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

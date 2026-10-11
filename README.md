@@ -31,3 +31,7 @@ Large tappable factor-pair review tiles recalculate score and completion bonus. 
 ## v2.2.0 — focus-first keyboard play
 
 Focus mode is enabled on first visit and persists as a browser preference. It hides the nonessential navigation, settings, visual aids, and explanatory panels while preserving the number, score, timer, answer input, factor pairs and round controls. Move a mouse to the top edge to reveal navigation, tap the always-visible Menu button on touch devices, or use the keyboard to focus the menu. Exit focus and the Settings checkbox both switch layouts. The pair entry automatically receives focus on new rounds, after valid or invalid submissions, and on returning to Play. In manual-next mode, Enter advances from the finished-round screen when not using another interactive control; auto-next continues to operate independently.
+
+## v2.4.0 — iPhone-first play
+
+Touch devices up to 700px use a compact gameplay layout and a dedicated numeric keypad. The keypad action key starts as × to move to the second factor, then becomes ↵ to submit. Either factor can be edited, and Backspace deletes a digit. No native iOS QWERTY keyboard is needed. The existing answer form remains the authoritative validation/scoring path; desktop typing and the shared Learning SDK are unchanged. The screen accounts for safe areas and short viewports, with the target, timer, discovered pairs, input and keypad arranged vertically.

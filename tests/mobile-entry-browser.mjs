@@ -1,0 +1,38 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+fs.mkdirSync('artifacts',{recursive:true});
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
+ await context.addInitScript(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'foundation',limit:64,duration:60,sound:false,showCount:true}));});
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(process.env.TEST_BASE_URL||'http://127.0.0.1:8000/',{waitUntil:'networkidle'});
+ await page.locator('#startButton').click();
+ await page.locator('#mobileEntry').waitFor({state:'visible'});
+ assert.equal(await page.locator('#mobileKeypad button').count(),12);
+ assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
+ assert.equal(await page.locator('#mobileKeypad [data-key="action"]').getAttribute('aria-label'),'Next factor');
+ assert.notEqual(await page.locator('#pairInput').evaluate(e=>document.activeElement===e),true,'Native keyboard must not be focused');
+ const target=Number(await page.locator('#numberValue').textContent());
+ const digits=String(target).split('');
+ await page.locator('#mobileKeypad [data-key="1"]').click();
+ await page.locator('#mobileKeypad [data-key="action"]').click();
+ assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'↵');
+ for(const digit of digits)await page.locator('#mobileKeypad [data-key="'+digit+'"]').click();
+ assert.equal(await page.locator('#mobileSecond').textContent(),String(target));
+ await page.locator('#mobileKeypad [data-key="action"]').click();
+ assert.match(await page.locator('#entryFeedback').textContent(),/Correct/);
+ assert.equal(await page.locator('#mobileFirst').textContent(),'—');
+ assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
+ assert.equal(await page.locator('#pairSlots .slot.solved').count(),1);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
+ await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
+ await page.setViewportSize({width:320,height:680});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow at 320');
+ await page.screenshot({path:'artifacts/mobile-game-320.png',fullPage:true});
+ assert.deepEqual(errors,[]);
+ console.log('Mobile custom keypad, action-key rotation, scoring, focus and responsive widths passed');
+ await context.close();
+}finally{await browser.close();}
