@@ -33,6 +33,7 @@ jobs:
           node tests/browser-smoke.mjs
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
+          node tests/mobile-dock-browser.mjs
       - name: Save browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

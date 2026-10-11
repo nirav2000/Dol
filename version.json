@@ -1,5 +1,5 @@
 {
-  "version": "2.4.4",
+  "version": "2.4.5",
   "name": "Factor Frenzy",
-  "description": "Keep Next question docked at the original bottom-right Enter-key position while round review scrolls."
+  "description": "Persistent mobile action-key position across gameplay and review; full keypad disappears while reviewing, with scroll clearance and touch reliability."
 }

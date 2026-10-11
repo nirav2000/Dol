@@ -43,6 +43,7 @@ function setView(view){
   if(view==='learn')renderLearn();
   if(view==='progress')renderProgress();
   roundTools?.viewChanged();
+  mobileEntry?.sync();
   if(view==='play')focusAnswer();
 }
 function tone(ok){
