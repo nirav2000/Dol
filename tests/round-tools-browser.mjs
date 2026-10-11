@@ -19,6 +19,7 @@ async function scenario(name,fn){
      sessionStorage.setItem('seeded-round-tools','yes');
    }
  },{seed});
+ if(name!=='focus-first layout, input focus and Enter next')await context.addInitScript(()=>localStorage.setItem('dol-focus-mode-v1','false'));
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.stack||e.message));
  try{

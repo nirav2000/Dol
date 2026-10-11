@@ -5,6 +5,7 @@ const page=await browser.newPage({viewport:{width:1280,height:900}});
 const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+await page.addInitScript(()=>localStorage.setItem('dol-focus-mode-v1','false'));
 await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle',timeout:45000});
 await page.waitForSelector('[data-mode="guided"]');
 assert.equal(await page.locator('#readyPanel').isVisible(),true);
