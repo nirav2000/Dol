@@ -1,5 +1,5 @@
 {
-  "version": "2.0.1",
+  "version": "2.0.2",
   "name": "Factor Frenzy",
-  "description": "Adaptive learning edition with tested factor selector and release gate"
+  "description": "Adaptive learning, fast halve-and-double chains and progressive scaffolding"
 }

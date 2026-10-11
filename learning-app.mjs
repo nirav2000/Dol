@@ -221,7 +221,17 @@ function tip(type){
   const n=state.target;
   const msg={
     even:n%2===0?'Yes, '+n+' is even. So 2 divides it. Can you work out the partner?':'No, '+n+' is odd. So 2 is not a factor.',
-    double:'Halve one EVEN factor and double its partner to keep the product unchanged. This quickly produces related pairs, but will not necessarily find them all. Start from a pair you already know, then check remaining divisors up to √'+n+'.',
+    double:(()=>{
+      const chains=[];
+      for(const key of state.found){
+        let [a,b]=key.split('-').map(Number),sequence=[];
+        while(b%2===0&&a*2<=b/2){a*=2;b/=2;const candidate=a+'-'+b;if(!state.found.has(candidate))sequence.push(a+' × '+b);}
+        if(sequence.length)chains.push(sequence.join(' → '));
+      }
+      return chains.length
+        ? 'From a pair you found, double the smaller factor and halve the larger: '+chains.join(' · ')+'. Try these pairs, then check the remaining divisors up to √'+n+'.'
+        : 'Find an even factor pair first. Then double one factor and halve the other while it remains even. This is fast but does not necessarily find every pair.';
+    })(),
     stop:'To prove completeness, check possible first factors from 1 to '+Math.floor(Math.sqrt(n))+'. Anything beyond √'+n+' only reverses an existing pair.'
   }[type];
   state.strategy=msg;state.hintsUsed++;render();
