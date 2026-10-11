@@ -18,3 +18,21 @@ jobs:
           node --check learning-app.mjs
       - name: Unit tests
         run: node --test tests/*.test.mjs
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install chromium
+      - name: Browser smoke tests
+        run: |
+          python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
+          sleep 2
+          node tests/browser-smoke.mjs
+      - name: Save browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factor-frenzy-browser
+          path: |
+            browser-desktop.png
+            browser-mobile.png
+          if-no-files-found: ignore
