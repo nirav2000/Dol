@@ -74,6 +74,7 @@ function renderHint(){
   $('hintText').textContent=k?arr[state.hintLevel]:'Is 1 a factor? What about 2? Select a number to explore without giving away the answer.';
   $('hintBack').disabled=!k||state.hintLevel===0||state.phase==='paused';
   $('hintNext').disabled=!k||state.phase==='paused';
+  $('testFactor').disabled=!k||state.phase==='paused';
   $('hintNext').textContent=state.hintLevel===4?'Start over ↻':'Next hint →';
   $('hintCounter').textContent=state.hintsUsed?state.hintsUsed+' hints used':'No hints yet';
 }
@@ -118,7 +119,7 @@ function start(){
   if(state.phase==='running'||state.phase==='paused')return;
   if(state.phase==='finished')state.round++;
   state.previous=state.target;
-  state.target=chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,previous:state.previous});
+  state.target=chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
   state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
   state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
   state.startedWithScore=state.score;state.startedAt=Date.now();
@@ -184,6 +185,26 @@ function review(){
   $('finishMessage').textContent=correct+' of '+total+' pairs found · '+assisted+' assisted · '+(correct-assisted)+' unassisted. '+(correct===total?'You earned the +2 completion bonus.':'Use the missing pairs to plan your next practice.');
   const el=$('answerReview');el.replaceChildren();
   for(const [a,b] of state.pairs){const k=a+'-'+b,s=document.createElement('span');s.className=state.found.has(k)?'':'missed';s.textContent=(state.found.has(k)?'✓ ':'○ ')+a+' × '+b;el.append(s);}
+}
+function testSelectedFactor(){
+  if(state.phase!=='running'||!state.chosenFactor)return;
+  tick();if(state.phase!=='running')return;
+  const k=state.chosenFactor,n=state.target;
+  state.hintsUsed++;
+  if(n%k!==0){
+    state.feedback=k+' is not a factor: '+n+' ÷ '+k+' leaves a remainder of '+(n%k)+'.';
+    state.feedbackType='error';
+    learning.record({concept:'div:'+k,correct:false,hints:1,mode:state.mode,context:{target:n}});
+    tone(false);render();return;
+  }
+  const a=Math.min(k,n/k),b=Math.max(k,n/k),key=a+'-'+b;
+  if(state.found.has(key)){state.feedback=a+' × '+b+' is already on your board.';state.feedbackType='error';render();return;}
+  state.found.add(key);state.hintedPairs.add(key);state.score++;
+  recordPair([a,b],true,state.hintsUsed);
+  state.feedback=a+' × '+b+' = '+n+'. You found this pair using the factor checker.';
+  state.feedbackType='success';tone(true);
+  state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;persist();
+  if(state.found.size===state.pairs.length)finish('complete');else render();
 }
 function resetScores(){
   if(['running','paused'].includes(state.phase)&&!confirm('End this round and reset scores?'))return;
@@ -259,7 +280,7 @@ $('durationSelect').addEventListener('change',e=>{state.duration=Number(e.target
 $('showCount').addEventListener('change',e=>{state.showCount=e.target.checked;persist();render();});
 $('sound').addEventListener('change',e=>{state.sound=e.target.checked;persist();render();});
 $('startButton').addEventListener('click',start);$('pauseButton').addEventListener('click',pause);$('finishButton').addEventListener('click',()=>finish('manual'));$('answerForm').addEventListener('submit',answer);$('resetScores').addEventListener('click',resetScores);
-$('hintNext').addEventListener('click',hintNext);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
+$('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
 $('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();renderProgress();}});

@@ -40,7 +40,7 @@ export function stageCandidates(stageId='foundation',maxOverride=1024){
   }
   return out;
 }
-export function chooseAdaptiveNumber({stage='foundation',limit=1024,history={},previous=null,random=Math.random}={}){
+export function chooseAdaptiveNumber({stage='foundation',limit=1024,history={},learningState=null,previous=null,random=Math.random}={}){
   let list=stageCandidates(stage,limit).filter(n=>n!==previous);
   if(!list.length)list=stageCandidates(stage,limit);
   if(!list.length)throw new RangeError('No eligible numbers');
@@ -51,8 +51,11 @@ export function chooseAdaptiveNumber({stage='foundation',limit=1024,history={},p
     const errorRate=(seen.attempts||0)>0 ? 1-(seen.correct||0)/seen.attempts : 0;
     const overdue=seen.nextDue&&seen.nextDue<=Date.now()?1:0;
     const challenge=1/(1+Math.abs(d.score-targetDifficulty)/6);
+    const observed=d.concepts.map(id=>learningState?.concepts?.[id]).filter(Boolean);
+    const weakFacts=observed.length ? observed.reduce((sum,c)=>sum+(1-(c.mastery||0)),0)/observed.length : .45;
+    const factReview=1+weakFacts*.8;
     const penalty=(seen.recentlySeen||0)>0?.25:1;
-    return Math.max(.01,(.35+challenge*2+errorRate*2+overdue)*penalty);
+    return Math.max(.01,(.35+challenge*2+errorRate*2+overdue)*penalty*factReview);
   });
   const total=weights.reduce((a,b)=>a+b,0);
   let pick=Math.min(.999999999,Math.max(0,random()))*total;

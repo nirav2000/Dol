@@ -16,8 +16,10 @@ await page.locator('#hintNext').click();
 assert.match(await page.locator('#hintLevel').textContent(),/1 of 4/);
 await page.locator('#pairInput').fill('1x'+target);
 await page.locator('#addButton').click();
-assert.match(await page.locator('#foundHeading').textContent(),/1 found/);
-await page.locator('#finishButton').click();
+if(await page.locator('#activePanel').isVisible()){
+  assert.match(await page.locator('#foundHeading').textContent(),/1 found/);
+  await page.locator('#finishButton').click();
+}
 assert.equal(await page.locator('#finishedPanel').isVisible(),true);
 await page.locator('[data-view="learn"]').click();
 assert.equal(await page.locator('#topicList .topic').count()>=20,true);

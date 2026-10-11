@@ -1,0 +1,18 @@
+name: Shared release validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'validation.config.json'
+      - '.github/workflows/shared-validation.yml'
+      - 'index.html'
+      - 'learning-app.mjs'
+      - 'adaptive.mjs'
+  workflow_dispatch:
+jobs:
+  validate:
+    uses: nirav2000/Apps/.github/workflows/static-app-validation.yml@main
+    with:
+      config: validation.config.json
+    permissions:
+      contents: read
