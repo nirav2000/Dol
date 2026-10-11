@@ -1,5 +1,8 @@
 name: Install Version Lab
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/version-lab-install.yml']
   workflow_dispatch:
 jobs:
   archive:
