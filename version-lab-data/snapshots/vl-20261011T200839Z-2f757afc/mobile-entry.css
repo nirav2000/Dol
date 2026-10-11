@@ -1,0 +1,83 @@
+/* Dedicated touch gameplay: all controls visible without invoking the iOS keyboard. */
+.mobile-entry{display:none}
+@media(max-width:700px) and (pointer:coarse){
+ html{scroll-padding-top:env(safe-area-inset-top)}
+ body{overscroll-behavior-y:contain}
+ .shell{padding:0 12px}
+ .menu-reveal{top:calc(env(safe-area-inset-top) + 3px)!important;right:12px!important;min-height:38px;font-size:12px}
+ .focus-mode #playView{padding-top:calc(env(safe-area-inset-top) + 8px)}
+ #playView .page-head{margin:0 0 7px!important}
+ #playView .scoreboard{gap:6px;margin-right:70px}
+ #playView .scoreboard>div{min-width:52px!important;padding:4px 7px!important;border-radius:9px}
+ #playView .scoreboard small{font-size:9px}
+ #playView .scoreboard strong{font-size:18px}
+ #playView .play-grid{display:flex;flex-direction:column;gap:7px}
+ #playView .number-section,#playView .work-panel{width:100%;min-width:0}
+ #playView .number-tile{aspect-ratio:auto!important;min-height:0!important;height:clamp(100px,19dvh,175px);border-radius:16px}
+ #playView .number-tile strong,#playView .number-tile strong[data-digits="4"]{font-size:clamp(68px,19vw,120px);letter-spacing:-.05em}
+ #playView .timer-line{margin:4px 0;gap:10px}
+ #playView .timer-line>strong{font-size:20px;min-width:55px}
+ #playView .meter{height:5px}
+ #playView .action-row{margin:4px 0;gap:8px}
+ #playView .action-row button{min-height:36px;padding:6px 12px}
+ #playView .work-panel{padding:12px;border-radius:16px;min-height:0}
+ #playView .panel-title{margin-bottom:6px!important}
+ #playView .panel-title h2{font-size:20px;margin:0}
+ #playView .panel-title .eyebrow{margin:0 0 4px}
+ #playView #answerForm{display:none}
+ #playView #activePanel .mobile-entry{display:block}
+ #playView .mobile-entry-label{font-size:10px;letter-spacing:1.3px;color:#aaa;text-align:center;font-weight:750;margin:4px 0 7px}
+ #playView .mobile-factors{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+ #playView .mobile-factors button{flex:1;min-width:0;min-height:46px;border-radius:12px;border:1px solid #555;background:#242424;color:white;font-size:26px;font-weight:800}
+ #playView .mobile-factors button[aria-pressed="true"]{outline:2px solid #eee;outline-offset:-2px;background:#303030}
+ #playView .mobile-factors span{font-size:23px}
+ #playView .mobile-keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ #playView .mobile-keypad button{min-height:clamp(37px,5.5dvh,56px);border-radius:9px;border:1px solid #454545;background:#292929;color:#f7f7f7;font-size:23px;font-weight:700;touch-action:manipulation}
+ #playView .mobile-keypad button[data-key="action"]{background:#f3f3f3;color:#111}
+ #playView .mobile-keypad button:active{background:#505050}
+ #playView #entryFeedback{min-height:18px;margin:5px 0;font-size:12px}
+ #playView .slots{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ #playView .slot{min-height:31px;font-size:12px}
+ #playView .slot .pair-number{font-size:14px;min-width:21px;padding:3px 4px}
+ #playView .slot .pair-times{font-size:12px}
+ #playView .pair-review-grid{gap:7px}
+ #playView .review-pair{min-height:64px}
+ #playView #nextLearningReason{font-size:11px;line-height:1.3;margin:4px 0}
+ .focus-mode #playView .work-panel .panel-title{margin-bottom:6px}
+ #playView .number-section>.eyebrow{display:none}
+ #playView #finishedPanel .review-pair .pair-number{font-size:18px}
+ .focus-mode #playView #roundVisuals,.focus-mode #playView #helpSection{display:none!important}
+}
+@media(max-width:700px) and (pointer:coarse) and (max-height:750px){
+ #playView .number-tile{height:90px}
+ #playView .mobile-keypad button{min-height:35px}
+ #playView .slot{min-height:27px}
+}
+
+/* v2.4.1: reliable iOS touch targets and one-tap next round */
+@media(max-width:700px) and (pointer:coarse){
+ #playView .mobile-keypad{gap:8px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+ #playView .mobile-keypad button{height:clamp(56px,7dvh,72px);min-height:56px;border-radius:13px;font-size:28px;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+ #playView .mobile-keypad button:active{transform:scale(.97);filter:brightness(1.3)}
+ #playView .mobile-factors button{min-height:52px}
+ #playView .mobile-next-question{display:block;width:100%;min-height:60px;font-size:19px;margin:18px 0 8px;border-radius:14px}
+ #playView .mobile-next-question[hidden]{display:none!important}
+ #playView .work-panel{padding:10px}
+ #playView .number-tile{height:clamp(88px,16dvh,140px)}
+ #playView .slots{gap:4px}
+ #playView .slot{min-height:29px}
+}
+@media(max-width:700px) and (pointer:coarse) and (max-height:750px){
+ #playView .mobile-keypad button{height:56px;min-height:56px}
+ #playView .number-tile{height:88px}
+}
+
+/* v2.4.2: same bottom-right action key becomes Next question after review */
+@media(max-width:700px) and (pointer:coarse){
+ #playView #finishedPanel .mobile-entry{display:block;margin-top:12px}
+ #playView .mobile-entry.is-finished .mobile-factors,
+ #playView .mobile-entry.is-finished .mobile-entry-label{display:none}
+ #playView .mobile-entry.is-finished .mobile-keypad button:not([data-key="action"]){visibility:hidden;pointer-events:none}
+ #playView .mobile-entry.is-finished .mobile-keypad button[data-key="action"]{font-size:13px;line-height:1.15;padding:4px;white-space:normal}
+ #playView .number-section .action-row #startButton:not([hidden]){display:none!important}
+}
