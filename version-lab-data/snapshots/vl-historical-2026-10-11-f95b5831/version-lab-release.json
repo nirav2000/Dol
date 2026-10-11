@@ -1,0 +1,37 @@
+{
+  "checkpointId": "vl-historical-2026-10-11-f95b5831",
+  "appId": "dol",
+  "productVersion": null,
+  "commit": "f95b5831636c737b21ab2a1a872a51821151c4b5",
+  "sourceRef": "f95b5831636c737b21ab2a1a872a51821151c4b5",
+  "createdAt": "2026-10-11T14:02:14.233Z",
+  "title": "feat: match Factor Frenzy in-round interface and add solo typing controls",
+  "summary": "Reconstructed historical checkpoint from Git history.",
+  "areas": [],
+  "sourceUrl": "https://github.com/nirav2000/Dol/tree/f95b5831636c737b21ab2a1a872a51821151c4b5",
+  "snapshotUrl": "./snapshots/vl-historical-2026-10-11-f95b5831/index.html",
+  "snapshotSafety": "visual-only",
+  "compatibility": {
+    "frontend": "archived",
+    "source": "git",
+    "snapshot": "generated",
+    "backend": "live backend connections blocked",
+    "data": "contract recorded"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  },
+  "readOnlyAdapter": null,
+  "platform": {
+    "contract": "v1"
+  },
+  "generator": {
+    "name": "Apps Version Lab",
+    "contractVersion": 1,
+    "backfilled": true
+  }
+}

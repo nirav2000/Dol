@@ -1,0 +1,37 @@
+{
+  "checkpointId": "vl-historical-2026-10-11-a23d384e",
+  "appId": "dol",
+  "productVersion": null,
+  "commit": "a23d384e534637e3935c61bc66f4ee9627005795",
+  "sourceRef": "a23d384e534637e3935c61bc66f4ee9627005795",
+  "createdAt": "2026-10-11T14:02:14.183Z",
+  "title": "feat: implement solo typing Factor Frenzy game",
+  "summary": "Reconstructed historical checkpoint from Git history.",
+  "areas": [],
+  "sourceUrl": "https://github.com/nirav2000/Dol/tree/a23d384e534637e3935c61bc66f4ee9627005795",
+  "snapshotUrl": "./snapshots/vl-historical-2026-10-11-a23d384e/index.html",
+  "snapshotSafety": "visual-only",
+  "compatibility": {
+    "frontend": "archived",
+    "source": "git",
+    "snapshot": "generated",
+    "backend": "live backend connections blocked",
+    "data": "contract recorded"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  },
+  "readOnlyAdapter": null,
+  "platform": {
+    "contract": "v1"
+  },
+  "generator": {
+    "name": "Apps Version Lab",
+    "contractVersion": 1,
+    "backfilled": true
+  }
+}

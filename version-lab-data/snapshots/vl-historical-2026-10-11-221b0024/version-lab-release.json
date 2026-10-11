@@ -1,0 +1,37 @@
+{
+  "checkpointId": "vl-historical-2026-10-11-221b0024",
+  "appId": "dol",
+  "productVersion": "1.1.0",
+  "commit": "221b0024d1e30c987dad131009d31ea86222ddcf",
+  "sourceRef": "221b0024d1e30c987dad131009d31ea86222ddcf",
+  "createdAt": "2026-10-11T14:02:14.293Z",
+  "title": "chore: install Version Lab archive workflow before learning redesign",
+  "summary": "Reconstructed historical checkpoint from Git history.",
+  "areas": [],
+  "sourceUrl": "https://github.com/nirav2000/Dol/tree/221b0024d1e30c987dad131009d31ea86222ddcf",
+  "snapshotUrl": "./snapshots/vl-historical-2026-10-11-221b0024/index.html",
+  "snapshotSafety": "visual-only",
+  "compatibility": {
+    "frontend": "archived",
+    "source": "git",
+    "snapshot": "generated",
+    "backend": "live backend connections blocked",
+    "data": "contract recorded"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  },
+  "readOnlyAdapter": null,
+  "platform": {
+    "contract": "v1"
+  },
+  "generator": {
+    "name": "Apps Version Lab",
+    "contractVersion": 1,
+    "backfilled": true
+  }
+}

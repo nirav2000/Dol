@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "appId": "dol",
+  "repository": "nirav2000/Dol",
+  "liveUrl": "https://nirav2000.github.io/Dol/",
+  "releases": [
+    {
+      "checkpointId": "vl-adoption-2026-10-11-e83de376",
+      "appId": "dol",
+      "productVersion": "1.1.0",
+      "commit": "e83de376475ad97b7262ba57421fbc2be64c100d",
+      "sourceRef": null,
+      "createdAt": "2026-10-11T14:02:14.491Z",
+      "title": "Version Lab adoption baseline",
+      "summary": "Baseline checkpoint created when the shared Version Lab was installed and future checkpoint management became shared.",
+      "areas": [
+        {
+          "id": "version-lab-adoption",
+          "title": "Version Lab adoption",
+          "kind": "platform",
+          "summary": "Shared Version Lab management enabled"
+        }
+      ],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/e83de376475ad97b7262ba57421fbc2be64c100d",
+      "snapshotUrl": "./snapshots/vl-adoption-2026-10-11-e83de376/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": false
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-e83de376",
+      "appId": "dol",
+      "productVersion": "1.1.0",
+      "commit": "e83de376475ad97b7262ba57421fbc2be64c100d",
+      "sourceRef": "e83de376475ad97b7262ba57421fbc2be64c100d",
+      "createdAt": "2026-10-11T14:02:14.422Z",
+      "title": "ci: retry historical Version Lab backfill after shared snapshot fix",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/e83de376475ad97b7262ba57421fbc2be64c100d",
+      "snapshotUrl": "./snapshots/vl-historical-2026-10-11-e83de376/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-95252d64",
+      "appId": "dol",
+      "productVersion": "1.1.0",
+      "commit": "95252d64a8212279a9604a77473196e46738e9d6",
+      "sourceRef": "95252d64a8212279a9604a77473196e46738e9d6",
+      "createdAt": "2026-10-11T14:02:14.360Z",
+      "title": "ci: run shared historical archive before learning edition",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/95252d64a8212279a9604a77473196e46738e9d6",
+      "snapshotUrl": "./snapshots/vl-historical-2026-10-11-95252d64/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-221b0024",
+      "appId": "dol",
+      "productVersion": "1.1.0",
+      "commit": "221b0024d1e30c987dad131009d31ea86222ddcf",
+      "sourceRef": "221b0024d1e30c987dad131009d31ea86222ddcf",
+      "createdAt": "2026-10-11T14:02:14.293Z",
+      "title": "chore: install Version Lab archive workflow before learning redesign",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/221b0024d1e30c987dad131009d31ea86222ddcf",
+      "snapshotUrl": "./snapshots/vl-historical-2026-10-11-221b0024/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-f95b5831",
+      "appId": "dol",
+      "productVersion": null,
+      "commit": "f95b5831636c737b21ab2a1a872a51821151c4b5",
+      "sourceRef": "f95b5831636c737b21ab2a1a872a51821151c4b5",
+      "createdAt": "2026-10-11T14:02:14.233Z",
+      "title": "feat: match Factor Frenzy in-round interface and add solo typing controls",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/f95b5831636c737b21ab2a1a872a51821151c4b5",
+      "snapshotUrl": "./snapshots/vl-historical-2026-10-11-f95b5831/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-a23d384e",
+      "appId": "dol",
+      "productVersion": null,
+      "commit": "a23d384e534637e3935c61bc66f4ee9627005795",
+      "sourceRef": "a23d384e534637e3935c61bc66f4ee9627005795",
+      "createdAt": "2026-10-11T14:02:14.183Z",
+      "title": "feat: implement solo typing Factor Frenzy game",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/a23d384e534637e3935c61bc66f4ee9627005795",
+      "snapshotUrl": "./snapshots/vl-historical-2026-10-11-a23d384e/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-43ba6a98",
+      "appId": "dol",
+      "productVersion": null,
+      "commit": "43ba6a982ef234d18aa1d34dce2f1eb37e329ecc",
+      "sourceRef": "43ba6a982ef234d18aa1d34dce2f1eb37e329ecc",
+      "createdAt": "2026-10-11T14:02:14.133Z",
+      "title": "chore: add temporary live-site audit to investigate embedded functionality",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/43ba6a982ef234d18aa1d34dce2f1eb37e329ecc",
+      "snapshotUrl": null,
+      "snapshotSafety": "source-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "source-only",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
+      "checkpointId": "vl-historical-2026-10-11-7c75c7c1",
+      "appId": "dol",
+      "productVersion": null,
+      "commit": "7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+      "sourceRef": "7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+      "createdAt": "2026-10-11T14:02:14.081Z",
+      "title": "Initial commit",
+      "summary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+      "snapshotUrl": null,
+      "snapshotSafety": "source-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "source-only",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    }
+  ],
+  "generatedAt": "2026-10-11T14:02:14.491Z"
+}

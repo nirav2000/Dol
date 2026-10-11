@@ -1,0 +1,44 @@
+{
+  "checkpointId": "vl-adoption-2026-10-11-e83de376",
+  "appId": "dol",
+  "productVersion": "1.1.0",
+  "commit": "e83de376475ad97b7262ba57421fbc2be64c100d",
+  "sourceRef": null,
+  "createdAt": "2026-10-11T14:02:14.491Z",
+  "title": "Version Lab adoption baseline",
+  "summary": "Baseline checkpoint created when the shared Version Lab was installed and future checkpoint management became shared.",
+  "areas": [
+    {
+      "id": "version-lab-adoption",
+      "title": "Version Lab adoption",
+      "kind": "platform",
+      "summary": "Shared Version Lab management enabled"
+    }
+  ],
+  "sourceUrl": "https://github.com/nirav2000/Dol/tree/e83de376475ad97b7262ba57421fbc2be64c100d",
+  "snapshotUrl": "./snapshots/vl-adoption-2026-10-11-e83de376/index.html",
+  "snapshotSafety": "visual-only",
+  "compatibility": {
+    "frontend": "archived",
+    "source": "git",
+    "snapshot": "generated",
+    "backend": "live backend connections blocked",
+    "data": "contract recorded"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  },
+  "readOnlyAdapter": null,
+  "platform": {
+    "contract": "v1"
+  },
+  "generator": {
+    "name": "Apps Version Lab",
+    "contractVersion": 1,
+    "backfilled": false
+  }
+}

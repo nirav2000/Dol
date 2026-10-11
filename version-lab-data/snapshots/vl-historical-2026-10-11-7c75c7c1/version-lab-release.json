@@ -1,0 +1,37 @@
+{
+  "checkpointId": "vl-historical-2026-10-11-7c75c7c1",
+  "appId": "dol",
+  "productVersion": null,
+  "commit": "7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+  "sourceRef": "7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+  "createdAt": "2026-10-11T14:02:14.081Z",
+  "title": "Initial commit",
+  "summary": "Reconstructed historical checkpoint from Git history.",
+  "areas": [],
+  "sourceUrl": "https://github.com/nirav2000/Dol/tree/7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+  "snapshotUrl": null,
+  "snapshotSafety": "source-only",
+  "compatibility": {
+    "frontend": "archived",
+    "source": "git",
+    "snapshot": "source-only",
+    "backend": "live backend connections blocked",
+    "data": "contract recorded"
+  },
+  "data": {
+    "provider": "localStorage",
+    "schemaVersion": "1",
+    "paths": [
+      "dol-factor-frenzy-v1"
+    ]
+  },
+  "readOnlyAdapter": null,
+  "platform": {
+    "contract": "v1"
+  },
+  "generator": {
+    "name": "Apps Version Lab",
+    "contractVersion": 1,
+    "backfilled": true
+  }
+}
