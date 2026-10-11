@@ -9,6 +9,7 @@ try{
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.TEST_BASE_URL||'http://127.0.0.1:8000/',{waitUntil:'networkidle'});
+ assert.equal(await page.locator('#startButton').isVisible(),true,'Ready screen must show Start round');
  await page.locator('#startButton').click();
  await page.locator('#mobileEntry').waitFor({state:'visible'});
  assert.equal(await page.locator('#mobileKeypad button').count(),12);

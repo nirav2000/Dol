@@ -81,3 +81,14 @@
  #playView .mobile-entry.is-finished .mobile-keypad button[data-key="action"]{font-size:13px;line-height:1.15;padding:4px;white-space:normal}
  #playView .number-section .action-row #startButton:not([hidden]){display:none!important}
 }
+
+/* v2.4.3: show the Start button on the ready screen; keep next-round hidden. */
+@media(max-width:700px) and (pointer:coarse){
+ #playView:has(#readyPanel:not([hidden])) .number-section .action-row #startButton:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center;min-height:58px;font-size:18px;width:100%}
+ .focus-mode #playView #readyPanel:not([hidden]){display:block!important}
+ #playView .work-panel:has(#readyPanel:not([hidden])){padding:16px}
+ #playView #readyPanel{font-size:14px}
+ #playView #readyPanel h2{font-size:19px;margin:6px 0}
+ #playView #readyPanel p{margin:7px 0}
+ #playView #readyPanel .rule-row{display:none}
+}

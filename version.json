@@ -1,5 +1,5 @@
 {
-  "version": "2.4.2",
+  "version": "2.4.3",
   "name": "Factor Frenzy",
-  "description": "Single next-question control in the keypad Enter position; redundant mobile Next round and Next question buttons removed."
+  "description": "Fix hidden Start round on iPhone focus mode; restore ready instructions without duplicating next-question controls."
 }
