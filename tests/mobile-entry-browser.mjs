@@ -31,8 +31,10 @@ try{
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
  await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
  await page.locator('#finishButton').click();
- assert.equal(await page.locator('#mobileNextQuestion').isVisible(),true);
- await page.locator('#mobileNextQuestion').click();
+ assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
+ assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
+ assert.equal(await page.locator('#startButton').isVisible(),false);
+ await page.locator('#mobileKeypad [data-key="action"]').click();
  assert.equal(await page.locator('#activePanel').isVisible(),true,'Next question must start from mobile button');
  await page.locator('#finishButton').click();
  await page.keyboard.press('Enter');

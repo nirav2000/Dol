@@ -71,3 +71,13 @@
  #playView .mobile-keypad button{height:56px;min-height:56px}
  #playView .number-tile{height:88px}
 }
+
+/* v2.4.2: same bottom-right action key becomes Next question after review */
+@media(max-width:700px) and (pointer:coarse){
+ #playView #finishedPanel .mobile-entry{display:block;margin-top:12px}
+ #playView .mobile-entry.is-finished .mobile-factors,
+ #playView .mobile-entry.is-finished .mobile-entry-label{display:none}
+ #playView .mobile-entry.is-finished .mobile-keypad button:not([data-key="action"]){visibility:hidden;pointer-events:none}
+ #playView .mobile-entry.is-finished .mobile-keypad button[data-key="action"]{font-size:13px;line-height:1.15;padding:4px;white-space:normal}
+ #playView .number-section .action-row #startButton:not([hidden]){display:none!important}
+}
