@@ -24,7 +24,7 @@ async function scenario(name,fn){
  page.on('pageerror',e=>errors.push(e.stack||e.message));
  try{
    await page.goto(base,{waitUntil:'networkidle'});
-   await page.waitForSelector('#autoNext');
+   await page.waitForSelector('#autoNext',{state:'attached'});
    await fn(page,context);
    assert.deepEqual(errors,[],name+' has no JavaScript errors');
    checks++;console.log('PASS '+name);
