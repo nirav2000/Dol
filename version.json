@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "name": "Factor Frenzy",
-  "description": "Large editable pair review, optional auto-next, interactive factor rainbows and arrays."
+  "description": "Default focus mode, top-edge navigation reveal, keyboard-first entry and Enter-to-advance."
 }

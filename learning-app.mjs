@@ -4,6 +4,12 @@ import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/A
 import {createRoundTools} from './round-tools.mjs';
 const $=id=>document.getElementById(id);
 let roundTools;
+const focusKey='dol-focus-mode-v1';
+let focusMode=readFocus();
+function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
+function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
+function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
+function focusAnswer(){if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const storageKey='dol-factor-frenzy-v1',settingsKey='dol-learning-settings-v2';
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch{return fallback;}}
 const old=read(storageKey,{});
@@ -35,6 +41,7 @@ function setView(view){
   if(view==='learn')renderLearn();
   if(view==='progress')renderProgress();
   roundTools?.viewChanged();
+  if(view==='play')focusAnswer();
 }
 function tone(ok){
   if(!state.sound)return;
@@ -143,6 +150,7 @@ function pause(){
   else if(state.phase==='paused'){state.deadline=performance.now()+state.remainingMs;state.phase='running';state.ticker=setInterval(tick,100);}
   else return;
   render();
+  if(state.phase==='running')focusAnswer();
 }
 function recordPair(pair,correct,hints=0){
   const [a,b]=pair;
@@ -300,9 +308,17 @@ $('topicSearch').addEventListener('input',renderLearn);
 $('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();renderProgress();}});
 $('exportProgress').addEventListener('click',()=>{const blob=new Blob([learning.export()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
+$('focusToggle').addEventListener('click',()=>setFocus(!focusMode));
+$('focusSetting').addEventListener('change',e=>setFocus(e.target.checked));
+const reveal=()=>{if(!focusMode)return;document.body.classList.add('focus-menu-revealed');};
+const hide=()=>{if(!focusMode)return;if(!document.querySelector('.topbar:focus-within'))document.body.classList.remove('focus-menu-revealed');};
+document.addEventListener('pointermove',e=>{if(!focusMode)return;if(e.pointerType==='mouse'||e.pointerType==='pen'){if(e.clientY<56)reveal();else if(e.clientY>140)hide();}});
+$('menuReveal').addEventListener('click',()=>{reveal();$('focusToggle').focus();});
+document.querySelector('.topbar').addEventListener('focusin',reveal);
+document.querySelector('.topbar').addEventListener('focusout',()=>setTimeout(hide,0));
 roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
   markAssisted:()=>{tick();if(state.phase==='running'){state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
   fillPair:pair=>{tick();if(state.phase!=='running')return;state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
 });
-render();setView('play');
+applyFocus();render();setView('play');

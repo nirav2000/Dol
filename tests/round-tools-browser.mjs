@@ -96,5 +96,21 @@ try{
    const data=JSON.parse(await learningData(p));const events=data.events.filter(e=>e.concept==='factor:pair'&&e.correct);assert.equal(events.length,2);assert.ok(events.every(e=>e.hints>=1));
    await p.locator('#finishButton').click();assert.match(await p.locator('#reviewEvidence').textContent(),/0 unassisted, 2 assisted/);
  });
+ await scenario('focus-first layout, input focus and Enter next',async p=>{
+   assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-mode')),true);
+   assert.equal(await p.locator('.topbar').evaluate(e=>getComputedStyle(e).transform==='matrix(1, 0, 0, 1, 0, 0)'),false);
+   await p.locator('#menuReveal').click();assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-menu-revealed')),true);
+   await p.locator('#focusToggle').click();assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-mode')),false);
+   await p.locator('#focusToggle').click();await start(p);
+   assert.equal(await p.locator('#pairInput').evaluate(e=>document.activeElement===e),true);
+   await p.locator('#pairInput').fill('1x112');await p.keyboard.press('Enter');
+   assert.equal(await p.locator('#pairInput').evaluate(e=>document.activeElement===e),true);
+   await p.locator('#finishButton').click();assert.equal(await round(p),1);
+   await p.locator('body').click({position:{x:10,y:150}});
+   await p.keyboard.press('Enter');assert.equal(await round(p),2);
+   assert.equal(await p.locator('#pairInput').evaluate(e=>document.activeElement===e),true);
+   await p.reload({waitUntil:'networkidle'});
+   assert.equal(await p.locator('body').evaluate(e=>e.classList.contains('focus-mode')),true);
+ });
  console.log(`${checks} enhanced browser scenarios passed`);
 }finally{await browser.close();}
