@@ -13,6 +13,7 @@ async function scenario(name,fn){
  await context.addInitScript(({seed})=>{
    Math.random=()=>seed;
    if(!sessionStorage.getItem('seeded-round-tools')){
+     localStorage.setItem('dol-auto-difficulty-v1',JSON.stringify(false));
      localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'systematic',limit:128,duration:30,sound:false,showCount:true}));
      localStorage.setItem('dol-factor-frenzy-v1',JSON.stringify({round:1,score:10}));
      localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false,delay:3}));
