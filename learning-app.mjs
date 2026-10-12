@@ -4,8 +4,9 @@ import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/A
 import {createRoundTools} from './round-tools.mjs';
 import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
+import {createStrategySupport} from './strategy-coach.mjs';
 const $=id=>document.getElementById(id);
-let roundTools,insights,mobileEntry;
+let roundTools,insights,mobileEntry,strategySupport;
 const focusKey='dol-focus-mode-v1';
 let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
@@ -44,6 +45,7 @@ function setView(view){
   if(view==='progress')renderProgress();
   roundTools?.viewChanged();
   mobileEntry?.sync();
+  strategySupport?.viewChanged();
   if(view==='play')focusAnswer();
 }
 function tone(ok){
@@ -108,17 +110,16 @@ function render(){
   document.querySelectorAll('[data-mode]').forEach(el=>el.classList.toggle('active',el.dataset.mode===state.mode));
   renderClock();
   if(active){
-    $('helpToggle').hidden=state.mode==='guided';
-    $('helpToggle').textContent=state.helpOpen?'Hide hints':'Need a hint?';
-    $('helpSection').hidden=state.mode!=='guided'&&!state.helpOpen;
+    $('helpToggle').hidden=false;
+    $('helpToggle').textContent='Hint';
+    $('helpSection').hidden=true;
     $('foundHeading').textContent=state.found.size+' found';
     $('pairCount').hidden=!state.showCount;
     $('pairCount').textContent=(state.pairs.length-state.found.size)+' left';
     $('pairInput').disabled=state.phase==='paused';$('addButton').disabled=state.phase==='paused';
     $('entryFeedback').textContent=state.feedback;
     $('entryFeedback').className='feedback'+(state.feedbackType?' '+state.feedbackType:'');
-    $('strategyFeedback').textContent=state.strategy;
-    slots();factors();renderHint();
+    slots();
     const d=describeDifficulty(state.target);
     $('difficultyDetail').textContent='Challenge profile: '+d.pairCount+' pairs · '+d.primeFactors.length+' prime factors · difficulty '+d.score;
   }
@@ -127,6 +128,7 @@ function render(){
   roundTools?.render(state);
   insights?.render();
   mobileEntry?.sync();
+  strategySupport?.render();
 }
 function stopTicker(){if(state.ticker!==null)clearInterval(state.ticker);state.ticker=null;}
 function tick(){
@@ -148,6 +150,7 @@ function start(){
   $('pairInput').value='';
   mobileEntry?.reset();
   insights?.start();
+  strategySupport?.resetRound();
   persist();setPhase('running');stopTicker();
   if(state.mode==='timed')state.ticker=setInterval(tick,100);
   focusAnswer();
@@ -171,6 +174,10 @@ function answer(event){
   event.preventDefault();if(state.phase!=='running')return;
   tick();if(state.phase!=='running')return;
   const input=$('pairInput'),check=assessPair(input.value,state.target,state.found);
+  // Accidental, incomplete and duplicate submissions are not misconceptions.
+  if(check.status==='invalid'||check.status==='duplicate'){
+    state.feedback=input.value.trim()?check.message:'';state.feedbackType='';render();focusAnswer();return;
+  }
   state.feedback=check.message;state.feedbackType=check.status==='correct'?'success':'error';
   if(check.status!=='correct'){
     if(check.status==='incorrect'){const values=input.value.match(/\d+/g);if(values?.length===2)insights?.answer(values.map(Number),'incorrect',false);}
@@ -179,14 +186,14 @@ function answer(event){
     if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
     tone(false);render();input.select();input.focus({preventScroll:true});return;
   }
-  const hints=Math.max(state.hintsUsed,state.visualHelp?1:0);
+  const hints=Math.max(state.hintsUsed,state.visualHelp?1:0,strategySupport?.assistanceFor(check.pair)||0);
   insights?.answer(check.pair,'correct',hints>0);
   state.mistakes=0;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
-  state.score++;recordPair(check.pair,true,hints);
+  state.score++;recordPair(check.pair,true,hints);strategySupport?.accepted(check.pair);
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
   state.feedbackType='success';
-  // Hints are attributed to the next successful pair; reset after it is entered.
-  state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
+  // Hints are attributed to their relevant pair and the next successful visual-tool use.
+  state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;state.visualHelp=false;
   persist();
   if(state.found.size===state.pairs.length)finish('complete');else{render();focusAnswer();}
 }
@@ -314,14 +321,13 @@ $('durationSelect').addEventListener('change',e=>{state.duration=Number(e.target
 $('showCount').addEventListener('change',e=>{state.showCount=e.target.checked;persist();render();});
 $('sound').addEventListener('change',e=>{state.sound=e.target.checked;persist();render();});
 $('startButton').addEventListener('click',start);$('pauseButton').addEventListener('click',pause);$('finishButton').addEventListener('click',()=>finish('manual'));$('answerForm').addEventListener('submit',answer);$('resetScores').addEventListener('click',resetScores);
-$('helpToggle').addEventListener('click',()=>{state.helpOpen=!state.helpOpen;render();});
 $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
-$('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();renderProgress();}});
-$('exportProgress').addEventListener('click',()=>{const blob=new Blob([learning.export()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+$('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();strategySupport?.resetProgress();renderProgress();}});
+$('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
+document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
 $('focusToggle').addEventListener('click',()=>setFocus(!focusMode));
 $('focusSetting').addEventListener('change',e=>setFocus(e.target.checked));
 const reveal=()=>{if(!focusMode)return;document.body.classList.add('focus-menu-revealed');};
@@ -336,6 +342,7 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
 });
 applyFocus();insights=createInsights({getState:()=>state,refresh:render});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
+strategySupport=createStrategySupport({getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason)});
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
 render();setView('play');

@@ -43,8 +43,13 @@ export function createInsights({getState,refresh}){
  if(!grouped.size)c.textContent='No detailed factor evidence yet. New attempts will appear here.';}
  function summary(){grid();conceptsView();document.getElementById('adaptiveExplanation').textContent='Adaptive level '+(level+1)+' of 5: '+stages[level][0]+' (limit '+stages[level][1]+'). '+reason+' Repeated numbers are limited where possible; weaker multiplication facts receive extra practice.';}
  function record(pair,outcome,{ms=null,hints=false,errors=0,target=null}={}){if(!pair||!pair.length)return;const [a,b]=pair.map(Number);if(!Number.isSafeInteger(a)||!Number.isSafeInteger(b)||a<1||b<1)return;const e={id:crypto.randomUUID?.()||Date.now()+'-'+Math.random(),at:Date.now(),key:pairKey(a,b),divisor:Math.min(a,b),target:target||a*b,outcome,assisted:!!hints,errors,ms:ms===null?null:Math.round(ms)};events.push(e);if(events.length>10000)events=events.slice(-10000);save(KEY,events);}
- function answer(pair,outcome,help){const elapsed=Math.max(1,performance.now()-lastAt);if(outcome==='incorrect'){mistakes++;record(pair,'incorrect',{ms:elapsed,errors:mistakes,target:getState().target});}else if(outcome==='correct'){record(pair,'correct',{ms:elapsed,hints:help||assisted,errors:mistakes,target:getState().target});lastAt=performance.now();mistakes=0;assisted=false;}}
- function start(){lastAt=performance.now();mistakes=0;assisted=false;}
+ let heldAt=null,heldMs=0;const holds=new Set();
+ function holdTime(reason){if(holds.has(reason))return;if(!holds.size)heldAt=performance.now();holds.add(reason);}
+ function releaseTime(reason){if(!holds.delete(reason))return;if(!holds.size&&heldAt!==null){heldMs+=Math.max(0,performance.now()-heldAt);heldAt=null;}}
+ function restartActiveClock(){lastAt=performance.now();heldMs=0;if(holds.size)heldAt=lastAt;}
+ function activeElapsed(){const now=performance.now();return Math.max(1,now-lastAt-heldMs-(heldAt===null?0:now-heldAt));}
+ function answer(pair,outcome,help){const elapsed=activeElapsed();if(outcome==='incorrect'){mistakes++;record(pair,'incorrect',{ms:elapsed,errors:mistakes,target:getState().target});}else if(outcome==='correct'){record(pair,'correct',{ms:elapsed,hints:help||assisted,errors:mistakes,target:getState().target});restartActiveClock();mistakes=0;assisted=false;}}
+ function start(){restartActiveClock();mistakes=0;assisted=false;}
  function help(){assisted=true;}
  function finish(state){for(const [a,b] of state.pairs)if(!state.found.has(a+'-'+b))record([a,b],'missed',{ms:null,target:state.target});if(!auto)return;
  const completed=events.filter(e=>e.outcome==='correct'||e.outcome==='missed').slice(-40);const correct=completed.filter(e=>e.outcome==='correct'&&!e.assisted&&e.errors===0),slow=correct.filter(e=>e.ms!==null&&e.ms>18000);
@@ -60,5 +65,5 @@ export function createInsights({getState,refresh}){
  return null;}
  function render(){config.querySelector('input').checked=auto;const state=getState(),running=['running','paused'].includes(state.phase);config.querySelector('input').disabled=running;if(auto&&!running){state.stage=stages[level][0];state.limit=stages[level][1];document.getElementById('stageSelect').value=state.stage;document.getElementById('limitSelect').value=state.limit;}document.getElementById('stageSelect').disabled=running||auto;document.getElementById('limitSelect').disabled=running||auto;}
  config.querySelector('input').onchange=e=>{auto=e.target.checked;save(PREF,auto);render();refresh();};
- return {start,answer,help,finish,choose,render,summary,record,get events(){return events;},get auto(){return auto;},get level(){return level;}};
+ return {start,answer,help,finish,choose,render,summary,record,holdTime,releaseTime,get events(){return events;},get auto(){return auto;},get level(){return level;}};
 }

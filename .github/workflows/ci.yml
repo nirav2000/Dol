@@ -16,6 +16,8 @@ jobs:
           node --check logic.mjs
           node --check adaptive.mjs
           node --check learning-app.mjs
+          node --check strategy-model.mjs
+          node --check strategy-coach.mjs
           node --check round-tools.mjs
           node --check round-model.mjs
           node --check visual-tools.mjs
@@ -31,6 +33,7 @@ jobs:
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
           sleep 2
           node tests/browser-smoke.mjs
+          node tests/strategy-browser.mjs
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
           node tests/mobile-dock-browser.mjs
