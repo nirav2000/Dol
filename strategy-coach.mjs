@@ -29,11 +29,11 @@ export function createStrategySupport({getState,setView,pause,focusAnswer,learni
   function paintHint(){
     if(!lesson)return;level=Math.min(level,lesson.steps.length-1);const content=lesson.steps[level];
     $('coachTarget').textContent='WORKING ON '+lesson.target;
-    $('coachProgress').textContent='Step '+(level+1)+' of '+lesson.steps.length+' \u00b7 stop whenever you are ready';
+    $('coachProgress').textContent='Step '+(level+1)+' of '+lesson.steps.length+' · stop whenever you are ready';
     $('coachTitle').textContent=content.title;$('coachText').textContent=content.text;
     $('coachEquation').textContent=content.equation;$('coachEquation').hidden=!content.equation;
     $('coachBack').disabled=level===0;$('coachNext').hidden=level===lesson.steps.length-1;
-    $('coachNext').textContent=level===lesson.partnerIndex-1?'Find the partner':'Another step';
+    $('coachNext').textContent=level===lesson.partnerIndex-1?'Find the partner':'Next step →';
     $('coachTry').className=level===lesson.steps.length-1?'primary':'text-button';
     $('coachPartner').hidden=lesson.kind!=='factor'||!lesson.pairKey||level>=lesson.partnerIndex;
     $('coachFactor').max=String(Math.max(1024,lesson.target));$('coachFactor').value=lesson.candidate||'';
