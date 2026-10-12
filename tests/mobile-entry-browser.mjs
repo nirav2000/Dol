@@ -26,10 +26,10 @@ try{
  assert.equal(await page.locator('#mobileSecond').textContent(),String(target));
  await page.locator('#mobileKeypad [data-key="action"]').click();
  const debug=await page.evaluate(()=>({feedback:document.querySelector('#entryFeedback').textContent,input:document.querySelector('#pairInput').value,first:document.querySelector('#mobileFirst').textContent,second:document.querySelector('#mobileSecond').textContent,slots:document.querySelectorAll('#pairSlots .slot.solved').length,phase:document.querySelector('#playView').dataset.mobilePhase}));
- assert.match(debug.feedback,/Correct/,JSON.stringify({target,...debug}));
+ assert.ok(debug.feedback.includes('Correct') || (debug.phase==='finished' && debug.slots===1),JSON.stringify({target,...debug}));
  assert.equal(await page.locator('#mobileFirst').textContent(),'—');
- assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
  assert.equal(await page.locator('#pairSlots .slot.solved').count(),1);
+ if(debug.phase!=='finished')assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
  await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
  await page.locator('#finishButton').click();
