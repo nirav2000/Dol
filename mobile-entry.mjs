@@ -3,7 +3,7 @@
 export function createMobileEntry({getState,submit}){
  const input=document.getElementById('pairInput'),play=document.getElementById('playView');
  const wrap=document.createElement('div');wrap.id='mobileEntry';wrap.className='mobile-entry';wrap.hidden=true;
- wrap.innerHTML='<div class="mobile-entry-label">ENTER A FACTOR PAIR</div><div class="mobile-factors"><button type="button" id="mobileFirst" aria-label="First factor" aria-pressed="true">\u2014</button><span aria-hidden="true">\u00d7</span><button type="button" id="mobileSecond" aria-label="Second factor" aria-pressed="false">\u2014</button></div><div id="mobileKeypad" class="mobile-keypad" role="group" aria-label="Factor keypad"></div>';
+ wrap.innerHTML='<div class="mobile-entry-label" id="mobileEntryStatus" role="status" aria-live="polite">ENTER A FACTOR PAIR</div><div class="mobile-factors"><button type="button" id="mobileFirst" aria-label="First factor" aria-pressed="true">\u2014</button><span aria-hidden="true">\u00d7</span><button type="button" id="mobileSecond" aria-label="Second factor" aria-pressed="false">\u2014</button></div><div id="mobileKeypad" class="mobile-keypad" role="group" aria-label="Factor keypad"></div>';
  // Outside both panels: never reparent or replace the button during a gesture.
  play.append(wrap);
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
@@ -23,6 +23,7 @@ export function createMobileEntry({getState,submit}){
    play.dataset.mobilePhase=state.phase;
    wrap.hidden=!isMobile()||state.view!=='play'||state.phase==='ready';
    wrap.classList.toggle('is-finished',finished);
+   const status=wrap.querySelector('#mobileEntryStatus');status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:'ENTER A FACTOR PAIR';status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
    first.textContent=parts[0]||'\u2014';second.textContent=parts[1]||'\u2014';
    first.setAttribute('aria-pressed',String(active===0));second.setAttribute('aria-pressed',String(active===1));
    const action=pad.querySelector('[data-key="action"]');
