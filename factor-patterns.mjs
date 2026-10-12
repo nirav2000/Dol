@@ -1,5 +1,5 @@
 import {factorPairs} from './logic.mjs';
-import {divisibilityRule} from './strategy-model.mjs';
+import {divisibilityRule,divisionChunks} from './strategy-model.mjs';
 const $=id=>document.getElementById(id);
 function explanation(n,a,b){
  if(a===1)return ['Start with 1',`Every number has 1 as a factor: 1 × ${n}.`];
@@ -9,7 +9,7 @@ function explanation(n,a,b){
  if(a===11){const r=divisibilityRule(n,11);return ['The 11 test',r.work+` Then ${n} ÷ 11 = ${b}.`];}
  const pairs=factorPairs(n);for(const [x,y] of pairs){if(x===a&&y===b)continue;if(x*2===a&&y%2===0&&y/2===b)return ['Double and halve',`Start with ${x} × ${y}. Double ${x} to ${a} and halve ${y} to ${b}; the product stays ${n}.`];}
  if(a%3===0&&n%3===0)return ['Build with 3',`Try dividing a known factor pair by 3 on one side and multiplying by 3 on the other. Check: ${a} × ${b} = ${n}.`];
- return ['Find the partner',`Test ${a} as a divisor, then calculate ${n} ÷ ${a} = ${b}. Check by multiplying back.`];
+ return ['Find the partner',`Use the worked division below to check whether ${a} divides ${n} without a remainder. The partner is ${b}.`];
 }
 export function initFactorPatterns(){
  const finished=$('finishedPanel');if(!finished)return;
@@ -19,7 +19,7 @@ export function initFactorPatterns(){
  function draw(){
  const n=Number($('numberValue')?.textContent);if(!Number.isSafeInteger(n)||n<1)return;
  grid.replaceChildren();const pairs=factorPairs(n);
- pairs.forEach(([a,b],i)=>{const button=document.createElement('button');button.type='button';button.className='pattern-pair';button.textContent=`${a} × ${b}`;button.addEventListener('click',()=>{grid.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));button.setAttribute('aria-pressed','true');const [title,text]=explanation(n,a,b);detail.replaceChildren();const heading=document.createElement('strong');heading.textContent=title;const para=document.createElement('p');para.textContent=text;detail.append(heading,para);});grid.append(button);if(i===0)queueMicrotask(()=>button.click());});
+ pairs.forEach(([a,b],i)=>{const button=document.createElement('button');button.type='button';button.className='pattern-pair';button.textContent=`${a} × ${b}`;button.addEventListener('click',()=>{grid.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));button.setAttribute('aria-pressed','true');const [title,text]=explanation(n,a,b);detail.replaceChildren();const heading=document.createElement('strong');heading.textContent=title;const para=document.createElement('p');para.textContent=text;detail.append(heading,para);const more=document.createElement('button');more.type='button';more.className='pattern-method';more.textContent='How do I test divisibility by '+a+'?';more.setAttribute('aria-expanded','false');const work=document.createElement('p');work.hidden=true;const c=divisionChunks(n,a),r=divisibilityRule(n,a);work.textContent=r.rule+' '+r.work+' Split '+n+' into '+c.firstProduct+' + '+c.remaining+'. Divide each part by '+a+': '+c.firstProduct+' ÷ '+a+' = '+c.first+' and '+c.remaining+' ÷ '+a+' = '+c.second+'. Add '+c.first+' + '+c.second+' = '+b+'. Check: '+a+' × '+b+' = '+n+'.';more.addEventListener('click',()=>{work.hidden=!work.hidden;more.setAttribute('aria-expanded',String(!work.hidden));});detail.append(more,work);});grid.append(button);if(i===0)queueMicrotask(()=>button.click());});
  }
  const observer=new MutationObserver(()=>{if(!finished.hidden&&!body.hidden)draw();});
  observer.observe(finished,{attributes:true,attributeFilter:['hidden']});
