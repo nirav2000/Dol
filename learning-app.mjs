@@ -193,7 +193,8 @@ function answer(event){
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
   state.feedbackType='success';
   // Hints are attributed to their relevant pair and the next successful visual-tool use.
-  state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;state.visualHelp=false;
+  state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
+  // A fully revealed visual board remains assisted for this round; private coach hints are pair-specific.
   persist();
   if(state.found.size===state.pairs.length)finish('complete');else{render();focusAnswer();}
 }
