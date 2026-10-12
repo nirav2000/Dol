@@ -15,14 +15,14 @@ try{
   const action=page.locator('#mobileKeypad [data-key="action"]');
   const before=await action.boundingBox();
   assert.ok(before&&before.height>=56);
-  await page.evaluate(()=>{window.originalAction=document.querySelector('[data-key="action"]');});
-  await page.locator('[data-key="1"]').tap();await page.locator('[data-key="1"]').tap();
+  await page.evaluate(()=>{window.originalAction=document.querySelector('#mobileKeypad [data-key="action"]');});
+  await page.locator('#mobileKeypad [data-key="1"]').tap();await page.locator('#mobileKeypad [data-key="1"]').tap();
   assert.equal(await page.locator('#mobileFirst').textContent(),'11','rapid repeated taps');
-  await page.locator('[data-key="clear"]').tap();await page.locator('[data-key="clear"]').tap();
+  await page.locator('#mobileKeypad [data-key="clear"]').tap();await page.locator('#mobileKeypad [data-key="clear"]').tap();
   await page.locator('#finishButton').tap();
   assert.equal(await action.getAttribute('aria-label'),'Next question');
   same(before,await action.boundingBox(),'play/review');
-  assert.equal(await page.evaluate(()=>window.originalAction===document.querySelector('[data-key="action"]')),true,'one persistent button');
+  assert.equal(await page.evaluate(()=>window.originalAction===document.querySelector('#mobileKeypad [data-key="action"]')),true,'one persistent button');
   assert.equal(await page.locator('#mobileEntry button:visible').count(),1,'no invisible keypad');
   const dock=await page.locator('#mobileEntry').boundingBox();
   assert.ok(dock.height<=before.height+1,'no reserved keypad rows');
