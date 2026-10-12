@@ -29,3 +29,11 @@
 .focus-mode .menu-reveal{top:5px;right:8px}
 }
 @media(prefers-reduced-motion:reduce){.focus-mode .topbar{transition:none}}
+
+/* On touch phones, Focus must hide the top navigation rather than leave a persistent menu strip. */
+@media(max-width:700px) and (pointer:coarse){
+ body.focus-mode:not(.focus-menu-revealed) .topbar{transform:translateY(-150%)!important;visibility:hidden;pointer-events:none}
+ body.focus-mode.focus-menu-revealed .topbar{transform:translateY(0)!important;visibility:visible;pointer-events:auto}
+ body.focus-mode .topbar:focus-within{visibility:visible;pointer-events:auto;transform:translateY(0)!important}
+ body.focus-mode:not(.focus-menu-revealed) .menu-reveal{display:block;opacity:.65}
+}
