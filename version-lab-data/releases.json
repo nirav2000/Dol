@@ -5,6 +5,68 @@
   "liveUrl": "https://nirav2000.github.io/Dol/",
   "releases": [
     {
+      "checkpointId": "vl-20261012T091706Z-d683dc9a",
+      "appId": "dol",
+      "productVersion": "2.2.0",
+      "commit": "d683dc9ae8a19c2d3287a70bf187f794a881a903",
+      "sourceRef": null,
+      "createdAt": "2026-10-12T09:17:06.739Z",
+      "title": "Factor Frenzy learning edition v2.2.0",
+      "summary": "Black and grey redesign, three learning modes, adaptive question selection, guided hints, strategy guide, learning SDK and progress tracking.",
+      "areas": [
+        {
+          "id": "learning-modes",
+          "title": "Learning modes",
+          "kind": "feature",
+          "summary": "Guided, independent and timed"
+        },
+        {
+          "id": "scaffolding",
+          "title": "Scaffolding",
+          "kind": "feature",
+          "summary": "Progressive factor hints"
+        },
+        {
+          "id": "design",
+          "title": "Design",
+          "kind": "redesign",
+          "summary": "Monochrome responsive interface"
+        },
+        {
+          "id": "progress",
+          "title": "Progress",
+          "kind": "feature",
+          "summary": "Shared Learning SDK"
+        }
+      ],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/d683dc9ae8a19c2d3287a70bf187f794a881a903",
+      "snapshotUrl": "./snapshots/vl-20261012T091706Z-d683dc9a/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": false
+      }
+    },
+    {
       "checkpointId": "vl-20261011T213112Z-e07dee64",
       "appId": "dol",
       "productVersion": "2.2.0",
@@ -1176,5 +1238,5 @@
       }
     }
   ],
-  "generatedAt": "2026-10-11T21:31:12.875Z"
+  "generatedAt": "2026-10-12T09:17:06.739Z"
 }
