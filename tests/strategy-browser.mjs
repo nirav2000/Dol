@@ -20,7 +20,7 @@ try{
   if(viewport.width<500){const action=page.locator('#mobileKeypad [data-key="action"]');assert.equal(await action.getAttribute('aria-label'),'Next question');await action.click();}
   else await page.locator('#startButton').click();
   await page.locator('#finishButton').click();
-  await page.locator('[data-view="learn"]').click();await page.locator('#techniqueStart').click();
+  await page.locator('#menuReveal').click();await page.locator('[data-view="learn"]').click();await page.locator('#techniqueStart').click();
   assert.equal(await page.locator('#strategyView').isVisible(),true);
   for(let i=0;i<5;i++){
    await page.locator('#strategyOptions button').first().click();
