@@ -25,7 +25,8 @@ try{
  for(const digit of digits)await page.locator('#mobileKeypad [data-key="'+digit+'"]').click();
  assert.equal(await page.locator('#mobileSecond').textContent(),String(target));
  await page.locator('#mobileKeypad [data-key="action"]').click();
- assert.match(await page.locator('#entryFeedback').textContent(),/Correct/);
+ const debug=await page.evaluate(()=>({feedback:document.querySelector('#entryFeedback').textContent,input:document.querySelector('#pairInput').value,first:document.querySelector('#mobileFirst').textContent,second:document.querySelector('#mobileSecond').textContent,slots:document.querySelectorAll('#pairSlots .slot.solved').length,phase:document.querySelector('#playView').dataset.mobilePhase}));
+ assert.match(debug.feedback,/Correct/,JSON.stringify({target,...debug}));
  assert.equal(await page.locator('#mobileFirst').textContent(),'—');
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
  assert.equal(await page.locator('#pairSlots .slot.solved').count(),1);
