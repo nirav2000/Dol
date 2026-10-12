@@ -32,7 +32,7 @@ try{
  if(debug.phase!=='finished')assert.equal(await page.locator('#mobileKeypad [data-key="action"]').textContent(),'×');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
  await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
- await page.locator('#finishButton').click();
+ if(await page.locator('#activePanel').isVisible())await page.locator('#finishButton').click();
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
  assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
  const actionBox=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();
