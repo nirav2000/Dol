@@ -46,7 +46,7 @@ export function speedGroups(entries,type='fact'){
  const groups=new Map();
  for(const e of entries){
   if(!clean(e)||!Number.isFinite(e.ms)||e.ms<0)continue;
-  const m=/^(\\d+)x(\\d+)$/.exec(String(e.key||''));
+  const m=/^(\d+)x(\d+)$/.exec(String(e.key||''));
   if(!m)continue;
   const a=Number(m[1]),b=Number(m[2]);
   const keys=type==='factor'?[...new Set([a,b].filter(n=>n>=1&&n<=12))].map(n=>({key:'f'+n,label:'Factor '+n,sort:n})):
