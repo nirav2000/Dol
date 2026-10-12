@@ -1,0 +1,17 @@
+{
+  "ignore": [
+    "version-lab-data",
+    "node_modules"
+  ],
+  "pages": [
+    {
+      "path": "/",
+      "readySelector": "#startButton",
+      "minCount": 1
+    }
+  ],
+  "releaseGate": {
+    "enabled": false
+  },
+  "maxExternalRequests": 8
+}
