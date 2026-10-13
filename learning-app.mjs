@@ -4,7 +4,8 @@ import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,re
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
 import {createRoundTools} from './round-tools.mjs';
 import {createLearningSync} from 'https://nirav2000.github.io/Apps/learning-sync/v1/index.js';
-import {activeAccount,initAccountUI,transport} from './dol-account.mjs';
+// Account integration loads asynchronously so Firebase outages never block offline practice.
+const activeAccount=()=>{try{return localStorage.getItem('dol-active-account-v1')||'guest'}catch{return 'guest'}};
 import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
@@ -406,7 +407,7 @@ render();setView('play');
 
 // Auth is initialised only after the game UI has mounted. Cloud sync is scoped to the
 // actual Firebase UID and never runs for a guest or a mismatched account.
-initAccountUI({onUser:async user=>{
+import('./dol-account.mjs').then(({initAccountUI,transport})=>initAccountUI({onUser:async user=>{
   if(!user||user.uid!==accountId||!learningSync)return;
   try{
     const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onSnapshot:merged=>{
@@ -420,4 +421,4 @@ initAccountUI({onUser:async user=>{
     learningSync=service;
     document.getElementById('dolSyncStatus').textContent='Cloud learning record synchronised';
   }catch(error){document.getElementById('dolSyncStatus').textContent='Offline/local progress saved. Sync: '+(error.code||error.message);console.warn('Dol sync unavailable',error);}
-}}).catch(error=>{document.getElementById('dolAccountStatus').textContent='Account service unavailable: '+error.message});
+}})).catch(error=>{document.getElementById('dolAccountStatus').textContent='Account service unavailable: '+error.message});
