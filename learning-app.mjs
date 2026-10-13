@@ -25,7 +25,7 @@ const prefs=read(settingsKey,{});
 const learning=createLearningStore({appId:'dol',learnerId:accountId==='guest'?'local':accountId});
 // Stage 1: durable guest learning evidence. Cloud/login remain disabled until secure Auth, rules and migration gates pass.
 let learningSync=null;
-try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
+try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});if(accountId==='guest')learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
 const state={
   phase:'ready',view:'play',mode:prefs.mode||'guided',stage:prefs.stage||'foundation',
   limit:[64,128,256,512,1024].includes(prefs.limit)?prefs.limit:128,
