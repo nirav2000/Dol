@@ -67,26 +67,30 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   function renderReview(s){
     if(!s.result)return;
     if(reviewIdentity!==s.result){reviewIdentity=s.result;selected=new Set(s.found);arm();}
-    const score=reviewScore(s.pairs,selected),host=$('answerReview');
+    const score=reviewScore(s.pairs,selected),onBoard=document.body.dataset.dolLayout==='pairboard',host=onBoard?$('layoutPairGrid'):$('answerReview'),other=onBoard?$('answerReview'):$('layoutPairGrid');
     const focusKey=document.activeElement?.dataset?.reviewPair;
     $('finishHeading').textContent='Check the pairs';
     $('roundPoints').textContent=`${s.pairs.length} pairs in total`;
     $('finishMessage').textContent=(s.result.reason==='time'?"Time's up. ":s.result.reason==='complete'?'All pairs found. ':'Round finished. ')+`You entered ${s.result.correct} of ${s.result.total} pairs during play.`;
-    host.className='pair-review-grid';host.setAttribute('aria-describedby','reviewInstructions');host.replaceChildren();
+    other.replaceChildren();other.hidden=true;host.hidden=false;host.className=onBoard?'layout-pair-grid unified-pair-review':'pair-review-grid';if(onBoard)host.style.setProperty('--board-columns','3');host.setAttribute('aria-describedby','reviewInstructions');host.replaceChildren();
     for(const [a,b] of s.pairs){
       const key=pairKey(a,b),checked=selected.has(key);
       const button=el('button',{type:'button',class:'review-pair'+(checked?' credited':''),'data-review-pair':key,'aria-pressed':checked,'aria-label':`${a} times ${b}. ${checked?'Credited; remove':'Not credited; award'} its point.`});
       pairContent(button,a,b);
       button.append(el('span',{class:'pair-mark','aria-hidden':'true'},checked?'✓':'○'));
-      button.addEventListener('click',()=>{if(getState().phase!=='finished')return;timer.hold('review');if(selected.has(key))selected.delete(key);else selected.add(key);applyReview();renderReview(getState());});
+      button.addEventListener('click',()=>{if(getState().phase!=='finished')return;timer.hold('review');if(document.body.dataset.dolPatternMode==='true'){document.dispatchEvent(new CustomEvent('dol-pattern-select',{detail:{n:getState().target,a,b,key}}));return;}if(selected.has(key))selected.delete(key);else selected.add(key);applyReview();renderReview(getState());});
       host.append(button);
     }
+    if(onBoard)$('layoutPairStatus').textContent=`${score.count} / ${score.total} credited`;
+    instruction.textContent=document.body.dataset.dolPatternMode==='true'?'Explore mode: select a pair to learn its technique. Your score will not change.':'Tap a pair to give or take away its point. Completing the set adds the +2 bonus.';
     summary.replaceChildren(el('strong',{},`${score.count} of ${score.total} pairs credited`),el('strong',{},`${score.points} points${score.bonus?' · +2 bonus included':''}`));
     const changed=selected.size!==s.found.size||[...selected].some(key=>!s.found.has(key));
     evidence.textContent=(changed?'Score adjusted manually. ':'Played result. ')+`${s.result.correct-s.result.assisted} unassisted, ${s.result.assisted} assisted during play. Review taps change the game score, not mastery or recorded learning results.`;
     restore.hidden=!changed;
+    document.dispatchEvent(new CustomEvent('dol-review-rendered',{detail:{target:s.target}}));
     if(focusKey)host.querySelector(`[data-review-pair="${focusKey}"]`)?.focus({preventScroll:true});
   }
+  document.addEventListener('dol-layoutchange',()=>{const s=getState();if(s.phase==='finished')renderReview(s);});
   function render(s){
     $('autoNext').checked=preferences.autoNext;$('autoNextDelay').value=preferences.delay;
     // These two controls remain usable in a round; core settings are intentionally locked.

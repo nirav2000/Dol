@@ -16,14 +16,36 @@ function explanation(n,a,b){
 }
 export function initFactorPatterns(){
  const finished=$('finishedPanel');if(!finished)return;
- const section=document.createElement('section');section.className='pattern-explorer';section.innerHTML='<button type="button" id="patternToggle" class="secondary" aria-expanded="false">Explore how the pairs connect ↓</button><div id="patternBody" hidden><p class="muted small">Tap a pair to see a way to discover it. These explanations never change your score.</p><div id="patternGrid" class="pattern-grid"></div><div id="patternDetail" class="pattern-detail" role="status" aria-live="polite"></div><p class="muted small">To know you are finished, check possible smaller factors only up to √n. Every larger factor has a smaller partner.</p></div>';finished.append(section);
- const toggle=$('patternToggle'),body=$('patternBody'),grid=$('patternGrid'),detail=$('patternDetail');
- toggle.addEventListener('click',()=>{body.hidden=!body.hidden;toggle.setAttribute('aria-expanded',String(!body.hidden));toggle.textContent=body.hidden?'Explore how the pairs connect ↓':'Hide factor patterns ↑';if(!body.hidden)draw();});
- function draw(){
- const n=Number($('numberValue')?.textContent);if(!Number.isSafeInteger(n)||n<1)return;
- grid.replaceChildren();grid.parentNode.querySelectorAll('.pattern-connections').forEach(node=>node.remove());const pairs=factorPairs(n);const connections=document.createElement('div');connections.className='pattern-connections';connections.textContent='Connections: double one factor and halve the other when the second factor is even. Select a pair below to explore.';grid.before(connections);grid.parentNode.querySelectorAll('.pattern-connections').forEach((node,i)=>{if(i>0)node.remove();});
- pairs.forEach(([a,b],i)=>{const button=document.createElement('button');button.type='button';button.className='pattern-pair';button.textContent=`${a} × ${b}`;button.addEventListener('click',()=>{grid.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));button.setAttribute('aria-pressed','true');const [title,text]=explanation(n,a,b);detail.replaceChildren();const heading=document.createElement('strong');heading.textContent=title;const para=document.createElement('p');para.textContent=text;detail.append(heading,para);const more=document.createElement('button');more.type='button';more.className='pattern-method';more.textContent='How do I test divisibility by '+a+'?';more.setAttribute('aria-expanded','false');const work=document.createElement('p');work.hidden=true;const c=divisionChunks(n,a),r=divisibilityRule(n,a);work.textContent=r.rule+' '+r.work+' Split '+n+' into '+c.firstProduct+' + '+c.remaining+'. Divide each part by '+a+': '+c.firstProduct+' ÷ '+a+' = '+c.first+' and '+c.remaining+' ÷ '+a+' = '+c.second+'. Add '+c.first+' + '+c.second+' = '+b+'. Check: '+a+' × '+b+' = '+n+'.';more.addEventListener('click',()=>{work.hidden=!work.hidden;more.setAttribute('aria-expanded',String(!work.hidden));});detail.append(more,work);const source=pairs.find(([x,y])=>x*2===a&&y/2===b&&y%2===0);if(source){const link=document.createElement('p');link.className='pattern-link';link.textContent='↳ '+source[0]+' × '+source[1]+' → '+a+' × '+b+' (double '+source[0]+', halve '+source[1]+')';detail.append(link);}});grid.append(button);if(i===0)queueMicrotask(()=>button.click());});
+ const section=document.createElement('section');section.className='pattern-explorer';
+ section.innerHTML='<button type="button" id="patternToggle" class="secondary" aria-expanded="false">Show factor patterns ↓</button><div id="patternBody" hidden><p class="muted small">Tap a pair on the existing board to explore its technique without changing your score.</p><div id="patternDetail" class="pattern-detail" role="status" aria-live="polite"></div><p class="muted small">Only check possible smaller factors up to √n. Every larger factor has a smaller partner.</p></div>';
+ finished.append(section);
+ const toggle=$('patternToggle'),body=$('patternBody'),detail=$('patternDetail');
+ let selected=null;
+ function root(){return document.body.dataset.dolLayout==='pairboard'?$('layoutPairGrid'):$('answerReview');}
+ function showPair(n,a,b,key){
+  selected=key;
+  const [title,text]=explanation(n,a,b);detail.replaceChildren();
+  const heading=document.createElement('strong');heading.textContent=a+' × '+b+' · '+title;
+  const para=document.createElement('p');para.textContent=text;detail.append(heading,para);
+  const more=document.createElement('button');more.type='button';more.className='pattern-method';more.textContent='How do I test divisibility by '+a+'?';more.setAttribute('aria-expanded','false');
+  const work=document.createElement('p');work.hidden=true;const c=divisionChunks(n,a),r=divisibilityRule(n,a);
+  work.textContent=r.rule+' '+r.work+' Split '+n+' into '+c.firstProduct+' + '+c.remaining+'. Divide each part by '+a+': '+c.firstProduct+' ÷ '+a+' = '+c.first+' and '+c.remaining+' ÷ '+a+' = '+c.second+'. Add '+c.first+' + '+c.second+' = '+b+'. Check: '+a+' × '+b+' = '+n+'.';
+  more.addEventListener('click',()=>{work.hidden=!work.hidden;more.setAttribute('aria-expanded',String(!work.hidden));});detail.append(more,work);
+  const source=factorPairs(n).find(([x,y])=>x*2===a&&y%2===0&&y/2===b);
+  if(source){const link=document.createElement('p');link.className='pattern-link';link.textContent='↳ '+source[0]+' × '+source[1]+' → '+a+' × '+b+' (double '+source[0]+', halve '+source[1]+')';detail.append(link);}
+  document.querySelectorAll('[data-review-pair]').forEach(button=>{if(button.dataset.reviewPair===key)button.dataset.patternSelected='true';else delete button.dataset.patternSelected;});
  }
- const observer=new MutationObserver(()=>{if(!finished.hidden&&!body.hidden)draw();});
- observer.observe(finished,{attributes:true,attributeFilter:['hidden']});
+ function selectFirst(){
+  const first=root()?.querySelector('[data-review-pair]');if(!first)return;
+  const [a,b]=first.dataset.reviewPair.split('-').map(Number);showPair(Number($('numberValue').textContent),a,b,first.dataset.reviewPair);
+ }
+ toggle.addEventListener('click',()=>{
+  body.hidden=!body.hidden;const open=!body.hidden;
+  toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'Hide factor patterns ↑':'Show factor patterns ↓';
+  if(open){document.body.dataset.dolPatternMode='true';selectFirst();}
+  else{delete document.body.dataset.dolPatternMode;document.querySelectorAll('[data-pattern-selected]').forEach(b=>delete b.dataset.patternSelected);}
+ });
+ document.addEventListener('dol-pattern-select',e=>{if(!body.hidden)showPair(e.detail.n,e.detail.a,e.detail.b,e.detail.key);});
+ document.addEventListener('dol-review-rendered',e=>{if(body.hidden)return;const item=root()?.querySelector('[data-review-pair="'+selected+'"]');if(item){const [a,b]=selected.split('-').map(Number);showPair(e.detail.target,a,b,selected);}else selectFirst();});
+ new MutationObserver(()=>{if(finished.hidden&&!body.hidden)toggle.click();}).observe(finished,{attributes:true,attributeFilter:['hidden']});
 }

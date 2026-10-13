@@ -220,7 +220,7 @@ function finish(reason){
 function celebratePrimeResult(){
   // Prime targets have exactly one factor pair: 1 × n. 1 itself is not prime.
   if(state.result?.reason!=='complete'||state.target<2||state.pairs.length!==1)return;
-  const tile=document.querySelector('#answerReview .review-pair.credited');
+  const tile=document.querySelector('#layoutPairGrid .review-pair.credited, #answerReview .review-pair.credited');
   if(!tile)return;
   tile.classList.remove('prime-rainbow-celebration');
   tile.querySelector('.prime-bubble')?.remove();
