@@ -16,6 +16,7 @@ jobs:
           node --check logic.mjs
           node --check adaptive.mjs
           node --check learning-app.mjs
+          node --check dol-account.mjs
           node --check strategy-model.mjs
           node --check strategy-coach.mjs
           node --check round-tools.mjs
