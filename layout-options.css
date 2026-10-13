@@ -54,3 +54,16 @@ body[data-dol-layout="pairboard"] #playView #pairSlots{display:none}
 
 /* Number-tile overlay styles must not stretch the nested layout switch label. */
 .number-tile .layout-switcher .layout-switch-label{position:static;inset:auto;display:inline;background:transparent;letter-spacing:normal;font-size:11px;font-weight:600;white-space:nowrap;}
+
+/* One board owns scored review and maths exploration; show large iPad-friendly cards. */
+body[data-dol-layout=pairboard] #layoutPairGrid.unified-pair-review{display:grid;grid-template-columns:repeat(var(--board-columns,3),minmax(0,1fr));gap:9px;margin:0;container-type:inline-size}
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair{min-width:0;min-height:86px;padding:12px 5px;gap:4px;border-radius:12px}
+body[data-dol-layout=pairboard] #layoutPairGrid .pair-number{min-width:0;padding:5px 7px;font-size:clamp(19px,2.15vw,30px);border-radius:6px}
+body[data-dol-layout=pairboard] #layoutPairGrid .pair-times{font-size:16px}
+@media(max-width:700px){
+ body[data-dol-layout=pairboard] #layoutPairGrid.unified-pair-review{--board-columns:2!important;gap:7px}
+ body[data-dol-layout=pairboard] #layoutPairGrid .review-pair{min-height:72px;padding:7px 4px}
+ body[data-dol-layout=pairboard] #layoutPairGrid .pair-number{font-size:clamp(19px,5vw,27px);padding:4px 5px}
+ body[data-dol-layout=pairboard] #layoutPairGrid .pair-times{font-size:14px}
+ body[data-dol-layout=pairboard] .layout-pair-grid:not(.unified-pair-review){--board-columns:2!important}
+}
