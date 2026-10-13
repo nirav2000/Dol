@@ -43,7 +43,7 @@ try{
   await page.locator('#finishButton').tap();
   await page.setViewportSize(viewport.width===844?{width:390,height:700}:{width:844,height:390});
   const rotated=await action.boundingBox();assert.ok(rotated&&rotated.y>=0);
-  await action.tap();same(rotated,await action.boundingBox(),'rotation');
+  await action.tap();const afterRotate=await action.boundingBox();if(Math.abs(rotated.y-afterRotate.y)>1)console.error('Rotation action geometry',JSON.stringify({viewport,rotated,afterRotate,metrics:await page.evaluate(()=>({innerHeight,clientHeight:document.documentElement.clientHeight,visualHeight:visualViewport?.height,visualOffset:visualViewport?.offsetTop,screenHeight:screen.height,dock:document.getElementById('mobileEntry').getBoundingClientRect().toJSON(),top:document.getElementById('mobileEntry').style.top,scrollY}))}));same(rotated,afterRotate,'rotation');
   await page.locator('#finishButton').tap();await page.keyboard.press('Enter');
   assert.ok(await page.locator('#activePanel').isVisible(),'keyboard Enter');
   assert.deepEqual(errors,[]);
