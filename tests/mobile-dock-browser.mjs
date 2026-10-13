@@ -42,7 +42,7 @@ try{
   assert.equal(await page.locator('#mobileEntry button:visible').count(),14);
   await page.locator('#finishButton').tap();
   await page.setViewportSize(viewport.width===844?{width:390,height:700}:{width:844,height:390});
-  const rotated=await action.boundingBox();assert.ok(rotated&&rotated.y>=0);
+  await page.waitForFunction(()=>{const r=document.querySelector('#mobileKeypad [data-key="action"]')?.getBoundingClientRect();return r&&r.y>=0&&r.bottom<=innerHeight+1;},{},{timeout:3000});const rotated=await action.boundingBox();assert.ok(rotated&&rotated.y>=0);
   await action.tap();const afterRotate=await action.boundingBox();if(Math.abs(rotated.y-afterRotate.y)>1)console.error('Rotation action geometry',JSON.stringify({viewport,rotated,afterRotate,metrics:await page.evaluate(()=>({innerHeight,clientHeight:document.documentElement.clientHeight,visualHeight:visualViewport?.height,visualOffset:visualViewport?.offsetTop,screenHeight:screen.height,dock:document.getElementById('mobileEntry').getBoundingClientRect().toJSON(),top:document.getElementById('mobileEntry').style.top,scrollY}))}));same(rotated,afterRotate,'rotation');
   await page.locator('#finishButton').tap();await page.keyboard.press('Enter');
   assert.ok(await page.locator('#activePanel').isVisible(),'keyboard Enter');
