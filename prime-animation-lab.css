@@ -25,3 +25,6 @@
 82%{transform:scale(1.1);background:#00f5d4;color:#000}
 }
 @media(prefers-reduced-motion:reduce){.card.gem-glow.playing .tile,.card.gem-flip.playing .tile,.card.gem-pop.playing .tile{animation:none!important}}
+
+/* Playful / colourful: no elliptical orbit outlines. Keep rainbow border, PRIME bubble and stars. */
+.card.rainbow .ring{display:none!important}
