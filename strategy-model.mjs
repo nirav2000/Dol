@@ -35,6 +35,8 @@ export function divisibilityRule(n,k){
   if(k===6){id='three';rule='A number is divisible by 6 only when it is divisible by BOTH 2 and 3.';work=`${n} is ${n%2?'odd':'even'}. Its digit sum is ${sum}, which ${sum%3?'is not':'is'} divisible by 3.`;}
   if(k===8){rule='Check the last three digits (the whole number for a shorter number). They must be divisible by 8. Three exact halvings also test division by 8.';work=`Check ${lastThree}${divide}8; an exact whole-number result is needed.`;}
   if(k===12){rule='Check BOTH divisibility by 3 and divisibility by 4.';work=`The digit sum is ${sum}; the last two digits make ${lastTwo}. Both tests must pass.`;}
+  if(k===18){id='three';rule='Test divisibility by both 2 and 9. They are coprime, so their product 18 must divide the number.';work=`${n} is ${n%2?'odd':'even'} and its digit sum is ${sum}, which ${sum%9?'is not':'is'} divisible by 9.`;}
+  if(k===27){id='three';rule='First check divisibility by 9, then check whether the quotient is divisible by another 3. Being divisible by both 3 and 9 alone is not enough.';work=n%9?`${n} is not divisible by 9, so it cannot be divisible by 27.`:`${n} ÷ 9 = ${n/9}. This quotient ${(n/9)%3?'is not':'is'} divisible by 3.`;}
   if(k===11){
     id='eleven';const c=elevenCheck(n),a=c.groups[0].join(' + '),b=c.groups[1].join(' + ')||'0';
     rule='Add the 1st, 3rd, 5th ... digits. Separately add the 2nd, 4th, 6th ... digits. Subtract the smaller total from the larger. If the difference is 0, 11, 22, 33 ... the original number is divisible by 11. Zero counts: 11 \u00d7 0 = 0.';
