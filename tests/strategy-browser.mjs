@@ -11,7 +11,7 @@ try{
   assert.equal(await page.locator('#helpSection').isVisible(),false);
   const help=page.locator('#helpToggle');assert.equal(await help.isVisible(),true);
   if(viewport.width<500){
-   const b=await help.boundingBox();assert.ok(b&&b.y>=0&&b.y+b.height<=viewport.height,'Hint reachable on small phone');
+   const b=await help.boundingBox();if(!(b&&b.y>=0&&b.y+b.height<=viewport.height)){console.error('Hint geometry',JSON.stringify({viewport,b,computed:await help.evaluate(el=>({position:getComputedStyle(el).position,display:getComputedStyle(el).display,bottom:getComputedStyle(el).bottom,offsetParent:el.offsetParent?.className,rect:el.getBoundingClientRect().toJSON()}))}));}assert.ok(b&&b.y>=0&&b.y+b.height<=viewport.height,'Hint reachable on small phone');
    const keypad=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();assert.ok(keypad&&b.y>=keypad.y+keypad.height,'Hint stays below keypad');
   }
   await help.click();assert.equal(await page.locator('#strategyHintDialog').isVisible(),true);
