@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "controlVersion": "1.0.1",
+  "issueRepository": "nirav2000/Apps",
+  "issueNumber": 25,
+  "recipe": "tablet-factor-visibility-v1",
+  "status": "verified",
+  "version": "2.6.4",
+  "baseCommit": "d82fc89e6102ce4cbf8f63322973aa46700a29c7",
+  "commit": "e1e8f489fdecef85d160b28adf90646b0c64d1a2",
+  "workflowRun": 38411930902,
+  "workflowUrl": "https://github.com/nirav2000/Dol/actions/runs/38411930902",
+  "deploymentUrl": "https://nirav2000.github.io/Dol/",
+  "deployedAt": "2026-10-13T14:22:36.774Z",
+  "regressionTestsPassed": true,
+  "baselineReproduced": true,
+  "liveCases": [
+    {
+      "engine": "chromium",
+      "viewport": {
+        "width": 1210,
+        "height": 675
+      },
+      "layout": "classic",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": {
+        "width": 1210,
+        "height": 675
+      },
+      "layout": "pairboard",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "layout": "classic",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "layout": "pairboard",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": {
+        "width": 834,
+        "height": 1194
+      },
+      "layout": "classic",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "chromium",
+      "viewport": {
+        "width": 834,
+        "height": 1194
+      },
+      "layout": "pairboard",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": {
+        "width": 1210,
+        "height": 675
+      },
+      "layout": "classic",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": {
+        "width": 1210,
+        "height": 675
+      },
+      "layout": "pairboard",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "layout": "classic",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "layout": "pairboard",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": {
+        "width": 834,
+        "height": 1194
+      },
+      "layout": "classic",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    },
+    {
+      "engine": "webkit",
+      "viewport": {
+        "width": 834,
+        "height": 1194
+      },
+      "layout": "pairboard",
+      "actionPreserved": true,
+      "learningPreserved": true,
+      "allPairsVisible": true
+    }
+  ]
+}
