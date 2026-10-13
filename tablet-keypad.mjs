@@ -41,7 +41,7 @@ export function initTabletKeypad(){
  function refresh(){
    bar.hidden=!media.matches||!running();
    if(!isEnabled()){
-     pad.hidden=true;pad.classList.remove('is-finished');
+     pad.hidden=true;pad.classList.remove('is-finished');input.readOnly=false;
      if(pad.parentElement!==form)form.append(pad);
      return;
    }
@@ -59,6 +59,8 @@ export function initTabletKeypad(){
      if(pad.parentElement!==form)form.append(pad);
      pad.classList.remove('is-finished');pad.style.left='';pad.style.top='';pad.style.width='';
      pad.hidden=false;
+     input.readOnly=opened&&document.body.dataset.dolLayout==='pairboard';
+     if(input.readOnly)input.blur();
      requestAnimationFrame(recordRect);
    }
    sync();
@@ -103,8 +105,11 @@ export function initTabletKeypad(){
  toggle.addEventListener('click',()=>{
    opened=!opened;toggle.setAttribute('aria-expanded',String(opened));
    toggle.textContent=opened?'Hide number pad':'Show number pad';
+   if(opened&&document.body.dataset.dolLayout==='pairboard'){input.readOnly=true;input.blur();}
+   else input.readOnly=false;
    refresh();
  });
+ document.addEventListener('dol-layoutchange',()=>{input.readOnly=opened&&document.body.dataset.dolLayout==='pairboard'&&media.matches;if(input.readOnly)input.blur();refresh();});
  const observer=new MutationObserver(()=>{
    // A new round must clear stale keypad values; keep the user's show/hide preference.
    const target=document.getElementById('numberValue')?.textContent;
