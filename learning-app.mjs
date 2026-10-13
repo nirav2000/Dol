@@ -277,6 +277,13 @@ function testSelectedFactor(){
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;persist();
   if(state.found.size===state.pairs.length)finish('complete');else render();
 }
+function resetRounds(){
+  if(['running','paused'].includes(state.phase)&&!confirm('End the current round and restart the round count at 1? Learning history and score will be kept.'))return;
+  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.result=null;state.remainingMs=state.duration*1000;persist();render();
+}
+function resetRoundsAfterDataClear(){
+  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.score=0;state.result=null;state.remainingMs=state.duration*1000;persist();render();
+}
 function resetScores(){
   if(['running','paused'].includes(state.phase)&&!confirm('End this round and reset scores?'))return;
   roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.score=0;state.result=null;state.remainingMs=state.duration*1000;persist();render();
@@ -361,11 +368,11 @@ $('limitSelect').addEventListener('change',e=>{state.limit=Number(e.target.value
 $('durationSelect').addEventListener('change',e=>{state.duration=Number(e.target.value);state.remainingMs=state.duration*1000;persist();render();});
 $('showCount').addEventListener('change',e=>{state.showCount=e.target.checked;persist();render();});
 $('sound').addEventListener('change',e=>{state.sound=e.target.checked;persist();render();});
-$('startButton').addEventListener('click',start);$('pauseButton').addEventListener('click',pause);$('finishButton').addEventListener('click',()=>finish('manual'));$('answerForm').addEventListener('submit',answer);$('resetScores').addEventListener('click',resetScores);
+$('startButton').addEventListener('click',start);$('pauseButton').addEventListener('click',pause);$('finishButton').addEventListener('click',()=>finish('manual'));$('answerForm').addEventListener('submit',answer);$('resetScores').addEventListener('click',resetScores);$('resetRounds').addEventListener('click',resetRounds);
 $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
-$('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();insights?.resetEvidence();strategySupport?.resetProgress();renderProgress();}});
+$('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();insights?.resetEvidence();strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
 $('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
