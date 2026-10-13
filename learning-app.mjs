@@ -218,29 +218,40 @@ function finish(reason){
   state.phase='finished';insights?.finish(state);persist();render();celebrateNumberResult();
 }
 function celebrateNumberResult(){
-  // Celebrate completed, accurately classified numbers; never obscure the factor pair.
   if(state.result?.reason!=='complete'||state.result.correct!==state.result.total)return;
   const n=state.target,prime=n>=2&&state.pairs.length===1;
-  const square=Number.isInteger(Math.sqrt(n));
   const powerTwo=n>2&&(n&(n-1))===0;
-  const kind=prime?'prime':square?'square':powerTwo?'power':'composite';
-  const labels={prime:'✦ PRIME',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND'};
-  const tile=document.querySelector('#layoutPairGrid .review-pair.credited, #answerReview .review-pair.credited');
-  if(!tile)return;
-  tile.querySelector('.number-celebration')?.remove();
-  const decoration=document.createElement('span');decoration.className='number-celebration number-celebration--'+kind;
-  decoration.setAttribute('aria-hidden','true');
-  const bubble=document.createElement('span');bubble.className='number-celebration-label';bubble.textContent=labels[kind];
-  const sparks=document.createElement('span');sparks.className='number-celebration-sparks';
+  const tiles=[...document.querySelectorAll('#layoutPairGrid .review-pair.credited, #answerReview .review-pair.credited')].filter(tile=>!tile.closest('[hidden]'));
+  if(!tiles.length)return;
   const colors=['#ffe27e','#70e5ff','#ff85aa','#a7faac','#c2a1ff','#ffb16c'];
-  [[-60,-32],[0,-48],[60,-32],[62,32],[0,48],[-62,32]].forEach(([x,y],i)=>{
-    const star=document.createElement('span');star.className='number-celebration-spark';star.textContent=kind==='square'?'◆':kind==='power'?'⚡':'✦';
-    star.style.setProperty('--spark-x',x+'px');star.style.setProperty('--spark-y',y+'px');star.style.setProperty('--spark-color',colors[i]);star.style.setProperty('--spark-delay',(.22+i*.06)+'s');sparks.append(star);
-  });
-  decoration.append(bubble,sparks);tile.append(decoration);tile.classList.add('number-celebrating');
-  const cleanup=()=>{decoration.remove();tile.classList.remove('number-celebrating');};
-  decoration.addEventListener('animationend',e=>{if(e.target===decoration)cleanup();},{once:true});
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(cleanup);
+  for(const [index,tile] of tiles.entries()){
+    const pair=state.pairs.find(([a,b])=>tile.dataset.reviewPair===a+'-'+b);
+    if(!pair)continue;
+    const square=pair[0]===pair[1];
+    const kind=prime?'prime':square?'square':powerTwo?'power':'composite';
+    const labels={prime:'✦ PRIME',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND'};
+    tile.querySelector('.number-celebration')?.remove();
+    const decoration=document.createElement('span');
+    decoration.className='number-celebration number-celebration--'+kind;
+    decoration.setAttribute('aria-hidden','true');
+    decoration.style.setProperty('--celebrate-delay',(index*.12)+'s');
+    if(square||prime||index===0){
+      const bubble=document.createElement('span');bubble.className='number-celebration-label';
+      bubble.textContent=labels[kind];decoration.append(bubble);
+    }
+    const sparks=document.createElement('span');sparks.className='number-celebration-sparks';
+    [[-60,-32],[0,-48],[60,-32],[62,32],[0,48],[-62,32]].forEach(([x,y],i)=>{
+      const star=document.createElement('span');star.className='number-celebration-spark';
+      star.textContent=square?'◆':kind==='power'?'⚡':'✦';
+      star.style.setProperty('--spark-x',x+'px');star.style.setProperty('--spark-y',y+'px');
+      star.style.setProperty('--spark-color',colors[i]);
+      star.style.setProperty('--spark-delay',(.22+i*.06+index*.12)+'s');sparks.append(star);
+    });
+    decoration.append(sparks);tile.append(decoration);tile.classList.add('number-celebrating');
+    const cleanup=()=>{decoration.remove();tile.classList.remove('number-celebrating');};
+    decoration.addEventListener('animationend',e=>{if(e.target===decoration)cleanup();},{once:true});
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(cleanup);
+  }
 }
 
 function review(){roundTools?.renderReview(state);}
