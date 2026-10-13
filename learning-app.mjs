@@ -215,25 +215,34 @@ function finish(reason){
   for(const [key,v] of Object.entries(state.numberHistory)){if(Number(key)!==state.target)v.recentlySeen=Math.max(0,(v.recentlySeen||0)-.15);}
   state.result={reason,correct,total,earned,assisted:state.hintedPairs.size};
   if(reason==='time')state.remainingMs=0;
-  state.phase='finished';insights?.finish(state);persist();render();celebratePrimeResult();
+  state.phase='finished';insights?.finish(state);persist();render();celebrateNumberResult();
 }
-function celebratePrimeResult(){
-  // Prime targets have exactly one factor pair: 1 × n. 1 itself is not prime.
-  if(state.result?.reason!=='complete'||state.target<2||state.pairs.length!==1)return;
+function celebrateNumberResult(){
+  // Celebrate completed, accurately classified numbers; never obscure the factor pair.
+  if(state.result?.reason!=='complete'||state.result.correct!==state.result.total)return;
+  const n=state.target,prime=n>=2&&state.pairs.length===1;
+  const square=Number.isInteger(Math.sqrt(n));
+  const powerTwo=n>2&&(n&(n-1))===0;
+  const kind=prime?'prime':square?'square':powerTwo?'power':'composite';
+  const labels={prime:'✦ PRIME',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND'};
   const tile=document.querySelector('#layoutPairGrid .review-pair.credited, #answerReview .review-pair.credited');
   if(!tile)return;
-  tile.classList.remove('prime-rainbow-celebration');
-  tile.querySelector('.prime-bubble')?.remove();
-  tile.querySelector('.prime-stars')?.remove();
-  const bubble=document.createElement('span');bubble.className='prime-bubble';bubble.textContent='✦ PRIME';bubble.setAttribute('aria-hidden','true');
-  const stars=document.createElement('span');stars.className='prime-stars';stars.setAttribute('aria-hidden','true');
-  const offsets=[[-64,-36],[0,-54],[66,-34],[78,0],[59,39],[0,52],[-62,39],[-78,0]];
-  const colors=['#ffe27e','#70e5ff','#ff85aa','#a7faac','#c2a1ff','#ffb16c','#c7fcff','#fff2a3'];
-  offsets.forEach(([x,y],i)=>{const star=document.createElement('span');star.className='prime-star';star.textContent=i%3?'✦':'✧';star.style.setProperty('--star-x',x+'px');star.style.setProperty('--star-y',y+'px');star.style.setProperty('--star-color',colors[i]);star.style.setProperty('--star-delay',(.48+i*.075)+'s');stars.append(star);});
-  tile.append(bubble,stars);
-  void tile.offsetWidth;tile.classList.add('prime-rainbow-celebration');
-  tile.addEventListener('animationend',event=>{if(event.animationName==='dolPrimeBorder'){tile.classList.remove('prime-rainbow-celebration');bubble.remove();stars.remove();}},{once:true});
+  tile.querySelector('.number-celebration')?.remove();
+  const decoration=document.createElement('span');decoration.className='number-celebration number-celebration--'+kind;
+  decoration.setAttribute('aria-hidden','true');
+  const bubble=document.createElement('span');bubble.className='number-celebration-label';bubble.textContent=labels[kind];
+  const sparks=document.createElement('span');sparks.className='number-celebration-sparks';
+  const colors=['#ffe27e','#70e5ff','#ff85aa','#a7faac','#c2a1ff','#ffb16c'];
+  [[-60,-32],[0,-48],[60,-32],[62,32],[0,48],[-62,32]].forEach(([x,y],i)=>{
+    const star=document.createElement('span');star.className='number-celebration-spark';star.textContent=kind==='square'?'◆':kind==='power'?'⚡':'✦';
+    star.style.setProperty('--spark-x',x+'px');star.style.setProperty('--spark-y',y+'px');star.style.setProperty('--spark-color',colors[i]);star.style.setProperty('--spark-delay',(.22+i*.06)+'s');sparks.append(star);
+  });
+  decoration.append(bubble,sparks);tile.append(decoration);tile.classList.add('number-celebrating');
+  const cleanup=()=>{decoration.remove();tile.classList.remove('number-celebrating');};
+  decoration.addEventListener('animationend',e=>{if(e.target===decoration)cleanup();},{once:true});
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(cleanup);
 }
+
 function review(){roundTools?.renderReview(state);}
 function testSelectedFactor(){
   if(state.phase!=='running'||!state.chosenFactor)return;
