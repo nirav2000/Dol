@@ -5,6 +5,62 @@
   "liveUrl": "https://nirav2000.github.io/Dol/",
   "releases": [
     {
+      "checkpointId": "vl-20261013T074704Z-aaa72b28",
+      "appId": "dol",
+      "productVersion": "2.5.0",
+      "commit": "aaa72b2824f33bf08e94aa5dea7b937cc2aa5424",
+      "sourceRef": null,
+      "createdAt": "2026-10-13T07:47:04.853Z",
+      "title": "Factor Frenzy strategy coaching v2.5.0",
+      "summary": "Optional step-by-step factor strategy hints, explicit quotient calculations, separate five-move technique workouts and pair-specific learning evidence.",
+      "areas": [
+        {
+          "id": "strategy-hints",
+          "title": "Strategy hints",
+          "kind": "feature",
+          "summary": "Optional pair-specific step-by-step help"
+        },
+        {
+          "id": "technique-practice",
+          "title": "Technique practice",
+          "kind": "feature",
+          "summary": "Five-move decision workouts"
+        },
+        {
+          "id": "evidence",
+          "title": "Evidence",
+          "kind": "feature",
+          "summary": "Separate technique and factor mastery"
+        }
+      ],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/aaa72b2824f33bf08e94aa5dea7b937cc2aa5424",
+      "snapshotUrl": "./snapshots/vl-20261013T074704Z-aaa72b28/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": false
+      }
+    },
+    {
       "checkpointId": "vl-20261013T074125Z-44438b20",
       "appId": "dol",
       "productVersion": "2.5.0",
@@ -1462,5 +1518,5 @@
       }
     }
   ],
-  "generatedAt": "2026-10-13T07:41:25.677Z"
+  "generatedAt": "2026-10-13T07:47:04.853Z"
 }
