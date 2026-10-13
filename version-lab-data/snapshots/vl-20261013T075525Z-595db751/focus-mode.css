@@ -1,0 +1,39 @@
+/* Focus mode is the default. Navigation is available by moving to the top edge,
+   tapping Menu, keyboard focus, or choosing Exit focus. */
+.menu-reveal{display:none;position:fixed;z-index:40;top:8px;right:12px;background:#252525;color:#fff;border:1px solid #777;border-radius:9px;padding:9px 12px;min-height:40px}
+.header-actions{display:flex;align-items:center;gap:10px}
+.focus-mode .shell{max-width:1120px}
+.focus-mode .topbar{position:fixed;z-index:35;top:0;left:0;right:0;width:100%;max-width:none;height:auto;min-height:75px;padding:12px max(20px,calc((100vw - 1180px)/2));background:#111;border-bottom:1px solid #555;transform:translateY(-110%);transition:transform .18s ease}
+.focus-mode.focus-menu-revealed .topbar,.focus-mode .topbar:focus-within{transform:translateY(0)}
+.focus-mode .menu-reveal{display:block;opacity:.5;transition:opacity .15s}
+.focus-mode.focus-menu-revealed .menu-reveal{opacity:0;pointer-events:none}
+.focus-mode #playView{padding-top:24px}
+.focus-mode #playView .page-head{margin-bottom:16px}
+.focus-mode #playView .page-head>div:first-child,.focus-mode #playView .mode-tabs,.focus-mode #playView .controls,.focus-mode #playView .bottom-bar,.focus-mode #playView #difficultyDetail,.focus-mode #playView #roundVisuals,.focus-mode #playView #helpSection,.focus-mode #playView #helpToggle,.focus-mode #playView #readyPanel,.focus-mode #playView .number-section>.eyebrow,.focus-mode footer{display:none!important}
+.focus-mode #playView .page-head{justify-content:flex-end}
+.focus-mode #playView .scoreboard>div{min-width:70px;padding:8px 12px}
+.focus-mode #playView .play-grid{align-items:start}
+.focus-mode #playView .number-tile{min-height:270px}
+.focus-mode #playView .work-panel{min-width:0}
+.focus-mode #playView .work-panel .panel-title{margin-bottom:8px}
+.focus-mode #playView #pairSlots{margin-top:14px}
+.focus-mode #playView #activePanel .help-section{display:none!important}
+.focus-mode #playView .timer-line{margin-top:10px}
+.focus-mode #playView .action-row{margin-top:10px}
+.focus-mode #playView .auto-next-status{margin-top:8px}
+@media(max-width:700px){
+.focus-mode .topbar{padding:14px 12px;flex-wrap:wrap}
+.focus-mode .topbar nav{order:3;width:100%;justify-content:center}
+.focus-mode #playView{padding-top:14px}
+.focus-mode #playView .number-tile{min-height:200px}
+.focus-mode .menu-reveal{top:5px;right:8px}
+}
+@media(prefers-reduced-motion:reduce){.focus-mode .topbar{transition:none}}
+
+/* On touch phones, Focus must hide the top navigation rather than leave a persistent menu strip. */
+@media(max-width:700px) and (pointer:coarse){
+ body.focus-mode:not(.focus-menu-revealed) .topbar{transform:translateY(-150%)!important;visibility:hidden;pointer-events:none}
+ body.focus-mode.focus-menu-revealed .topbar{transform:translateY(0)!important;visibility:visible;pointer-events:auto}
+ body.focus-mode .topbar:focus-within{visibility:visible;pointer-events:auto;transform:translateY(0)!important}
+ body.focus-mode:not(.focus-menu-revealed) .menu-reveal{display:block;opacity:.65}
+}

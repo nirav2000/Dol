@@ -1,0 +1,10 @@
+/* Tablet-only optional keypad; never alters the mobile dock or Enter geometry. */
+.tablet-pad-toolbar{margin:.6rem 0}.tablet-pad-toolbar button{min-height:44px}.tablet-pad{max-width:380px;padding:12px;border:1px solid #555;border-radius:16px;background:#171717;margin:.7rem 0}.tablet-pad[hidden],.tablet-pad-toolbar[hidden]{display:none!important}.tablet-pad-fields{display:flex;gap:10px;margin-bottom:10px}.tablet-pad-fields button{flex:1;min-height:54px;font-size:24px;background:#292929;color:#fff;border:1px solid #555;border-radius:10px}.tablet-pad-fields button[aria-pressed=true]{outline:2px solid #fff}.tablet-pad-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tablet-pad-grid button{min-height:56px;font-size:26px;font-weight:700;color:#fff;background:#292929;border:1px solid #555;border-radius:10px;touch-action:manipulation}.tablet-pad-grid button[data-key=action]{background:#f2f2f2;color:#111}@media(max-width:700px), (pointer:fine){.tablet-pad,.tablet-pad-toolbar{display:none!important}}
+
+/* Keep the action button fixed in its original touch position during review. */
+.tablet-pad.is-finished{position:fixed!important;z-index:1000;margin:0;padding:0;border:0;background:transparent;max-width:none;border-radius:10px;pointer-events:none}
+.tablet-pad.is-finished .tablet-pad-fields{display:none}
+.tablet-pad.is-finished .tablet-pad-grid{display:block}
+.tablet-pad.is-finished .tablet-pad-grid button{display:none}
+.tablet-pad.is-finished .tablet-pad-grid button[data-tablet-key="action"]{display:block;width:100%;height:100%;min-height:56px;pointer-events:auto;white-space:nowrap;font-size:16px}
+.tablet-pad-grid button[data-tablet-key="action"]{background:#f2f2f2;color:#111}
