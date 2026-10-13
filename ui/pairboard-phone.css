@@ -19,3 +19,9 @@ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-ph
 
 /* Keep the setup heading and scoreboard within narrow screens. */
 @media(max-width:700px){#playView .page-head{flex-wrap:wrap}#playView .page-head>div:first-child{min-width:0}#playView .page-head .scoreboard{margin-left:auto}}
+
+/* Reserve a dedicated area for the target so the Pair Board switcher cannot cover it on phones. */
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-tile{padding-right:min(46%,165px);overflow:hidden}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-tile strong{font-size:clamp(38px,10vw,64px)!important;letter-spacing:-.04em;min-width:0}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .layout-switcher{right:5px;bottom:50%;transform:translateY(50%);max-width:53%;z-index:3}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .layout-switcher .layout-switch-label{font-size:10px;white-space:nowrap}
