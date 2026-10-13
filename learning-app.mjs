@@ -218,7 +218,7 @@ function finish(reason){
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
   const session={mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
   learning.session(session);
-  try{learningSync?.capture(learning.getState());}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
+  try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Learning cloud sync deferred',error));}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
   const prev=state.numberHistory[state.target]||{attempts:0,correct:0};
   state.numberHistory[state.target]={attempts:prev.attempts+1,correct:prev.correct+(correct===total?1:0),nextDue:Date.now()+(correct===total?3:1)*86400000,recentlySeen:1};
   for(const [key,v] of Object.entries(state.numberHistory)){if(Number(key)!==state.target)v.recentlySeen=Math.max(0,(v.recentlySeen||0)-.15);}
