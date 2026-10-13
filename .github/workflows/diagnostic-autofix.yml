@@ -1,0 +1,183 @@
+name: Controlled diagnostic auto-fix
+on:
+  issues:
+    types: [opened, edited, reopened]
+  schedule:
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/diagnostic-autofix.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: diagnostic-control-dol
+  cancel-in-progress: false
+jobs:
+  investigate:
+    if: vars.DIAGNOSTIC_AUTOFIX_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    outputs:
+      selected: ${{ steps.plan.outputs.selected }}
+      key: ${{ steps.plan.outputs.key }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          repository: nirav2000/Apps
+          ref: 00da5008f037d52bb78d452ebb4eb40a8c1d1436
+          path: Apps-control
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check policy and investigate local issues
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --test Apps-control/automation/policy.test.mjs
+          node Apps-control/automation/triage.mjs
+      - name: Select one familiar report within retry limit
+        id: plan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node Apps-control/automation/prepare.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-plan
+          path: artifacts/diagnostic-plan.json
+  fix:
+    name: Diagnostic ${{ needs.investigate.outputs.key }}
+    needs: investigate
+    if: needs.investigate.outputs.selected == 'true' && vars.DIAGNOSTIC_AUTOFIX_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+      actions: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: nirav2000/Apps
+          ref: 00da5008f037d52bb78d452ebb4eb40a8c1d1436
+          path: Apps-control
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: diagnostic-plan
+          path: artifacts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install regression tools
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Reproduce reported geometry failure before applying any fix
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 > /tmp/dol-diagnostic-server.log 2>&1 &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8000/ >/dev/null && break; sleep 1; done
+          cp ui/pairboard-tablet.css artifacts/bootstrap-tablet.css
+          if grep -q 'diagnostic-recipe:tablet-factor-visibility-v1' ui/pairboard-tablet.css; then
+            git show HEAD^:ui/pairboard-tablet.css > ui/pairboard-tablet.css
+          fi
+          set +e
+          APPS_CHECKOUT=Apps-control node tests/diagnostic-25-browser.mjs > artifacts/baseline.log 2>&1
+          result=$?
+          set -e
+          cp artifacts/bootstrap-tablet.css ui/pairboard-tablet.css
+          test "$result" -ne 0
+          grep -q 'AssertionError' artifacts/baseline.log
+          grep -q '"inside":false' artifacts/baseline.log
+          printf 'Reported outside-viewport geometry reproduced\n' > artifacts/baseline-reproduced.txt
+      - name: Apply fixed, narrowly scoped tablet CSS recipe and increment version
+        run: node Apps-control/automation/apply.mjs
+      - name: Full regression gate before main commit
+        run: |
+          node --test tests/*.test.mjs
+          node tests/browser-smoke.mjs
+          node tests/strategy-browser.mjs
+          node tests/round-tools-browser.mjs
+          node tests/mobile-entry-browser.mjs
+          node tests/mobile-dock-browser.mjs
+          APPS_CHECKOUT=Apps-control node tests/diagnostics-ui-browser.mjs
+          APPS_CHECKOUT=Apps-control node tests/diagnostic-25-browser.mjs
+          printf 'All unit and browser regression checks passed\n' > artifacts/regression-passed.txt
+      - name: Commit tested four-file candidate directly to main
+        id: commit
+        run: node Apps-control/automation/commit.mjs
+      - name: Wait for earlier branch Pages build to finish
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          for(let i=0;i<60;i++){
+            const r=await fetch(`https://api.github.com/repos/nirav2000/Dol/actions/runs?head_sha=${process.env.GITHUB_SHA}`,{headers:{Authorization:'Bearer '+process.env.GITHUB_TOKEN,Accept:'application/vnd.github+json'}});
+            if(!r.ok)throw Error('Cannot check previous Pages run');
+            const runs=(await r.json()).workflow_runs.filter(r=>r.name==='pages build and deployment');
+            if(runs.every(r=>r.status==='completed'))break;
+            if(i===59)throw Error('Earlier Pages build did not finish');
+            await new Promise(r=>setTimeout(r,5000));
+          }
+          JS
+      - name: Package the exact tested site
+        run: |
+          mkdir -p _site
+          tar --exclude=./.git --exclude=./node_modules --exclude=./Apps-control --exclude=./artifacts --exclude=./_site -cf - . | tar -xf - -C _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy exact tested interface
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify deployed version and both engines before recording success
+        env:
+          EXPECTED_VERSION: ${{ steps.commit.outputs.version }}
+          TEST_BASE_URL: https://nirav2000.github.io/Dol/
+        run: |
+          node tests/wait-live-release.mjs
+          node --input-type=module -e 'const r=await fetch("https://nirav2000.github.io/Dol/version.json?source="+Date.now());if((await r.json()).version!==process.env.EXPECTED_VERSION)throw Error("Unexpected deployed version");'
+          node tests/diagnostic-25-browser.mjs
+          cp artifacts/issue25-browser.json artifacts/issue25-live-browser.json
+          node tests/live-diagnostics-browser.mjs
+      - name: Record deployment evidence on main (issue remains open for independent verification)
+        run: node Apps-control/automation/receipt.mjs
+      - name: Capture verified checkpoint through shared Version Lab
+        env:
+          VERSION_LAB_TITLE: Tablet factor pairs remain visible through review
+          VERSION_LAB_SUMMARY: Verified repair of Apps issue 25. Phone and tablet Classic and Pair Board pass Chromium and WebKit with fixed action geometry and unchanged learner evidence.
+          VERSION_LAB_AREAS: Tablet board::fix::Visible target and factor pairs|Regression checks::test::Twelve deployed browser cases
+          VERSION_LAB_SOURCE_REF: ${{ steps.commit.outputs.commit }}
+          VERSION_LAB_PRODUCT_VERSION: ${{ steps.commit.outputs.version }}
+        run: |
+          node Apps-control/version-lab/tooling/capture-release.mjs
+          node Apps-control/version-lab/tooling/validate-release.mjs
+          git add version-lab-data
+          git commit -m "Version Lab: verified tablet factor visibility"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Save baseline, regression and deployed screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostic-fix-evidence
+          path: artifacts/
+          if-no-files-found: warn

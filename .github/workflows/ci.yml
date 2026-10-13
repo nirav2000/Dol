@@ -31,7 +31,7 @@ jobs:
         run: node --test tests/*.test.mjs
       - name: Install browser test dependencies
         run: |
-          npm install --no-save playwright
+          npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium webkit
       - uses: actions/checkout@v4
         with:
@@ -47,23 +47,12 @@ jobs:
           node tests/mobile-entry-browser.mjs
           node tests/mobile-dock-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
-      - name: Verify published Dol v2.6.2 and Shared Diagnostics assets
+          if grep -q 'diagnostic-recipe:tablet-factor-visibility-v1' ui/pairboard-tablet.css; then APPS_CHECKOUT=Apps-shared node tests/diagnostic-25-browser.mjs; fi
+      - name: Verify published Dol and Shared Diagnostics assets
         run: |
-          set -e
-          for attempt in $(seq 1 24); do
-            curl -fsSL "https://nirav2000.github.io/Dol/?release=2.6.2-$attempt" -o /tmp/dol-live || true
-            if grep -q 'v2.6.2' /tmp/dol-live 2>/dev/null; then break; fi
-            sleep 10
-          done
-          for path in / /device-profile.mjs /diagnostics.mjs /ui/pairboard-phone.css /ui/pairboard-tablet.css /ui/pairboard-desktop.css /version.json; do
-            curl --fail --location --retry 10 --retry-delay 3 --retry-all-errors --silent --show-error "https://nirav2000.github.io/Dol$path" -o /tmp/dol-live
-            test -s /tmp/dol-live
-            if [ "$path" = / ]; then grep -q 'v2.6.2' /tmp/dol-live; fi
-            if [ "$path" = /version.json ]; then grep -q '"2.6.2"' /tmp/dol-live; fi
-          done
+          node tests/wait-live-release.mjs
           curl --fail --location --retry 10 --retry-delay 3 --retry-all-errors --silent --show-error https://nirav2000.github.io/Apps/diagnostics/releases/1.0.0/index.mjs -o /tmp/shared-live
           grep -q 'initialise' /tmp/shared-live
-          echo 'Published Dol and Apps diagnostics assets verified.'
       - name: Test real deployed phone and tablet interfaces
         run: node tests/live-diagnostics-browser.mjs
       - name: Save browser screenshots

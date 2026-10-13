@@ -16,3 +16,6 @@ body[data-dol-profile=phone][data-dol-layout=pairboard] #answerReview{display:no
 @media(max-height:620px){body[data-dol-profile=phone][data-dol-layout=pairboard] .layout-pair-chip{min-height:19px;font-size:11px}}
 body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=finished] .layout-pair-chip{min-height:44px}
 @media(orientation:landscape) and (max-height:500px){body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .play-grid{width:calc(100% - min(360px,47vw) - 15px)}body[data-dol-profile=phone][data-dol-layout=pairboard] #playView>.mobile-entry{width:min(360px,47vw)}}
+
+/* Keep the setup heading and scoreboard within narrow screens. */
+@media(max-width:700px){#playView .page-head{flex-wrap:wrap}#playView .page-head>div:first-child{min-width:0}#playView .page-head .scoreboard{margin-left:auto}}

@@ -1,8 +1,5 @@
 name: Version Lab checkpoint
 on:
-  push:
-    branches: [main]
-    paths: ['version.json', '.github/workflows/version-lab.yml']
   workflow_dispatch:
     inputs:
       title:

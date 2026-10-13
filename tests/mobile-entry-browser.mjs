@@ -1,11 +1,14 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {chooseAdaptiveNumber} from '../adaptive.mjs';
+const seed=Array.from({length:10000},(_,i)=>i/10000).find(r=>chooseAdaptiveNumber({stage:'foundation',limit:64,random:()=>r})===12);
+assert.notEqual(seed,undefined);
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 fs.mkdirSync('artifacts',{recursive:true});
 try{
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
- await context.addInitScript(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'foundation',limit:64,duration:60,sound:false,showCount:true}));});
+ await context.addInitScript(seed=>{Math.random=()=>seed;localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false}));localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'foundation',limit:64,duration:60,sound:false,showCount:true}));},seed);
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.TEST_BASE_URL||'http://127.0.0.1:8000/',{waitUntil:'networkidle'});
@@ -33,6 +36,7 @@ try{
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
  await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
  if(await page.locator('#activePanel').isVisible())await page.locator('#finishButton').click();
+ await page.locator('#mobileKeypad [data-key="action"]').waitFor({state:'visible'});
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
  assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
  const actionBox=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();
