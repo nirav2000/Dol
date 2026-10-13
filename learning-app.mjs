@@ -111,6 +111,7 @@ function render(){
   document.querySelectorAll('.controls select,[data-mode]').forEach(el=>el.disabled=active);
   document.querySelectorAll('[data-mode]').forEach(el=>el.classList.toggle('active',el.dataset.mode===state.mode));
   renderClock();
+  slots(); // Keep canonical solved-pair DOM in sync on automatic completion too.
   if(active){
     $('helpToggle').hidden=false;
     $('helpToggle').textContent='Hint';
@@ -121,7 +122,6 @@ function render(){
     $('pairInput').disabled=state.phase==='paused';$('addButton').disabled=state.phase==='paused';
     $('entryFeedback').textContent=state.feedback;
     $('entryFeedback').className='feedback'+(state.feedbackType?' '+state.feedbackType:'');
-    slots();
     const d=describeDifficulty(state.target);
     $('difficultyDetail').textContent='Challenge profile: '+d.pairCount+' pairs · '+d.primeFactors.length+' prime factors · difficulty '+d.score;
   }
