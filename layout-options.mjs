@@ -64,11 +64,13 @@ export function createLayoutOptions({getState}){
    board.hidden=!isPairBoard||s.phase==='ready'||!s.target;
    if(board.hidden)return;
    const finished=s.phase==='finished',correct=s.found.size,total=s.pairs.length;
+   if(finished){grid.style.setProperty('--board-columns','3');return;}
+   grid.hidden=false;grid.className='layout-pair-grid';
    status.textContent=correct+' / '+total+' found';
    // Allocate slots for every pair so the whole board is visible without scrolling.
    const pairs=finished?s.pairs:Array.from(s.found,(key)=>key.split('-').map(Number));
    const visible=s.showCount||finished?total:Math.max(correct,1);
-   grid.style.setProperty('--board-columns',visible>12?'4':visible>6?'3':'2');
+   grid.style.setProperty('--board-columns',visible>12?'4':'3');
    const retained=document.activeElement?.dataset?.pairKey;
    const items=[];
    for(const pair of pairs){
