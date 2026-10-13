@@ -61,3 +61,9 @@ body[data-dol-profile=tablet] #playView:has(#readyPanel[hidden]) .play-grid{
 }
 body[data-dol-profile=tablet].focus-mode #playView:has(#readyPanel[hidden]) .play-grid{top:76px;max-height:calc(100dvh - 88px)}
 body[data-dol-profile=tablet]:not(.focus-mode) .topbar{position:sticky;top:0;z-index:30;background:#050505}
+
+/* Landscape iPad: less stretched keys, taller touch targets, centred keypad. */
+body[data-dol-profile=tablet] #playView .tablet-pad:not(.is-finished){max-width:470px;width:100%;margin:9px auto 0;padding:10px}
+body[data-dol-profile=tablet] #playView .tablet-pad:not(.is-finished) .tablet-pad-grid{gap:8px}
+body[data-dol-profile=tablet] #playView .tablet-pad:not(.is-finished) .tablet-pad-grid button{min-height:clamp(56px,6.5dvh,74px);border-radius:12px}
+body[data-dol-profile=tablet] #playView .tablet-pad:not(.is-finished) .tablet-pad-fields button{min-height:52px}
