@@ -1,3 +1,4 @@
+import {createLayoutOptions} from './layout-options.mjs';
 import {factorPairs,assessPair,formatTime} from './logic.mjs';
 import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,requiredConcepts} from './adaptive.mjs';
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
@@ -6,13 +7,13 @@ import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
 const $=id=>document.getElementById(id);
-let roundTools,insights,mobileEntry,strategySupport;
+let roundTools,insights,mobileEntry,strategySupport,layoutOptions;
 const focusKey='dol-focus-mode-v1';
 let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
 function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
 function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
-function focusAnswer(){if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
+function focusAnswer(){if(document.body.dataset.dolLayout==='pairboard'&&matchMedia('(pointer:coarse)').matches)return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const storageKey='dol-factor-frenzy-v1',settingsKey='dol-learning-settings-v2';
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch{return fallback;}}
 const old=read(storageKey,{});
@@ -46,6 +47,7 @@ function setView(view){
   roundTools?.viewChanged();
   mobileEntry?.sync();
   strategySupport?.viewChanged();
+  layoutOptions?.sync();
   if(view==='play')focusAnswer();
 }
 function tone(ok){
@@ -129,6 +131,7 @@ function render(){
   insights?.render();
   mobileEntry?.sync();
   strategySupport?.render();
+  layoutOptions?.sync();
 }
 function stopTicker(){if(state.ticker!==null)clearInterval(state.ticker);state.ticker=null;}
 function tick(){
@@ -184,7 +187,7 @@ function answer(event){
     state.mistakes++;
     if(state.mistakes>=2&&state.mode==='practice')state.feedback+=' You can open a hint to work through this.';
     if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
-    tone(false);render();input.select();input.focus({preventScroll:true});return;
+    tone(false);render();if(!(document.body.dataset.dolLayout==='pairboard'&&matchMedia('(pointer:coarse)').matches)){input.select();input.focus({preventScroll:true});}return;
   }
   const hints=Math.max(state.hintsUsed,state.visualHelp?1:0,strategySupport?.assistanceFor(check.pair)||0);
   insights?.answer(check.pair,'correct',hints>0);
@@ -358,6 +361,7 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
   markAssisted:()=>{tick();if(state.phase==='running'){insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
   fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
 });
+layoutOptions=createLayoutOptions({getState:()=>state});
 applyFocus();insights=createInsights({getState:()=>state,refresh:render});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
 strategySupport=createStrategySupport({getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason)});
