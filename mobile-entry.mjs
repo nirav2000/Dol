@@ -95,13 +95,14 @@ export function createMobileEntry({getState,submit}){
  },true);
  // Only reserve the real footprint, never an invisible four-row keypad in review.
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(reserveSpace).observe(wrap);
- window.visualViewport?.addEventListener('scroll',placeDock,{passive:true});
+ const settleDock=()=>{placeDock();requestAnimationFrame(()=>requestAnimationFrame(placeDock));};
+ window.visualViewport?.addEventListener('scroll',settleDock,{passive:true});
  const visibility=new MutationObserver(sync);
  visibility.observe(play,{attributes:true,attributeFilter:['hidden']});
  visibility.observe(document.getElementById('activePanel'),{attributes:true,attributeFilter:['hidden']});
  media.addEventListener('change',sync);
- window.addEventListener('resize',()=>{reserveSpace();placeDock();});
- window.visualViewport?.addEventListener('resize',()=>{reserveSpace();placeDock();});
+ window.addEventListener('resize',()=>{reserveSpace();settleDock();});
+ window.visualViewport?.addEventListener('resize',()=>{reserveSpace();settleDock();});
  document.addEventListener('dol-layoutchange',sync);
  sync();
  return {reset,sync,focus,isMobile};
