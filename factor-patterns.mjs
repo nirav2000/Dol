@@ -6,6 +6,9 @@ function explanation(n,a,b){
  if(a===2)return ['Even number',`${n} ends in an even digit. Halve it to get ${b}.`];
  if(a===3||a===9){const digits=[...String(n)].map(Number),sum=digits.reduce((x,y)=>x+y,0);let s=`${digits.join(' + ')} = ${sum}. ${sum} is divisible by ${a===9?9:3}.`;if(sum>=10){const root=[...String(sum)].map(Number).reduce((x,y)=>x+y,0);s+=` You can also add again: ${[...String(sum)].join(' + ')} = ${root}, but this second addition is optional.`;}return ['Digit-sum test',s+ ` Therefore ${n} ÷ ${a} = ${b}.`];}
  if(a===6)return ['Combine 2 and 3',`${n} is even and its digits sum to a multiple of 3. Because 2 and 3 have no common factor, it is divisible by 6. ${n} ÷ 6 = ${b}.`];
+ if(a===18&&n%9===0)return ['Combine independent factors',`${n} is even and divisible by 9. Since 2 and 9 have no prime factors in common, 18 = 2 × 9 divides ${n}. The partner is ${b}.`];
+ if(a===27&&n%9===0)return ['An extra factor of 3',`${n} ÷ 9 = ${n/9}. That quotient is also divisible by 3, so ${n} is divisible by 27 = 9 × 3. Divisibility by 9 alone would not guarantee this.`];
+ if(a===9&&n%3===0)return ['Factor inheritance',`9 = 3 × 3, so any multiple of 9 is also a multiple of 3. But being divisible by 3 alone does not guarantee divisibility by 9.`];
  if(a===11){const r=divisibilityRule(n,11);return ['The 11 test',r.work+` Then ${n} ÷ 11 = ${b}.`];}
  const pairs=factorPairs(n);for(const [x,y] of pairs){if(x===a&&y===b)continue;if(x*2===a&&y%2===0&&y/2===b)return ['Double and halve',`Start with ${x} × ${y}. Double ${x} to ${a} and halve ${y} to ${b}; the product stays ${n}.`];}
  if(a%3===0&&n%3===0)return ['Build with 3',`Try dividing a known factor pair by 3 on one side and multiplying by 3 on the other. Check: ${a} × ${b} = ${n}.`];
