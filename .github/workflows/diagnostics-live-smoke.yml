@@ -1,0 +1,27 @@
+name: Dol deployed diagnostics smoke
+on:
+  workflow_run:
+    workflows: ["pages build and deployment"]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify deployed interface and module assets
+        run: |
+          set -e
+          base=https://nirav2000.github.io/Dol
+          for path in / /device-profile.mjs /diagnostics.mjs /ui/pairboard-phone.css /ui/pairboard-tablet.css /ui/pairboard-desktop.css /version.json; do
+            curl --fail --location --retry 8 --retry-delay 3 --retry-all-errors --silent --show-error "$base$path" -o /tmp/dol-live
+            test -s /tmp/dol-live
+            if [ "$path" = / ]; then grep -q 'v2.6.0' /tmp/dol-live; grep -q 'diagnostics.mjs' /tmp/dol-live; fi
+            if [ "$path" = /version.json ]; then grep -q '"2.6.0"' /tmp/dol-live; fi
+          done
+          curl --fail --location --retry 8 --retry-delay 3 --retry-all-errors --silent --show-error https://nirav2000.github.io/Apps/diagnostics/releases/1.0.0/index.mjs -o /tmp/shared-live
+          grep -q 'initialise' /tmp/shared-live
+          echo 'Live Dol v2.6.0 and shared module verified.'
