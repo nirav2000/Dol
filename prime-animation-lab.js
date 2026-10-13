@@ -1,7 +1,7 @@
-/* Four deliberately non-blocking celebration prototypes. No dependencies. */
+/* Seven deliberately non-blocking celebration prototypes. No dependencies. */
 (() => {
   'use strict';
-  const designs=[['rainbow','Rainbow ribbon','Rainbow edge, rising PRIME badge, and gently spreading stars.','Playful · colourful'],['orbit','Cosmic orbit','Two luminous orbital rings carry the energy around the tile.','Energetic · scientific'],['ripple','Prism ripple','Warm concentric ripples radiate from the answer.','Joyful · bouncy'],['quiet','Quiet sparkle','A quieter colour wash, mint badge and four delicate stars.','Subtle · focused']];
+  const designs=[['rainbow','Rainbow ribbon','Rainbow edge, rising PRIME badge, and gently spreading stars.','Playful · colourful'],['orbit','Cosmic orbit','Two luminous orbital rings carry the energy around the tile.','Energetic · scientific'],['ripple','Prism ripple','Warm concentric ripples radiate from the answer.','Joyful · bouncy'],['quiet','Quiet sparkle','A quieter colour wash, mint badge and four delicate stars.','Subtle · focused'],['gem-glow','Golden glow · Gemini','A warm golden halo swells around the prime tile.','Gemini · gold'],['gem-flip','Smooth flip · Gemini','The prime tile rotates in 3D and returns to its original position.','Gemini · purple'],['gem-pop','Elastic pop · Gemini','The tile compresses, springs out and gently settles.','Gemini · mint']];
   const colors=['#ffe27e','#70e5ff','#ff85aa','#a7faac','#c2a1ff','#ffb16c','#c7fcff','#fff2a3'];
   const rays=[[0,-59],[55,-43],[76,-6],[65,38],[20,58],[-28,55],[-68,25],[-71,-20],[-38,-50]];
   const gallery=document.getElementById('gallery'), speed=document.getElementById('speed');
