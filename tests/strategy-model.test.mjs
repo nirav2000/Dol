@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {elevenCheck,divisibilityRule,divisionChunks,factorLesson,transformationLesson,suggestLesson,makeTechniqueSession,recordChoice,emptyStrategyHistory} from '../strategy-model.mjs';
+import {elevenCheck,divisibilityRule,divisionChunks,factorLesson,transformationLesson,factorChainLesson,suggestLesson,makeTechniqueSession,recordChoice,emptyStrategyHistory} from '../strategy-model.mjs';
 test('11 rule includes both zero and nonzero multiples',()=>{
  assert.deepEqual(elevenCheck(748).sums,[15,4]);assert.equal(elevenCheck(748).difference,11);assert.equal(elevenCheck(748).divisible,true);
  assert.deepEqual(elevenCheck(187).sums,[8,8]);assert.equal(elevenCheck(187).difference,0);assert.equal(elevenCheck(187).divisible,true);
@@ -30,4 +30,11 @@ test('technique choices count alternative valid methods but not guesses',()=>{
 });
 test('11 test works for arbitrary positive integers',()=>{
  for(let n=1;n<=1024;n++)assert.equal(elevenCheck(n).divisible,n%11===0);
+});
+
+test('459 uses prime factor chain to discover 17 × 27',()=>{
+ const lesson=factorChainLesson(459,new Set(['1-459','3-153','9-51']));
+ assert.equal(lesson.pairKey,'17-27');
+ assert.match(lesson.steps.map(s=>s.text).join(' '),/3 × 3 × 3 × 17/);
+ assert.equal(suggestLesson(459,new Set(['1-459','3-153','9-51'])).pairKey,'17-27');
 });
