@@ -61,3 +61,13 @@
 @keyframes numberLabel{0%,100%{opacity:0}15%,75%{opacity:1}}
 @keyframes numberSpark{0%{opacity:0;transform:translate(0,0) scale(.4)}30%{opacity:1}100%{opacity:0;transform:translate(var(--spark-x),var(--spark-y)) scale(.65)}}
 @media(prefers-reduced-motion:reduce){.number-celebration,.number-celebration::before,.number-celebration-label,.number-celebration-spark{animation:none!important}}
+
+/* Account settings — touch friendly and responsive */
+.dol-account-panel{margin:20px 0;padding:18px;border:1px solid var(--line,#454545);border-radius:16px;max-width:760px}
+.dol-account-panel h2{margin:0 0 12px;font-size:1.2rem}
+#dolAccountLogin{display:grid;gap:12px}
+#dolAccountLogin label{display:grid;gap:5px;min-width:0}
+#dolAccountLogin input{width:100%;max-width:420px;min-height:44px;border-radius:9px;padding:10px 12px}
+.dol-account-panel .action-row{display:flex;gap:8px;flex-wrap:wrap}
+.dol-account-panel button{min-height:44px}
+.dol-account-panel [hidden]{display:none!important}
