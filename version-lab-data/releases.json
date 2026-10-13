@@ -5,6 +5,56 @@
   "liveUrl": "https://nirav2000.github.io/Dol/",
   "releases": [
     {
+      "checkpointId": "vl-20261013T142238Z-e1e8f489",
+      "appId": "dol",
+      "productVersion": "2.6.4",
+      "commit": "e1e8f489fdecef85d160b28adf90646b0c64d1a2",
+      "sourceRef": "e1e8f489fdecef85d160b28adf90646b0c64d1a2",
+      "createdAt": "2026-10-13T14:22:38.289Z",
+      "title": "Tablet factor pairs remain visible through review",
+      "summary": "Verified repair of Apps issue 25. Phone and tablet Classic and Pair Board pass Chromium and WebKit with fixed action geometry and unchanged learner evidence.",
+      "areas": [
+        {
+          "id": "tablet-board",
+          "title": "Tablet board",
+          "kind": "fix",
+          "summary": "Visible target and factor pairs"
+        },
+        {
+          "id": "regression-checks",
+          "title": "Regression checks",
+          "kind": "test",
+          "summary": "Twelve deployed browser cases"
+        }
+      ],
+      "sourceUrl": "https://github.com/nirav2000/Dol/tree/e1e8f489fdecef85d160b28adf90646b0c64d1a2",
+      "snapshotUrl": "./snapshots/vl-20261013T142238Z-e1e8f489/index.html",
+      "snapshotSafety": "visual-only",
+      "compatibility": {
+        "frontend": "archived",
+        "source": "git",
+        "snapshot": "generated",
+        "backend": "live backend connections blocked",
+        "data": "contract recorded"
+      },
+      "data": {
+        "provider": "localStorage",
+        "schemaVersion": "1",
+        "paths": [
+          "dol-factor-frenzy-v1"
+        ]
+      },
+      "readOnlyAdapter": null,
+      "platform": {
+        "contract": "v1"
+      },
+      "generator": {
+        "name": "Apps Version Lab",
+        "contractVersion": 1,
+        "backfilled": true
+      }
+    },
+    {
       "checkpointId": "vl-20261013T133231Z-4d97eb52",
       "appId": "dol",
       "productVersion": "2.5.0",
@@ -1742,5 +1792,5 @@
       }
     }
   ],
-  "generatedAt": "2026-10-13T13:32:31.530Z"
+  "generatedAt": "2026-10-13T14:22:38.289Z"
 }

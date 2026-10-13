@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-10-11T14:02:13.985Z",
+  "totalCommits": 7,
+  "max": 8,
+  "checkpoints": [
+    {
+      "sha": "7c75c7c12fc6ffa5276d6fd1c8322e8efa5cdc64",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "Initial commit",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 1
+    },
+    {
+      "sha": "43ba6a982ef234d18aa1d34dce2f1eb37e329ecc",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "chore: add temporary live-site audit to investigate embedded functionality",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 2
+    },
+    {
+      "sha": "a23d384e534637e3935c61bc66f4ee9627005795",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "feat: implement solo typing Factor Frenzy game",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 3
+    },
+    {
+      "sha": "f95b5831636c737b21ab2a1a872a51821151c4b5",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "feat: match Factor Frenzy in-round interface and add solo typing controls",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 4
+    },
+    {
+      "sha": "221b0024d1e30c987dad131009d31ea86222ddcf",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "chore: install Version Lab archive workflow before learning redesign",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 5
+    },
+    {
+      "sha": "95252d64a8212279a9604a77473196e46738e9d6",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "ci: run shared historical archive before learning edition",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 6
+    },
+    {
+      "sha": "e83de376475ad97b7262ba57421fbc2be64c100d",
+      "date": "2026-10-11",
+      "tag": null,
+      "suggestedTitle": "ci: retry historical Version Lab backfill after shared snapshot fix",
+      "suggestedSummary": "Reconstructed historical checkpoint from Git history.",
+      "areas": [],
+      "order": 7
+    }
+  ]
+}
