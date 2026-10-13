@@ -1,7 +1,9 @@
 {
   "appId": "dol",
-  "platformVersion": "1.6.0",
-  "capabilities": {},
+  "platformVersion": "1.7.0",
+  "capabilities": {
+    "learningSync": true
+  },
   "ui": {
     "mode": "headless"
   },
