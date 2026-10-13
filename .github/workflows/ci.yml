@@ -58,6 +58,8 @@ jobs:
           curl --fail --location --retry 10 --retry-delay 3 --retry-all-errors --silent --show-error https://nirav2000.github.io/Apps/diagnostics/releases/1.0.0/index.mjs -o /tmp/shared-live
           grep -q 'initialise' /tmp/shared-live
           echo 'Published Dol and Apps diagnostics assets verified.'
+      - name: Test real deployed phone and tablet interfaces
+        run: node tests/live-diagnostics-browser.mjs
       - name: Save browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
