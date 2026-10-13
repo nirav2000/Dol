@@ -33,7 +33,7 @@ export function createMobileEntry({getState,submit}){
    const roundKey=state.round+':'+state.target;
    if(isMobile()&&enabled()&&roundKey!==lastRound){
      lastRound=roundKey;
-     requestAnimationFrame(()=>{if(enabled())window.scrollTo({top:play.offsetTop,behavior:'auto'});});
+     if(document.body.dataset.dolLayout!=='pairboard')requestAnimationFrame(()=>{if(enabled())window.scrollTo({top:play.offsetTop,behavior:'auto'});});
    }
  }
  const reset=()=>{parts=['',''];active=0;updateInput();sync();};
@@ -93,6 +93,7 @@ export function createMobileEntry({getState,submit}){
  media.addEventListener('change',sync);
  window.addEventListener('resize',reserveSpace);
  window.visualViewport?.addEventListener('resize',reserveSpace);
+ document.addEventListener('dol-layoutchange',sync);
  sync();
  return {reset,sync,focus,isMobile};
 }
