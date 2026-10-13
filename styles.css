@@ -51,10 +51,10 @@
 
 /* Number celebrations decorate, but NEVER animate opacity of the answer tile. */
 :is(#answerReview,#layoutPairGrid) .review-pair.number-celebrating{position:relative;isolation:isolate;overflow:visible;z-index:2}
-.number-celebration{position:absolute;inset:0;pointer-events:none;z-index:4;animation:numberCelebrate 2.3s ease-out both}
-.number-celebration::before{content:'';position:absolute;inset:-3px;border:3px solid var(--celebrate-color,#ffca79);border-radius:12px;box-shadow:0 0 16px var(--celebrate-color,#ffca79);animation:numberOutline 2.3s ease-in-out both}
+.number-celebration{position:absolute;inset:0;pointer-events:none;z-index:4;animation:numberCelebrate 2.3s ease-out var(--celebrate-delay,0s) both}
+.number-celebration::before{content:'';position:absolute;inset:-3px;border:3px solid var(--celebrate-color,#ffca79);border-radius:12px;box-shadow:0 0 16px var(--celebrate-color,#ffca79);animation:numberOutline 2.3s ease-in-out var(--celebrate-delay,0s) both}
 .number-celebration--prime{--celebrate-color:#ff8cd4}.number-celebration--square{--celebrate-color:#8cd8ff}.number-celebration--power{--celebrate-color:#f9d36c}.number-celebration--composite{--celebrate-color:#9de9b5}
-.number-celebration-label{position:absolute;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);background:var(--celebrate-color);color:#171717;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:850;white-space:nowrap;animation:numberLabel 2.3s ease both}
+.number-celebration-label{position:absolute;left:50%;bottom:calc(100% + 9px);transform:translateX(-50%);background:var(--celebrate-color);color:#171717;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:850;white-space:nowrap;animation:numberLabel 2.3s ease var(--celebrate-delay,0s) both}
 .number-celebration-spark{position:absolute;left:50%;top:50%;color:var(--spark-color);font-size:17px;animation:numberSpark 1.5s ease-out var(--spark-delay) both}
 @keyframes numberCelebrate{0%,85%{opacity:1}100%{opacity:0}}
 @keyframes numberOutline{0%,100%{opacity:0;transform:scale(.98)}20%,75%{opacity:1;transform:scale(1.01)}}
