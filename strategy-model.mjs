@@ -73,10 +73,35 @@ export function transformationLesson(n,source,direction=1){
     step('Complete the new pair',`${doubled}${times}2 = ${next[0]}. Pair that with ${next[1]}: ${next[0]}${times}${next[1]} = ${n}.${next[0]>next[1]?' Writing the smaller number first gives '+key.replace('-',times)+'. It is the same pair, not an extra one.':''} Halving and doubling can find more pairs, but it does not prove you have found every pair.`,key.replace('-',times)+` = ${n}`)
   ]};
 }
+/** Reduce a composite target through small prime divisions before combining factors. */
+export function factorChainLesson(n,found=new Set()){
+  requireNumber(n);
+  const primes=[],steps=[],factors=[];let rest=n;
+  for(let p=2;p*p<=rest;p+=(p===2?1:2)){
+    while(rest%p===0){factors.push(p);rest/=p;}
+  }
+  if(rest>1)factors.push(rest);
+  if(factors.length<3)return null;
+  const pairs=factorPairs(n),missing=pairs.filter(p=>!found.has(normalPair(p))&&p[0]>1);
+  if(!missing.length)return null;
+  const target=missing.find(([a])=>a>=10)||missing[0];
+  const [a,b]=target;const key=normalPair(target);
+  steps.push(step('Start with an easy divisibility rule',`Do not guess the large factors of ${n}. First check 2, 3, 5 and 9. Divide by an easy factor, then work with the smaller number.`));
+  let value=n;
+  for(const p of factors.slice(0,-1)){
+    const next=value/p;
+    steps.push(step(`Reduce ${value} by ${p}`,`Because ${p} divides ${value} exactly, ${value} = ${p} × ${next}. Now factor ${next} instead of hunting for a large factor of ${n}.`,`${value} ÷ ${p} = ${next}`));
+    value=next;
+  }
+  steps.push(step('Combine the small pieces',`${n} = ${factors.join(' × ')}. Group these prime factors to make ${a} and ${b}. You can recombine them in different ways to discover the other pairs.`,`${a} × ${b} = ${n}`));
+  steps.push(step('Check no pairs are missing',`Check first factors up to √${n} (about ${Math.sqrt(n).toFixed(1)}). Each larger factor is already the partner of a smaller one. A square's middle pair counts once.`));
+  return {kind:'chain',technique:'split',target:n,candidate:a,pairKey:key,partnerIndex:steps.length-2,steps};
+}
 export function suggestLesson(n,found=new Set()){
   requireNumber(n);const pairs=factorPairs(n),missing=pairs.filter(p=>!found.has(normalPair(p)));
   if(!missing.length)return null;
   if(!found.has(`1-${n}`))return factorLesson(n,1);
+  const chain=factorChainLesson(n,found);if(chain&&n%2!==0)return chain;
   // Only use pairs actually entered; never assume an unseen intermediate pair is known.
   for(const pair of [...found].reverse().map(k=>k.split('-').map(Number))){
     if(pair.length!==2||pair[0]*pair[1]!==n)continue;
