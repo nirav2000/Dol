@@ -3,11 +3,11 @@ const KEY='dol-strategy-history-v1';
 const $=id=>document.getElementById(id);
 function element(tag,attributes={},text){const node=document.createElement(tag);for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));if(text!==undefined)node.textContent=text;return node;}
 /** Optional help and a separate, untimed technique workout. No factor score mutations. */
-export function createStrategySupport({getState,setView,pause,focusAnswer,learning,holdTime=()=>{},releaseTime=()=>{}}){
-  let saved;try{saved=JSON.parse(localStorage.getItem(KEY));}catch{}
+export function createStrategySupport({getState,setView,pause,focusAnswer,learning,storageScope=k=>k,holdTime=()=>{},releaseTime=()=>{}}){
+  let saved;try{saved=JSON.parse(localStorage.getItem(storageScope(KEY)));}catch{}
   let history=cleanStrategyHistory(saved),lesson=null,level=0,ownsHintPause=false,ownsSessionPause=false,roundId=null,quiz=null;
   let helpHeld=false;const exposures=new Map(),seenSteps=new Set();
-  function save(){try{localStorage.setItem(KEY,JSON.stringify(history));}catch{}}
+  function save(){try{localStorage.setItem(storageScope(KEY),JSON.stringify(history));}catch{}}
   const dialog=element('dialog',{id:'strategyHintDialog',class:'strategy-dialog','aria-labelledby':'coachHeading'});
   dialog.innerHTML='<div class="coach-header"><div><p class="eyebrow" id="coachTarget"></p><h2 id="coachHeading">A small nudge</h2></div><button type="button" id="coachClose" class="secondary" aria-label="Close hint and return to practice">Close</button></div><p id="coachProgress" class="small muted"></p><div id="coachStep" aria-live="polite" aria-atomic="true"><h3 id="coachTitle"></h3><p id="coachText"></p><p id="coachEquation" class="coach-equation"></p></div><div class="coach-actions"><button type="button" id="coachBack" class="secondary">Back</button><button type="button" id="coachNext" class="primary">Another step</button></div><button type="button" id="coachTry" class="text-button">Let me try</button><details id="coachApproach"><summary>Stuck somewhere else?</summary><button type="button" id="coachPartner" class="secondary">I know this factor. Help with its partner.</button><div class="coach-factor-picker"><label for="coachFactor">Factor to explore</label><input type="number" id="coachFactor" min="1" max="1024" step="1" inputmode="numeric"><button type="button" id="coachExplore" class="secondary">Explore</button></div><p id="coachPickerMessage" class="small muted" role="status"></p><button type="button" id="coachSuggest" class="text-button">Suggest a move from my board</button></details><p class="small muted" id="coachNote"></p>';
   document.body.append(dialog);
