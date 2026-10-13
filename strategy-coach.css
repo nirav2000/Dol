@@ -61,3 +61,6 @@
 
 /* Keep hint accessible on short phone screens. */
 @media(max-width:700px) and (pointer:coarse){#playView #helpToggle{position:fixed!important;left:calc(12px + env(safe-area-inset-left,0px))!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;z-index:31!important;transform:none!important;}}
+
+/* Focus mode hides general help, but the compact hint button remains reachable beneath the phone keypad. */
+@media(max-width:700px) and (pointer:coarse){body.focus-mode #playView #helpToggle{display:block!important;visibility:visible!important;}}
