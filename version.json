@@ -1,5 +1,5 @@
 {
-  "version": "2.6.8",
+  "version": "2.6.9",
   "name": "Factor Frenzy",
-  "description": "Opt-in Shared Learning Sync v1 guest evidence, with cloud and account migration gated."
+  "description": "kk-syllabus Firebase login and opt-in authenticated learning sync, with guest migration and account isolation."
 }
