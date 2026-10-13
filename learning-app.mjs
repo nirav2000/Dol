@@ -4,6 +4,7 @@ import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,re
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
 import {createRoundTools} from './round-tools.mjs';
 import {createLearningSync} from 'https://nirav2000.github.io/Apps/learning-sync/v1/index.js';
+import {activeAccount,initAccountUI,transport} from './dol-account.mjs';
 import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
@@ -15,14 +16,16 @@ function readFocus(){try{const value=localStorage.getItem(focusKey);return value
 function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
 function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
 function focusAnswer(){if(document.body.dataset.dolLayout==='pairboard'&&['phone','tablet'].includes(document.body.dataset.dolProfile))return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
-const storageKey='dol-factor-frenzy-v1',settingsKey='dol-learning-settings-v2';
+const accountId=activeAccount();
+const scoped=key=>accountId==='guest'?key:key+':account:'+accountId;
+const storageKey=scoped('dol-factor-frenzy-v1'),settingsKey=scoped('dol-learning-settings-v2');
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch{return fallback;}}
 const old=read(storageKey,{});
 const prefs=read(settingsKey,{});
-const learning=createLearningStore({appId:'dol',learnerId:'local'});
+const learning=createLearningStore({appId:'dol',learnerId:accountId==='guest'?'local':accountId});
 // Stage 1: durable guest learning evidence. Cloud/login remain disabled until secure Auth, rules and migration gates pass.
 let learningSync=null;
-try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId:'guest'});learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
+try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
 const state={
   phase:'ready',view:'play',mode:prefs.mode||'guided',stage:prefs.stage||'foundation',
   limit:[64,128,256,512,1024].includes(prefs.limit)?prefs.limit:128,
@@ -32,14 +35,14 @@ const state={
   visualHelp:false,target:null,previous:null,pairs:[],found:new Set(),hintedPairs:new Set(),attempted:new Set(),
   chosenFactor:null,hintLevel:0,hintsUsed:0,helpOpen:false,mistakes:0,startedWithScore:0,startedAt:0,
   remainingMs:60000,deadline:0,ticker:null,feedback:'',feedbackType:'',strategy:'',result:null,
-  numberHistory:read('dol-number-history-v2',{})
+  numberHistory:read(scoped('dol-number-history-v2'),{})
 };
 state.remainingMs=state.duration*1000;
 function persist(){
   try{
     localStorage.setItem(storageKey,JSON.stringify({round:state.round,score:state.score,limit:state.limit,duration:state.duration,showCount:state.showCount,sound:state.sound}));
     localStorage.setItem(settingsKey,JSON.stringify({mode:state.mode,stage:state.stage,limit:state.limit,duration:state.duration,showCount:state.showCount,sound:state.sound}));
-    localStorage.setItem('dol-number-history-v2',JSON.stringify(state.numberHistory));
+    localStorage.setItem(scoped('dol-number-history-v2'),JSON.stringify(state.numberHistory));
   }catch{}
 }
 function setView(view){
@@ -377,7 +380,7 @@ $('startButton').addEventListener('click',start);$('pauseButton').addEventListen
 $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
-$('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();try{learningSync?.resetGuest();}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
+$('resetProgress').addEventListener('click',()=>{if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();try{if(accountId==='guest')learningSync?.resetGuest();else alert('Your cloud learning record cannot be deleted from this screen. Local progress was reset, but synced history remains in Firebase.');}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
 $('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
@@ -394,9 +397,27 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
   fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
 });
 layoutOptions=createLayoutOptions({getState:()=>state});
-applyFocus();insights=createInsights({getState:()=>state,refresh:render});
+applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
-strategySupport=createStrategySupport({getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason)});
+strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason)});
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
 render();setView('play');
+
+// Auth is initialised only after the game UI has mounted. Cloud sync is scoped to the
+// actual Firebase UID and never runs for a guest or a mismatched account.
+initAccountUI({onUser:async user=>{
+  if(!user||user.uid!==accountId||!learningSync)return;
+  try{
+    const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onSnapshot:merged=>{
+      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);renderProgress();}
+    }});
+    service.capture(learning.getState());
+    if(localStorage.getItem('dol-guest-imported:'+accountId)!=='yes'&&confirm('Copy the learning history saved on this device into this account? Only do this if it belongs to you.')){
+      service.importGuest({approved:true});localStorage.setItem('dol-guest-imported:'+accountId,'yes');
+    }
+    await service.sync();service.observeOnline();
+    learningSync=service;
+    document.getElementById('dolSyncStatus').textContent='Cloud learning record synchronised';
+  }catch(error){document.getElementById('dolSyncStatus').textContent='Offline/local progress saved. Sync: '+(error.code||error.message);console.warn('Dol sync unavailable',error);}
+}}).catch(error=>{document.getElementById('dolAccountStatus').textContent='Account service unavailable: '+error.message});
