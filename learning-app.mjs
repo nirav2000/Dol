@@ -13,7 +13,7 @@ let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
 function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
 function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
-function focusAnswer(){if(document.body.dataset.dolLayout==='pairboard'&&matchMedia('(pointer:coarse)').matches)return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
+function focusAnswer(){if(document.body.dataset.dolLayout==='pairboard'&&['phone','tablet'].includes(document.body.dataset.dolProfile))return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const storageKey='dol-factor-frenzy-v1',settingsKey='dol-learning-settings-v2';
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fallback;}catch{return fallback;}}
 const old=read(storageKey,{});

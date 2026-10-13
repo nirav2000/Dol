@@ -58,3 +58,6 @@
 @media (max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse){
  #playView #helpToggle{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:31;min-height:44px;margin:0;padding:8px 16px;background:#242424;border:1px solid #666;box-shadow:0 3px 12px #0006}
 }
+
+/* Keep hint accessible on short phone screens. */
+@media(max-width:700px) and (pointer:coarse){#playView #helpToggle{position:fixed!important;left:calc(12px + env(safe-area-inset-left,0px))!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;z-index:31!important;transform:none!important;}}

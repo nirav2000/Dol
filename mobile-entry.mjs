@@ -9,7 +9,7 @@ export function createMobileEntry({getState,submit}){
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
  const media=window.matchMedia('(max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse)');
  let parts=['',''],active=0,lastRound=null;
- const isMobile=()=>media.matches;
+ const isMobile=()=>document.body.dataset.dolProfile==='phone'||media.matches&&document.body.dataset.dolProfile!=='tablet';
  const enabled=()=>getState().phase==='running'&&getState().view==='play';
  const nextQuestion=()=>{if(getState().phase==='finished'&&getState().view==='play')document.getElementById('startButton').click();};
  function reserveSpace(){
@@ -71,7 +71,7 @@ export function createMobileEntry({getState,submit}){
    input.blur();focus();sync();
  });
  document.addEventListener('keydown',e=>{
-   if(!isMobile()||e.defaultPrevented||e.repeat||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||e.isComposing||getState().view!=='play')return;
+   if(e.composedPath().some(n=>n?.dataset?.diagnosticsIgnore)||!isMobile()||e.defaultPrevented||e.repeat||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||e.isComposing||getState().view!=='play')return;
    const focused=document.activeElement;
    if(focused?.closest?.('.topbar,#helpSection,#roundVisuals,dialog')||focused?.isContentEditable)return;
    if(focused?.matches?.('input,textarea,select')&&focused!==input)return;

@@ -1,0 +1,12 @@
+/* Tablet-only Pair Board. */
+body[data-dol-profile=tablet][data-dol-layout=pairboard] #playView{padding:12px}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] #playView .play-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(290px,.92fr);gap:16px;align-items:start}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] #playView .number-tile{min-height:0!important;aspect-ratio:auto;height:clamp(120px,22dvh,220px)}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] #playView .number-tile strong{font-size:clamp(70px,12vw,145px)!important}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] .layout-pair-board{padding:12px;margin-top:10px}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] .layout-pair-grid{gap:6px}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] .layout-pair-chip{min-height:clamp(35px,5dvh,48px);font-size:clamp(14px,1.6vw,20px)}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] .tablet-pad{max-width:none;width:100%;margin:8px 0 0;padding:8px}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] .tablet-pad-grid button{min-height:clamp(50px,7.5dvh,68px);font-size:27px}
+body[data-dol-profile=tablet][data-dol-layout=pairboard][data-dol-touchpad=tablet] #answerForm>.small,body[data-dol-profile=tablet][data-dol-layout=pairboard][data-dol-touchpad=tablet] #answerForm>.input-row{display:none}
+body[data-dol-profile=tablet][data-dol-layout=pairboard] .tablet-pad.is-finished{width:auto}

@@ -22,12 +22,20 @@ jobs:
           node --check round-model.mjs
           node --check visual-tools.mjs
           node --check mobile-entry.mjs
+          node --check device-profile.mjs
+          node --check diagnostics.mjs
+          node --check layout-options.mjs
+          node --check tablet-keypad.mjs
       - name: Unit tests
         run: node --test tests/*.test.mjs
       - name: Install browser test dependencies
         run: |
           npm install --no-save playwright
-          npx playwright install chromium
+          npx playwright install --with-deps chromium webkit
+      - uses: actions/checkout@v4
+        with:
+          repository: nirav2000/Apps
+          path: Apps-shared
       - name: Browser smoke tests
         run: |
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
@@ -37,6 +45,7 @@ jobs:
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
           node tests/mobile-dock-browser.mjs
+          APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
       - name: Save browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,10 +1,11 @@
+import {currentProfile} from './device-profile.mjs';
 // Optional touch-tablet pad. The phone keypad is separate and never modified.
 export function initTabletKeypad(){
  const play=document.getElementById('playView'),form=document.getElementById('answerForm');
  const input=document.getElementById('pairInput'),activePanel=document.getElementById('activePanel');
  const finishedPanel=document.getElementById('finishedPanel'),start=document.getElementById('startButton');
  if(!play||!form||!input||!activePanel||!finishedPanel||!start)return;
- const media=matchMedia('(pointer:coarse) and (min-width:701px) and (min-height:501px)');
+ const media={get matches(){return currentProfile()==='tablet';},addEventListener(_name,fn){document.addEventListener('dol-devicechange',fn);}};
  const bar=document.createElement('div');bar.className='tablet-pad-toolbar';
  const toggle=document.createElement('button');toggle.type='button';toggle.className='secondary';
  toggle.setAttribute('aria-expanded','false');toggle.textContent='Show number pad';
@@ -13,6 +14,8 @@ export function initTabletKeypad(){
  pad.setAttribute('role','group');pad.setAttribute('aria-label','Optional touch number pad');
  const fields=document.createElement('div');fields.className='tablet-pad-fields';
  let part=0,values=['',''],lastActionRect=null,lastTarget=null,opened=false;
+ let preferred=null;try{preferred=localStorage.getItem('dol-tablet-keypad-v1');}catch{}
+ if(preferred!==null)opened=preferred==='true';
  const buttons=[0,1].map(i=>{
    const b=document.createElement('button');b.type='button';
    b.setAttribute('aria-label',i?'Second factor':'First factor');
@@ -39,9 +42,12 @@ export function initTabletKeypad(){
  }
  function recordRect(){if(running()&&!pad.hidden&&!pad.classList.contains('is-finished'))lastActionRect=action()?.getBoundingClientRect()||lastActionRect;}
  function refresh(){
+   if(preferred===null&&document.body.dataset.dolLayout==='pairboard')opened=true;
+   toggle.setAttribute('aria-expanded',String(opened));toggle.textContent=opened?'Hide number pad':'Show number pad';
+   if(media.matches&&opened&&(running()||finished()))document.body.dataset.dolTouchpad='tablet';else if(document.body.dataset.dolTouchpad==='tablet')delete document.body.dataset.dolTouchpad;
    bar.hidden=!media.matches||!running();
    if(!isEnabled()){
-     pad.hidden=true;pad.classList.remove('is-finished');input.readOnly=false;
+     pad.hidden=true;pad.classList.remove('is-finished');if(document.body.dataset.dolTouchpad!=='phone')input.readOnly=false;
      if(pad.parentElement!==form)form.append(pad);
      return;
    }
@@ -53,13 +59,13 @@ export function initTabletKeypad(){
      pad.classList.add('is-finished');pad.hidden=false;
      if(lastActionRect){
        pad.style.left=lastActionRect.left+'px';pad.style.top=lastActionRect.top+'px';
-       pad.style.width=lastActionRect.width+'px';
+       pad.style.width=lastActionRect.width+'px';pad.style.height=lastActionRect.height+'px';
      }
    }else{
      if(pad.parentElement!==form)form.append(pad);
-     pad.classList.remove('is-finished');pad.style.left='';pad.style.top='';pad.style.width='';
+     pad.classList.remove('is-finished');pad.style.left='';pad.style.top='';pad.style.width='';pad.style.height='';
      pad.hidden=false;
-     input.readOnly=opened&&document.body.dataset.dolLayout==='pairboard';
+     input.readOnly=opened&&media.matches;
      if(input.readOnly)input.blur();
      requestAnimationFrame(recordRect);
    }
@@ -73,7 +79,7 @@ export function initTabletKeypad(){
  }
  function press(key){
    if(finished()){if(key==='action')nextQuestion();return;}
-   if(!running())return;
+   if(!running()||input.disabled)return;
    if(key==='clear'){
      if(values[part])values[part]=values[part].slice(0,-1);
      else if(part===1)part=0;
@@ -82,7 +88,7 @@ export function initTabletKeypad(){
    if(key==='action'){
      if(part===0){if(values[0]&&Number(values[0])>0)part=1;sync();return;}
      if(values[0]&&values[1]){
-       writeInput();form.requestSubmit();
+       recordRect();writeInput();form.requestSubmit();
        if(document.getElementById('entryFeedback')?.classList.contains('success')||finished()){
          values=['',''];part=0;sync();
        }
@@ -103,16 +109,16 @@ export function initTabletKeypad(){
    keyButtons.set(k,b);grid.append(b);
  });
  toggle.addEventListener('click',()=>{
-   opened=!opened;toggle.setAttribute('aria-expanded',String(opened));
+   opened=!opened;preferred=String(opened);try{localStorage.setItem('dol-tablet-keypad-v1',preferred);}catch{}toggle.setAttribute('aria-expanded',String(opened));
    toggle.textContent=opened?'Hide number pad':'Show number pad';
-   if(opened&&document.body.dataset.dolLayout==='pairboard'){input.readOnly=true;input.blur();}
+   if(opened&&media.matches){input.readOnly=true;input.blur();}
    else input.readOnly=false;
    refresh();
  });
- document.addEventListener('dol-layoutchange',()=>{input.readOnly=opened&&document.body.dataset.dolLayout==='pairboard'&&media.matches;if(input.readOnly)input.blur();refresh();});
+ document.addEventListener('dol-layoutchange',()=>{input.readOnly=opened&&media.matches;if(input.readOnly)input.blur();refresh();});
  const observer=new MutationObserver(()=>{
    // A new round must clear stale keypad values; keep the user's show/hide preference.
-   const target=document.getElementById('numberValue')?.textContent;
+   const target=document.getElementById('roundValue')?.textContent+':'+document.getElementById('numberValue')?.textContent;
    if(running()&&target!==lastTarget){
      lastTarget=target;values=['',''];part=0;
    }
@@ -133,6 +139,8 @@ export function initTabletKeypad(){
    buttons.forEach((b,i)=>{b.textContent=values[i]||'—';b.setAttribute('aria-pressed',String(i===part));});
    syncAction();
  });
+ document.getElementById('finishButton')?.addEventListener('pointerdown',recordRect,{passive:true});
+ input.addEventListener('focus',()=>{if(isEnabled())input.blur();});
  function syncAction(){const a=action();if(a){a.textContent=finished()?'Next question ↵':part===0?'×':'↵';a.setAttribute('aria-label',finished()?'Next question':part===0?'Next factor':'Submit factor pair');}}
  refresh();sync();
 }
