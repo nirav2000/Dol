@@ -128,8 +128,23 @@ export function createStrategySupport({getState,setView,pause,focusAnswer,learni
   function resetRound(){
     tidyHint(false);if(dialog.open)dialog.close();lesson=null;level=0;exposures.clear();seenSteps.clear();roundId=identity();
   }
+  // Mobile browser layout viewport can be taller than the visible viewport.
+  // Anchor the hint to visualViewport rather than CSS fixed bottom, which can be off-screen.
+  function placeMobileHint(){
+    const hint=$('helpToggle');if(!hint)return;
+    if(innerWidth<=700&&matchMedia('(pointer:coarse)').matches){
+      const vv=window.visualViewport;
+      const top=Math.max(8,(vv?.offsetTop||0)+(vv?.height||innerHeight)-54);
+      hint.style.setProperty('top',top+'px','important');
+      hint.style.setProperty('bottom','auto','important');
+    }else{hint.style.removeProperty('top');hint.style.removeProperty('bottom');}
+  }
+  window.visualViewport?.addEventListener('resize',placeMobileHint,{passive:true});
+  window.visualViewport?.addEventListener('scroll',placeMobileHint,{passive:true});
+  window.addEventListener('resize',placeMobileHint,{passive:true});
   function render(){
-    const s=getState();if(roundId!==identity())resetRound();
+    const s=getState();
+    placeMobileHint();if(roundId!==identity())resetRound();
     $('helpToggle').hidden=!['running','paused'].includes(s.phase);$('helpToggle').disabled=false;
     if(dialog.open&&s.phase==='finished'){tidyHint(false);dialog.close();}
   }
