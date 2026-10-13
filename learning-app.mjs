@@ -411,7 +411,7 @@ import('./dol-account.mjs').then(({initAccountUI,transport})=>initAccountUI({onU
   if(!user||user.uid!==accountId||!learningSync)return;
   try{
     const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onSnapshot:merged=>{
-      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);renderProgress();}
+      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);service.adoptSnapshot(merged);renderProgress();}
     }});
     service.capture(learning.getState());
     if(localStorage.getItem('dol-guest-imported:'+accountId)!=='yes'&&confirm('Copy the learning history saved on this device into this account? Only do this if it belongs to you.')){
