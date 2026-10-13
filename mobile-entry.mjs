@@ -12,6 +12,14 @@ export function createMobileEntry({getState,submit}){
  const isMobile=()=>document.body.dataset.dolProfile==='phone'||media.matches&&document.body.dataset.dolProfile!=='tablet';
  const enabled=()=>getState().phase==='running'&&getState().view==='play';
  const nextQuestion=()=>{if(getState().phase==='finished'&&getState().view==='play')document.getElementById('startButton').click();};
+ function placeDock(){
+   if(!isMobile()||wrap.hidden)return;
+   const vv=window.visualViewport,visibleHeight=vv?.height||innerHeight;
+   const bottom=innerWidth>innerHeight&&visibleHeight<=500?12:Math.max(64,Math.min(104,visibleHeight*.1));
+   const top=Math.max(4,(vv?.offsetTop||0)+visibleHeight-bottom-wrap.getBoundingClientRect().height);
+   wrap.style.setProperty('top',top+'px','important');
+   wrap.style.setProperty('bottom','auto','important');
+ }
  function reserveSpace(){
    const height=isMobile()&&!wrap.hidden?Math.ceil(wrap.getBoundingClientRect().height):0;
    const value=height+'px';
@@ -29,7 +37,7 @@ export function createMobileEntry({getState,submit}){
    const action=pad.querySelector('[data-key="action"]');
    if(action){action.textContent=finished?'Next question \u21b5':active===0?'\u00d7':'\u21b5';action.setAttribute('aria-label',finished?'Next question':active===0?'Next factor':'Submit factor pair');}
    wrap.querySelectorAll('button').forEach(b=>{b.disabled=finished?(b.dataset.key!=='action'||state.view!=='play'):!enabled();});
-   reserveSpace();
+   reserveSpace();placeDock();
    const roundKey=state.round+':'+state.target;
    if(isMobile()&&enabled()&&roundKey!==lastRound){
      lastRound=roundKey;
@@ -87,12 +95,13 @@ export function createMobileEntry({getState,submit}){
  },true);
  // Only reserve the real footprint, never an invisible four-row keypad in review.
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(reserveSpace).observe(wrap);
+ window.visualViewport?.addEventListener('scroll',placeDock,{passive:true});
  const visibility=new MutationObserver(sync);
  visibility.observe(play,{attributes:true,attributeFilter:['hidden']});
  visibility.observe(document.getElementById('activePanel'),{attributes:true,attributeFilter:['hidden']});
  media.addEventListener('change',sync);
- window.addEventListener('resize',reserveSpace);
- window.visualViewport?.addEventListener('resize',reserveSpace);
+ window.addEventListener('resize',()=>{reserveSpace();placeDock();});
+ window.visualViewport?.addEventListener('resize',()=>{reserveSpace();placeDock();});
  document.addEventListener('dol-layoutchange',sync);
  sync();
  return {reset,sync,focus,isMobile};
