@@ -1,0 +1,18 @@
+/* Phone-only Pair Board; never change tablet or desktop. */
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView{padding-top:8px;padding-bottom:0;min-height:100dvh}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .page-head{margin-bottom:5px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .play-grid{display:flex;flex-direction:column;gap:5px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-section{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:'target controls' 'board board';gap:5px;position:relative}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-tile{grid-area:target;aspect-ratio:auto!important;min-height:0!important;height:clamp(60px,10dvh,90px);border-radius:12px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-tile strong{font-size:clamp(42px,12vw,76px)!important}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .action-row{grid-area:controls;display:flex;flex-wrap:wrap;max-width:110px;gap:4px;margin:0!important}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .action-row button{min-height:44px;padding:5px 8px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] .layout-pair-board{grid-area:board;margin:0;padding:6px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] .layout-pair-grid{gap:3px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] .layout-pair-chip{min-height:clamp(23px,4dvh,32px);font-size:12px}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=running] .work-panel{display:none}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=paused] .work-panel{display:none}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #answerReview{display:none}
+@media(max-height:620px){body[data-dol-profile=phone][data-dol-layout=pairboard] .layout-pair-chip{min-height:19px;font-size:11px}}
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=finished] .layout-pair-chip{min-height:44px}
+@media(orientation:landscape) and (max-height:500px){body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .play-grid{width:calc(100% - min(360px,47vw) - 15px)}body[data-dol-profile=phone][data-dol-layout=pairboard] #playView>.mobile-entry{width:min(360px,47vw)}}
