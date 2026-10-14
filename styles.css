@@ -71,3 +71,9 @@
 .dol-account-panel .action-row{display:flex;gap:8px;flex-wrap:wrap}
 .dol-account-panel button{min-height:44px}
 .dol-account-panel [hidden]{display:none!important}
+
+/* Shared account entry integration: header placement and Progress status */
+#dolAccountEntrySlot{display:inline-flex;align-items:center;flex:none}
+.dol-progress-sync{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 16px;margin:0 0 20px;border:1px solid #343d4c;border-radius:13px;background:#131923;color:#d6e0ef;font-size:13px}
+.dol-progress-sync button{min-height:44px}
+@media(max-width:680px){.header-actions{gap:6px}.topbar{gap:7px}#dolAccountEntrySlot{order:2}.dol-progress-sync{align-items:center}}
