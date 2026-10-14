@@ -2,6 +2,7 @@
 // Account transitions reload the app so no previous learner's in-memory state is reused.
 import {Auth} from 'https://nirav2000.github.io/Apps/auth/v1/index.js';
 import 'https://nirav2000.github.io/Apps/auth/v1/ui.js';
+import {mountAccountEntry} from 'https://nirav2000.github.io/Apps/platform/account-entry/v1/index.js';
 import {createFirestoreTransport} from 'https://nirav2000.github.io/Apps/learning-sync/v1/index.js';
 import {getApps,getApp,initializeApp} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
@@ -17,10 +18,12 @@ export async function initAccountUI({onUser,notice}={}){
  const status=document.getElementById('dolAccountStatus');
  const say=message=>{if(status)status.textContent=message;notice?.(message)};
  await Auth.init({appId:'dol',mode:'shadow',migration:{phase:'shadow',authority:'legacy'},identity:{firebaseConfig:config},autoAnonymous:false});
+ const entry=mountAccountEntry({Auth,appId:'dol',slot:document.getElementById('dolAccountEntrySlot'),settingsTrigger:document.getElementById('dolManageAccount'),variant:'balanced',theme:'midnight',methods:'emailPassword,google',heading:'Your Dol account'});
+ document.getElementById('dolProgressAccount')?.addEventListener('click',entry.open);
  onAuthStateChanged(firebaseAuth,user=>{
    const next=user?.uid||'guest';
    if(next!==activeAccount()){localStorage.setItem(activeKey,next);location.reload();return}
-   const logged=!!user;
+   if(!user)document.getElementById('dolSyncStatus').textContent='Saved on this device · not synchronised';
    say(logged?'Signed in: '+(user.email||'Firebase account'):'Playing as guest. Progress is stored on this device.');
    onUser?.(user);
  });
