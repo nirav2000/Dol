@@ -13,6 +13,7 @@ export const activeAccount=()=>{const v=localStorage.getItem(activeKey)||'guest'
 const app=getApps().find(x=>x.name==='apps-identity')||initializeApp(config,'apps-identity');
 const firebaseAuth=getAuth(app);
 const db=firestore.getFirestore(app);
+export function preferencesStore(){return {db,firestore,auth:firebaseAuth}}
 export function transport(){return createFirestoreTransport({db,auth:firebaseAuth,sdk:firestore})}
 export async function initAccountUI({onUser,notice}={}){
  const status=document.getElementById('dolAccountStatus');
@@ -24,7 +25,7 @@ export async function initAccountUI({onUser,notice}={}){
    const next=user?.uid||'guest';
    if(next!==activeAccount()){localStorage.setItem(activeKey,next);location.reload();return}
    if(!user)document.getElementById('dolSyncStatus').textContent='Saved on this device · not synchronised';
-   say(logged?'Signed in: '+(user.email||'Firebase account'):'Playing as guest. Progress is stored on this device.');
+   say(user?'Signed in: +(user.email||'Firebase account'):'Playing as guest. Progress is stored on this device.');
    onUser?.(user);
  });
  return {auth:firebaseAuth,db};
