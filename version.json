@@ -1,5 +1,5 @@
 {
-  "version": "2.6.9",
+  "version": "2.6.11",
   "name": "Factor Frenzy",
-  "description": "kk-syllabus Firebase login and opt-in authenticated learning sync, with guest migration and account isolation."
+  "description": "Single round and score ledger with lifetime totals, legacy migration and progress reconciliation."
 }
