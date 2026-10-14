@@ -33,7 +33,7 @@ export function createRoundLedger({storage,key,legacy={},recordedSessions=0}){
    save();
  }
  function round(value){data.round=Math.max(1,integer(value,1));save();}
- function finish(){data.completedRounds++;save();}
+ function finish(){data.completedRounds++;data.lastSessionCount++;save();}
  function resetRounds(){data.round=1;save();}
  function resetScores(){data.round=1;data.score=0;save();}
  // Preserve lifetime numbers when a learning-record clear is requested.
