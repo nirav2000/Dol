@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Fetch raw HTML and embedded references
         run: |
           python3 - <<'PY'
@@ -62,7 +62,7 @@ jobs:
             await browser.close();
           })().catch(e=>{console.error(e);process.exitCode=1});
           JS
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: original-site-audit
