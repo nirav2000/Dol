@@ -361,10 +361,10 @@ function renderLearn(){
 function renderProgress(){
   const data=learning.getState(),sessions=data.sessions||[],summary=learning.summary();
   ledger.updateHistory(sessions.length);
-   $('statRounds').textContent=ledger.data.completedRounds;$('statConcepts').textContent=summary.concepts;
+   $('statRounds').textContent=ledger.data.completedRounds;$('statRounds').previousElementSibling.textContent=ledger.data.legacyRoundsIndicated?'ROUNDS (INCLUDES ESTIMATE)':'ROUNDS COMPLETED';$('statConcepts').textContent=summary.concepts;
    $('statAllTimeRounds').textContent=ledger.data.completedRounds;
    $('statAllTimeScore').textContent=ledger.data.allTimeScore;
-   $('statHistoryCoverage').textContent=sessions.length+' detailed session'+(sessions.length===1?'':'s')+' recorded'+(ledger.data.legacyRoundsIndicated?' · earlier round counter indicated '+ledger.data.legacyRoundsIndicated+' additional rounds without recoverable details':'')+'.';
+   $('statHistoryCoverage').textContent=sessions.length+' detailed session'+(sessions.length===1?'':'s')+' recorded'+(ledger.data.legacyRoundsIndicated?' · earlier round counter indicated '+ledger.data.legacyRoundsIndicated+' additional rounds suggested by the old counter (estimate; no detailed records)':'')+'.';
   $('statDue').textContent=summary.needsPractice.length;
   $('statIndependent').textContent=sessions.reduce((n,s)=>n+Math.max(0,s.correct-s.hints),0);
   const el=$('recentSessions');el.replaceChildren();
