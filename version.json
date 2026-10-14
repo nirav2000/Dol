@@ -1,5 +1,5 @@
 {
-  "version": "2.6.12",
+  "version": "2.6.13",
   "name": "Factor Frenzy",
-  "description": "Shared Auth Lab account panel and improved iOS Google popup handling."
+  "description": "Shared App Platform Account Entry in header, reusable account modal, Settings shortcut and Progress sync status."
 }
