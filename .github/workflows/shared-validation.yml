@@ -9,6 +9,9 @@ on:
       - 'learning-app.mjs'
       - 'adaptive.mjs'
   workflow_dispatch:
+concurrency:
+  group: dol-shared-validation-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   validate:
     uses: nirav2000/Apps/.github/workflows/static-app-validation.yml@main
