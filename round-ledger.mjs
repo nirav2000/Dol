@@ -8,7 +8,7 @@ export function createRoundLedger({storage,key,legacy={},recordedSessions=0}){
  const historyCount=integer(recordedSessions);
  const fresh={
    version:1,round:oldRound,score:oldScore,
-   allTimeScore:oldScore,completedRounds:historyCount,
+   allTimeScore:oldScore,completedRounds:Math.max(historyCount,oldRound-1),
    // A historical round counter is a position, not evidence of completed sessions.
    legacyRoundsIndicated:Math.max(0,oldRound-1-historyCount),
    lastSessionCount:historyCount
