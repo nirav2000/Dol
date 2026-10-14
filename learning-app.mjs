@@ -428,7 +428,40 @@ function renderLearn(){
   ];
   for(const [title,desc] of essentials){const d=document.createElement('div'),s=document.createElement('strong'),p=document.createElement('p');s.textContent=title;p.textContent=desc;d.append(s,p);mem.append(d);}
 }
+
+function improvementMetrics(){
+ const sessions=[...(learning.getState().sessions||[])].filter(s=>Number.isFinite(s.timestamp)&&s.total>0).sort((a,b)=>a.timestamp-b.timestamp);
+ const events=(insights?.events||[]).filter(e=>Number.isFinite(e.at)).sort((a,b)=>a.at-b.at);
+ const n=Math.min(20,Math.floor(sessions.length/2)),earlier=sessions.slice(0,n),recent=sessions.slice(-n);
+ const period=rounds=>{if(!rounds.length)return [];const start=rounds[0].timestamp,end=rounds.at(-1).timestamp;return events.filter(e=>e.at>=start&&e.at<=end);};
+ const accuracy=rounds=>{const a=period(rounds).filter(e=>e.outcome==='correct'||e.outcome==='incorrect');return a.length?100*a.filter(e=>e.outcome==='correct').length/a.length:null;};
+ const complete=rounds=>rounds.length?100*rounds.filter(r=>r.correct===r.total).length/rounds.length:null;
+ const pace=rounds=>{const a=period(rounds).filter(e=>e.outcome==='correct'&&!e.assisted&&!e.errors&&Number.isFinite(e.ms)&&e.ms>0).map(e=>e.ms/1000).sort((a,b)=>a-b);return a.length?a[Math.floor(a.length/2)]:null;};
+ const patterns=rounds=>{const set=new Set();for(const r of rounds){const count=factorPairs(r.target).length;if(count===1)set.add('Prime');if(Number.isInteger(Math.sqrt(r.target)))set.add('Square');if(r.target>1&&(r.target&(r.target-1))===0)set.add('Power of two');if(count>=5)set.add('Many pairs');}return set.size;};
+ const support=new Map(),familiar=new Set(),last=new Map(),week=new Set(),month=new Set();
+ for(const e of events){if(e.outcome==='correct'&&e.assisted)support.set(e.key,e.at);
+ if(e.outcome==='correct'&&!e.assisted&&support.has(e.key)&&e.at-support.get(e.key)>=86400000)familiar.add(e.key);
+ if(e.outcome==='correct'&&last.has(e.key)){const gap=e.at-last.get(e.key);if(gap>=7*86400000)week.add(e.key);if(gap>=30*86400000)month.add(e.key);}last.set(e.key,e.at);}
+ return {n,earlier,recent,accuracy:[accuracy(earlier),accuracy(recent)],completeness:[complete(earlier),complete(recent)],pace:[pace(earlier),pace(recent)],breadth:[patterns(earlier),patterns(recent)],familiar:familiar.size,week:week.size,month:month.size};
+}
+function renderImprovement(){
+ let host=$('improvementPanel');if(!host){host=document.createElement('section');host.id='improvementPanel';host.className='improvement-panel';host.innerHTML='<p class="eyebrow">YOUR IMPROVEMENT</p><h2>How your learning is changing</h2><p id="improvementHeadline"></p><p class="improvement-help"><strong>Hints are part of learning.</strong> Answers reached with help count equally towards accuracy and completeness. Later independent success shows growing familiarity, not a target to avoid help.</p><p id="improvementSample" class="muted small"></p><div id="improvementDimensions" class="improvement-dimensions"></div><div class="improvement-chart"><label>Then and now <select id="improvementDimensionChoice"><option value="accuracy">Accuracy</option><option value="completeness">Completeness</option><option value="pace">Pace (indicative)</option><option value="breadth">Pattern breadth</option></select></label><div id="improvementChart"></div></div><details><summary>How are these changes measured?</summary><p>We compare your first 20 detailed rounds with your latest 20, using equal smaller non-overlapping periods when necessary. Accuracy counts correct submissions with or without help; incomplete and duplicate entries do not count as mistakes. Completeness measures rounds with every pair found. Pace is the median of correct, error-free, unaided pair-entry intervals. Older timing includes thinking, entry and possible interruptions; different question mixes or input methods can make a pace comparison misleading. Breadth describes encountered number patterns, not mastery. Retention requires a successful return after a recorded gap. Missing evidence is not zero progress. These are learning indicators, not validated assessment scores.</p></details>';const anchor=$('progressView').querySelector('.dol-progress-sync');if(anchor)anchor.after(host);else $('progressView').prepend(host);host.querySelector('select').addEventListener('change',drawImprovementChart);}
+ const m=improvementMetrics(),fmt=(v,unit='')=>v===null?'Collecting evidence':(unit==='s'?v.toFixed(1):Math.round(v))+unit;
+ $('improvementHeadline').textContent=m.n<5?'Your learning record is growing.':m.completeness[0]!==null&&m.completeness[1]>m.completeness[0]+5?'You are finding every pair more reliably.':m.accuracy[0]!==null&&m.accuracy[1]>m.accuracy[0]+5?'You are getting more factor pairs right.':m.familiar?'Skills explored with help are becoming familiar.':'Your practice is developing across several dimensions.';
+ $('improvementSample').textContent=m.n?'First '+m.n+' recorded rounds compared with latest '+m.n+'. '+(m.n<20?'Early indication; more practice is needed for a steadier comparison.':'Repeated practice, but question difficulty may differ.'):'Complete more rounds to establish a starting period.';
+ const data=[['Accuracy',fmt(m.accuracy[1],'%'),m.accuracy[0]===null?'Building baseline':'Then '+fmt(m.accuracy[0],'%')],['Growing familiarity',m.familiar+' facts','Previously explored with support, then solved unaided on a later day'],['Completeness',fmt(m.completeness[1],'%'),m.completeness[0]===null?'Building baseline':'Then '+fmt(m.completeness[0],'%')],['Pace',fmt(m.pace[1],'s'),m.pace[0]===null?'Building baseline':'Then '+fmt(m.pace[0],'s')+' · indicative only'],['Challenge breadth',m.breadth[1]+' patterns','Then '+m.breadth[0]+' patterns encountered'],['Retention',m.week+' revisited facts',m.month+' after 30-day recorded gaps']];
+ const grid=$('improvementDimensions');grid.replaceChildren();for(const [name,value,description] of data){const card=document.createElement('article');const title=document.createElement('h3'),number=document.createElement('strong'),note=document.createElement('small');title.textContent=name;number.textContent=value;note.textContent=description;card.append(title,number,note);grid.append(card);}
+ host._improvement=m;drawImprovementChart();
+}
+function drawImprovementChart(){
+ const host=$('improvementPanel');if(!host)return;const m=host._improvement,key=$('improvementDimensionChoice').value,values=m[key],unit=key==='accuracy'||key==='completeness'?'%':key==='pace'?'s':'',area=$('improvementChart');area.replaceChildren();
+ if(!values||values.some(v=>v===null)){area.textContent='More recorded practice is needed before this comparison is available.';return;}
+ const max=unit==='%'?100:Math.max(1,...values);
+ for(const [i,label] of ['Then','Now'].entries()){const row=document.createElement('div'),name=document.createElement('span'),track=document.createElement('div'),bar=document.createElement('div'),value=document.createElement('b');row.className='improvement-bar-row';name.textContent=label;track.className='improvement-track';bar.className='improvement-bar '+label.toLowerCase();bar.style.width=Math.max(0,Math.min(100,values[i]/max*100))+'%';value.textContent=(unit==='s'?values[i].toFixed(1):Math.round(values[i]))+unit;track.append(bar);row.append(name,track,value);area.append(row);}
+}
+
 function renderProgress(){
+  renderImprovement();
   const data=learning.getState(),sessions=data.sessions||[],summary=learning.summary();
   ledger.updateHistory(sessions.length);
    $('statRounds').textContent=ledger.data.completedRounds;$('statRounds').previousElementSibling.textContent=ledger.data.legacyRoundsIndicated?'ROUNDS (INCLUDES ESTIMATE)':'ROUNDS COMPLETED';$('statConcepts').textContent=summary.concepts;
