@@ -231,19 +231,75 @@ function finish(reason){
   state.phase='finished';insights?.finish(state);persist();render();celebrateNumberResult();
 }
 const ANIMATION_DEFAULT=2.3;
-function animationSeconds(){
-  const value=Number(localStorage.getItem('dol-animation-duration-v1'));
-  return Number.isFinite(value)&&value>=0.5&&value<=6?value:ANIMATION_DEFAULT;
+const ANIMATION_KEY='dol-animation-duration-v1';
+const ANIMATION_META_KEY='dol-animation-duration-updated-v1';
+let animationPreferenceSync=null;
+function validatedSeconds(value){const n=Number(value);return Number.isFinite(n)&&n>=0.5&&n<=6?Math.round(n*10)/10:null;}
+function animationSeconds(){return validatedSeconds(localStorage.getItem(ANIMATION_KEY))??ANIMATION_DEFAULT;}
+function displayAnimationSeconds(value){
+  const slider=document.getElementById('animationDuration'),output=document.getElementById('animationDurationValue');
+  if(slider)slider.value=String(value);
+  if(output)output.textContent=Number(value).toFixed(1)+' seconds';
+  document.documentElement.style.setProperty('--number-celebration-duration',value+'s');
+}
+function saveAnimationSeconds(value){
+  localStorage.setItem(ANIMATION_KEY,String(value));
+  const updatedAt=Date.now();
+  localStorage.setItem(ANIMATION_META_KEY,String(updatedAt));
+  displayAnimationSeconds(value);
+  animationPreferenceSync?.({duration:value,updatedAt});
 }
 function setupAnimationDuration(){
-  const slider=document.getElementById('animationDuration'),output=document.getElementById('animationDurationValue'),reset=document.getElementById('resetAnimationDuration');
-  if(!slider||!output||!reset)return;
-  const update=value=>{slider.value=String(value);output.textContent=Number(value).toFixed(1)+' seconds';document.documentElement.style.setProperty('--number-celebration-duration',value+'s');};
-  update(animationSeconds());
-  slider.addEventListener('input',()=>{const value=Number(slider.value);localStorage.setItem('dol-animation-duration-v1',String(value));update(value);});
-  reset.addEventListener('click',()=>{localStorage.removeItem('dol-animation-duration-v1');update(ANIMATION_DEFAULT);});
+  const slider=document.getElementById('animationDuration'),reset=document.getElementById('resetAnimationDuration');
+  if(!slider||!reset)return;
+  displayAnimationSeconds(animationSeconds());
+  slider.addEventListener('input',()=>saveAnimationSeconds(Number(slider.value)));
+  reset.addEventListener('click',()=>saveAnimationSeconds(ANIMATION_DEFAULT));
 }
 setupAnimationDuration();
+async function syncAnimationPreference(user,store){
+  animationPreferenceSync=null;
+  if(!user||user.uid!==accountId)return;
+  const {db,firestore,auth}=store;
+  const ref=firestore.doc(db,'users',user.uid,'preferences','dol');
+  const uid=user.uid;
+  const status=document.getElementById('animationSyncStatus');
+  const say=message=>{if(status)status.textContent=message;};
+  let pending=Promise.resolve();
+  const upload=({duration,updatedAt})=>{
+    if(auth.currentUser?.uid!==uid)return;
+    say('Saving preference to your account…');
+    pending=pending.catch(()=>{}).then(async()=>{
+      if(auth.currentUser?.uid!==uid)return;
+      await firestore.setDoc(ref,{animationDuration:duration,animationDurationUpdatedAt:updatedAt},{merge:true});
+      say('Saved to your Firebase account');
+    }).catch(error=>{say('Saved locally · cloud sync unavailable');console.warn('Animation preference sync:',error);});
+  };
+  try{
+    const snapshot=await firestore.getDoc(ref);
+    if(auth.currentUser?.uid!==uid)return;
+    const cloud=snapshot.exists()?snapshot.data():{};
+    const cloudValue=validatedSeconds(cloud.animationDuration);
+    const cloudTime=Number(cloud.animationDurationUpdatedAt)||0;
+    const localValue=animationSeconds();
+    const localTime=Number(localStorage.getItem(ANIMATION_META_KEY))||0;
+    if(cloudValue!==null&&cloudTime>=localTime){
+      localStorage.setItem(ANIMATION_KEY,String(cloudValue));
+      localStorage.setItem(ANIMATION_META_KEY,String(cloudTime));
+      displayAnimationSeconds(cloudValue);
+      say('Synced with your Firebase account');
+    }else if(localTime>0){
+      upload({duration:localValue,updatedAt:localTime});
+    }else if(cloudValue===null){
+      say('Using default · adjust slider to save to your account');
+    }
+    animationPreferenceSync=upload;
+  }catch(error){
+    say('Saved locally · cloud sync unavailable');
+    animationPreferenceSync=upload;
+    console.warn('Animation preference download:',error);
+  }
+}
 function celebrateNumberResult(){
   if(state.result?.reason!=='complete'||state.result.correct!==state.result.total)return;
   const n=state.target,prime=n>=2&&state.pairs.length===1;
@@ -431,7 +487,8 @@ render();setView('play');
 
 // Auth is initialised only after the game UI has mounted. Cloud sync is scoped to the
 // actual Firebase UID and never runs for a guest or a mismatched account.
-import('./dol-account.mjs').then(({initAccountUI,transport})=>initAccountUI({onUser:async user=>{
+import('./dol-account.mjs').then(({initAccountUI,transport,preferencesStore})=>initAccountUI({onUser:async user=>{
+  await syncAnimationPreference(user,preferencesStore());
   if(!user||user.uid!==accountId||!learningSync)return;
   try{
     const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onSnapshot:merged=>{
