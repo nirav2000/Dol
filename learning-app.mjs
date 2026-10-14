@@ -230,6 +230,20 @@ function finish(reason){
   if(reason==='time')state.remainingMs=0;
   state.phase='finished';insights?.finish(state);persist();render();celebrateNumberResult();
 }
+const ANIMATION_DEFAULT=2.3;
+function animationSeconds(){
+  const value=Number(localStorage.getItem('dol-animation-duration-v1'));
+  return Number.isFinite(value)&&value>=0.5&&value<=6?value:ANIMATION_DEFAULT;
+}
+function setupAnimationDuration(){
+  const slider=document.getElementById('animationDuration'),output=document.getElementById('animationDurationValue'),reset=document.getElementById('resetAnimationDuration');
+  if(!slider||!output||!reset)return;
+  const update=value=>{slider.value=String(value);output.textContent=Number(value).toFixed(1)+' seconds';document.documentElement.style.setProperty('--number-celebration-duration',value+'s');};
+  update(animationSeconds());
+  slider.addEventListener('input',()=>{const value=Number(slider.value);localStorage.setItem('dol-animation-duration-v1',String(value));update(value);});
+  reset.addEventListener('click',()=>{localStorage.removeItem('dol-animation-duration-v1');update(ANIMATION_DEFAULT);});
+}
+setupAnimationDuration();
 function celebrateNumberResult(){
   if(state.result?.reason!=='complete'||state.result.correct!==state.result.total)return;
   const n=state.target,prime=n>=2&&state.pairs.length===1;
