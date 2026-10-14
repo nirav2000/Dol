@@ -77,3 +77,8 @@
 .dol-progress-sync{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 16px;margin:0 0 20px;border:1px solid #343d4c;border-radius:13px;background:#131923;color:#d6e0ef;font-size:13px}
 .dol-progress-sync button{min-height:44px}
 @media(max-width:680px){.header-actions{gap:6px}.topbar{gap:7px}#dolAccountEntrySlot{order:2}.dol-progress-sync{align-items:center}}
+
+/* Duration preference scales the entire number celebration including sparkles. */
+.number-celebration{animation-duration:var(--number-celebration-duration,2.3s)}
+.number-celebration::before,.number-celebration-label{animation-duration:var(--number-celebration-duration,2.3s)}
+.number-celebration-spark{animation-duration:calc(var(--number-celebration-duration,2.3s) * .652)}
