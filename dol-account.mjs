@@ -25,7 +25,7 @@ export async function initAccountUI({onUser,notice}={}){
    const next=user?.uid||'guest';
    if(next!==activeAccount()){localStorage.setItem(activeKey,next);location.reload();return}
    if(!user)document.getElementById('dolSyncStatus').textContent='Saved on this device · not synchronised';
-   say(user?'Signed in: +(user.email||'Firebase account'):'Playing as guest. Progress is stored on this device.');
+   say(user?'Signed in: '+(user.email||'Firebase account'):'Playing as guest. Progress is stored on this device.');
    onUser?.(user);
  });
  return {auth:firebaseAuth,db};
