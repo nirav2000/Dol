@@ -230,7 +230,7 @@ function finish(reason){
   if(reason==='time')state.remainingMs=0;
   state.phase='finished';insights?.finish(state);persist();render();celebrateNumberResult();
 }
-const ANIMATION_DEFAULT=2.3;
+const ANIMATION_DEFAULT=5;
 const ANIMATION_KEY='dol-animation-duration-v1';
 const ANIMATION_META_KEY='dol-animation-duration-updated-v1';
 let animationPreferenceSync=null;
