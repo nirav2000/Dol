@@ -27,16 +27,16 @@ jobs:
       selected: ${{ steps.plan.outputs.selected }}
       key: ${{ steps.plan.outputs.key }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.sha }}
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: nirav2000/Apps
           ref: 20b785db38ec625564a7b7ab542ec218453f8869
           path: Apps-control
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
       - name: Check policy and investigate local issues
@@ -50,7 +50,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node Apps-control/automation/prepare.mjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: diagnostic-plan
           path: artifacts/diagnostic-plan.json
@@ -69,21 +69,21 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: nirav2000/Apps
           ref: 20b785db38ec625564a7b7ab542ec218453f8869
           path: Apps-control
           persist-credentials: false
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: diagnostic-plan
           path: artifacts
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
       - name: Install regression tools
@@ -176,7 +176,7 @@ jobs:
           git push origin HEAD:main
       - name: Save baseline, regression and deployed screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: diagnostic-fix-evidence
           path: artifacts/
