@@ -1,5 +1,5 @@
 {
-  "version": "2.6.11",
+  "version": "2.6.12",
   "name": "Factor Frenzy",
-  "description": "Single round and score ledger with lifetime totals, legacy migration and progress reconciliation."
+  "description": "Shared Auth Lab account panel and improved iOS Google popup handling."
 }
