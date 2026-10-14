@@ -3,6 +3,7 @@ import {factorPairs,assessPair,formatTime} from './logic.mjs';
 import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,requiredConcepts} from './adaptive.mjs';
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
 import {createRoundTools} from './round-tools.mjs';
+import {createRoundLedger} from './round-ledger.mjs';
 import {createLearningSync} from 'https://nirav2000.github.io/Apps/learning-sync/v1/index.js';
 // Account integration loads asynchronously so Firebase outages never block offline practice.
 const activeAccount=()=>{try{return localStorage.getItem('dol-active-account-v1')||'guest'}catch{return 'guest'}};
@@ -24,6 +25,7 @@ function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))||fa
 const old=read(storageKey,{});
 const prefs=read(settingsKey,{});
 const learning=createLearningStore({appId:'dol',learnerId:accountId==='guest'?'local':accountId});
+const ledger=createRoundLedger({storage:localStorage,key:scoped('dol-round-ledger-v1'),legacy:old,recordedSessions:(learning.getState().sessions||[]).length});
 // Stage 1: durable guest learning evidence. Cloud/login remain disabled until secure Auth, rules and migration gates pass.
 let learningSync=null;
 try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});if(accountId==='guest')learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
@@ -32,7 +34,7 @@ const state={
   limit:[64,128,256,512,1024].includes(prefs.limit)?prefs.limit:128,
   duration:[30,60,90].includes(prefs.duration)?prefs.duration:60,
   showCount:prefs.showCount!==false,sound:prefs.sound!==false,
-  round:Math.max(1,Number(old.round)||1),score:Math.max(0,Number(old.score)||0),
+  round:ledger.data.round,score:ledger.data.score,
   visualHelp:false,target:null,previous:null,pairs:[],found:new Set(),hintedPairs:new Set(),attempted:new Set(),
   chosenFactor:null,hintLevel:0,hintsUsed:0,helpOpen:false,mistakes:0,startedWithScore:0,startedAt:0,
   remainingMs:60000,deadline:0,ticker:null,feedback:'',feedbackType:'',strategy:'',result:null,
@@ -41,6 +43,7 @@ const state={
 state.remainingMs=state.duration*1000;
 function persist(){
   try{
+    ledger.round(state.round);ledger.score(state.score);
     localStorage.setItem(storageKey,JSON.stringify({round:state.round,score:state.score,limit:state.limit,duration:state.duration,showCount:state.showCount,sound:state.sound}));
     localStorage.setItem(settingsKey,JSON.stringify({mode:state.mode,stage:state.stage,limit:state.limit,duration:state.duration,showCount:state.showCount,sound:state.sound}));
     localStorage.setItem(scoped('dol-number-history-v2'),JSON.stringify(state.numberHistory));
@@ -218,6 +221,7 @@ function finish(reason){
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
   const session={mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
   learning.session(session);
+  ledger.finish();
   try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Learning cloud sync deferred',error));}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
   const prev=state.numberHistory[state.target]||{attempts:0,correct:0};
   state.numberHistory[state.target]={attempts:prev.attempts+1,correct:prev.correct+(correct===total?1:0),nextDue:Date.now()+(correct===total?3:1)*86400000,recentlySeen:1};
@@ -288,10 +292,10 @@ function testSelectedFactor(){
 }
 function resetRounds(){
   if(['running','paused'].includes(state.phase)&&!confirm('End the current round and restart the round count at 1? Learning history and score will be kept.'))return;
-  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.result=null;state.remainingMs=state.duration*1000;persist();render();
+  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;ledger.resetRounds();state.result=null;state.remainingMs=state.duration*1000;persist();render();
 }
 function resetRoundsAfterDataClear(){
-  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.score=0;state.result=null;state.remainingMs=state.duration*1000;persist();render();
+  roundTools?.reset();stopTicker();state.phase='ready';state.target=null;state.previous=null;state.round=1;state.score=0;ledger.resetScores();state.result=null;state.remainingMs=state.duration*1000;persist();render();
 }
 function resetScores(){
   if(['running','paused'].includes(state.phase)&&!confirm('End this round and reset scores?'))return;
@@ -356,14 +360,18 @@ function renderLearn(){
 }
 function renderProgress(){
   const data=learning.getState(),sessions=data.sessions||[],summary=learning.summary();
-  $('statRounds').textContent=sessions.length;$('statConcepts').textContent=summary.concepts;
+  ledger.updateHistory(sessions.length);
+   $('statRounds').textContent=ledger.data.completedRounds;$('statConcepts').textContent=summary.concepts;
+   $('statAllTimeRounds').textContent=ledger.data.completedRounds;
+   $('statAllTimeScore').textContent=ledger.data.allTimeScore;
+   $('statHistoryCoverage').textContent=sessions.length+' detailed session'+(sessions.length===1?'':'s')+' recorded'+(ledger.data.legacyRoundsIndicated?' · earlier round counter indicated '+ledger.data.legacyRoundsIndicated+' additional rounds without recoverable details':'')+'.';
   $('statDue').textContent=summary.needsPractice.length;
   $('statIndependent').textContent=sessions.reduce((n,s)=>n+Math.max(0,s.correct-s.hints),0);
   const el=$('recentSessions');el.replaceChildren();
   for(const s of [...sessions].reverse().slice(0,12)){
     const d=document.createElement('div');d.className='session';const a=document.createElement('span');a.textContent=s.mode+' · '+s.target+' · '+s.correct+'/'+s.total+' pairs';const b=document.createElement('small');b.textContent=s.hints+' assisted · '+new Date(s.timestamp).toLocaleDateString();d.append(a,b);el.append(d);
   }
-  if(!sessions.length)el.textContent='No rounds yet. Start a guided lesson to begin.';
+  if(!sessions.length)el.textContent=ledger.data.completedRounds?'Detailed session history is unavailable for earlier rounds. Your lifetime totals are preserved.':'No recorded rounds yet. Start a guided lesson to begin.';
   const sug=$('practiceSuggestions');sug.replaceChildren();
   const due=Object.entries(data.concepts||{}).sort((a,b)=>conceptPriority(data,a[0])-conceptPriority(data,b[0])).reverse().slice(0,8);
   if(!due.length)sug.textContent='Complete a few rounds to discover what needs practice.';
@@ -411,7 +419,7 @@ import('./dol-account.mjs').then(({initAccountUI,transport})=>initAccountUI({onU
   if(!user||user.uid!==accountId||!learningSync)return;
   try{
     const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onSnapshot:merged=>{
-      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);service.adoptSnapshot(merged);renderProgress();}
+      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);service.adoptSnapshot(merged);ledger.updateHistory(merged.sessions.length);renderProgress();}
     }});
     service.capture(learning.getState());
     if(localStorage.getItem('dol-guest-imported:'+accountId)!=='yes'&&confirm('Copy the learning history saved on this device into this account? Only do this if it belongs to you.')){
