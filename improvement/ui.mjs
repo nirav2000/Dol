@@ -39,7 +39,14 @@ export function createImprovementUI({getSnapshot,getStatus,startCheck,sync,impor
       pace:[format(m.pace?.after,'s'),m.pace?'Then '+format(m.pace.before,'s')+' in the same question and entry conditions.':'Collecting matched active timings; older intervals remain available below.'],
       breadth:[m.breadth.count?m.breadth.after.length+' patterns':'Collecting evidence',m.breadth.count?'Then '+m.breadth.before.length+' patterns. '+m.breadth.targets+' distinct recent targets; encounter is not mastery.':'Equal-sized early and recent round groups will show the variety encountered.'],
       retention:[m.retention.week+' retained facts',m.retention.month+' after 30-day gaps; '+m.retention.refreshed+' supported refreshers after 7-day gaps. In recorded history.']};
-    for(const [key,[value,note]] of Object.entries(data)){const card=root.querySelector('[data-dimension="'+key+'"]');card.querySelector('strong').textContent=value;card.querySelector('small').textContent=note;}
+    for(const [key,[value,note]] of Object.entries(data)){
+      let card=root.querySelector('[data-dimension="'+key+'"]');
+      if(!card){card=element('article');card.dataset.dimension=key;card.append(element('h3',definitions.find(([id])=>id===key)?.[1]||key));$('improvementDimensions').append(card);}
+      let main=card.querySelector('strong'),detail=card.querySelector('small');
+      if(!main){main=element('strong');card.append(main);}
+      if(!detail){detail=element('small');card.append(detail);}
+      main.textContent=value;detail.textContent=note;
+    }
     $('improvementStartCheck').textContent=getDraft()?'Resume my progress check':'Start a progress check';$('improvementStartCheck').disabled=!canStart();
     $('improvementCheckHelp').textContent=canStart()?'Checks do not change scores or adaptive difficulty. Results join your account evidence when signed in.':'Finish the current game round before starting a separate progress check.';
     draw();checkHistory();

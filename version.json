@@ -1,5 +1,5 @@
 {
-  "version": "2.7.10",
+  "version": "2.7.11",
   "name": "Factor Frenzy",
-  "description": "Refresh saved progress-check history on completion and modal close."
+  "description": "Make Progress card updates resilient and complete saved-check history refresh."
 }
