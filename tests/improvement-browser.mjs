@@ -16,7 +16,9 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
   assert.equal((await page.locator('.version').textContent()).trim(),'Dol v'+expected);
   assert.equal((await page.locator('footer [data-dol-version]').textContent()).trim(),'Dol v'+expected);
   assert.ok(await page.locator('#startButton').isEnabled());
-  await page.locator('[data-view="progress"]').click();
+  const progressNav=page.locator('[data-view="progress"]');
+  if(!(await progressNav.isVisible()))await page.locator('#menuReveal').click();
+  await progressNav.click();
   await page.locator('#improvementPanel').waitFor({state:'attached',timeout:30000});
   assert.equal(await page.locator('#improvementDimensions article').count(),6);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3));

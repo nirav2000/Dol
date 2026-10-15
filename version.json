@@ -1,5 +1,5 @@
 {
-  "version": "2.7.3",
+  "version": "2.7.4",
   "name": "Factor Frenzy",
-  "description": "Verified release labels, resilient startup diagnostics and cross-browser progress smoke tests."
+  "description": "Correct mobile Progress navigation in Chromium and WebKit regression tests."
 }
