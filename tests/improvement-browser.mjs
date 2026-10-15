@@ -49,7 +49,7 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
       chunks:data?Object.values(data.chunks).map(c=>c.events.filter(e=>e.kind==='check')):[],buffer:data?.buffer?.events?.filter(e=>e.kind==='check')||[],
       history:document.querySelector('#improvementCheckHistory')?.textContent};
   });
-  console.log('PROGRESS CHECK EVIDENCE',JSON.stringify(checkEvidence));
+  console.log('PROGRESS CHECK EVIDENCE',JSON.stringify(checkEvidence));console.log('PAGE ERRORS',JSON.stringify(errors));
   assert.match(await page.locator('#improvementCheckHistory').textContent(),/100% correct submissions/);
   const duplicates=await page.locator('[id]').evaluateAll(els=>{const ids=els.map(e=>e.id);return ids.filter((id,i)=>ids.indexOf(id)!==i);});
   assert.deepEqual(duplicates,[],'No duplicate element IDs');

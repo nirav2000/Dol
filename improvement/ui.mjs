@@ -78,15 +78,15 @@ export function createImprovementUI({getSnapshot,getStatus,startCheck,sync,impor
     for(const g of groups){const row=element('div',null,'improvement-change-row'),target=g.key.split('|')[0],name=key==='pace'?g.key.split('|')[1].replace('x',' \u00d7 ')+' for '+target:'Target '+target,unit=key==='pace'?'s':'%';row.append(element('strong',name),element('span',format(g.before,unit)+' \u2192 '+format(g.after,unit)),element('small',g.n+' observations in each period'));host.append(row);}
   }
   function checkHistory(){
-    const result=compareChecks(model.checks),host=$('improvementCheckHistory');host.replaceChildren();
+    const checks=getSnapshot().checks,result=compareChecks(checks),host=$('improvementCheckHistory');host.replaceChildren();
     if(!result){host.append(element('p','Your first completed check becomes a reference point.','muted small'));return;}
     const {latest,earlier}=result,help=latest.responses.filter(r=>r.help).length;
     host.append(element('h4','Latest: '+CHECK_LEVELS[latest.stage]+' \u00b7 Set '+(latest.form?'B':'A')));
     host.append(element('p',day(latest.at)+' \u00b7 '+format(result.after,'%')+' correct submissions. '+help+' activities explored with support.'));
     host.append(element('p',earlier?'Same-set accuracy: '+format(result.before,'%')+' on '+day(earlier.at)+' \u2192 '+format(result.after,'%')+' now. One check comparison is an early indication.':'No earlier check of this same level and set yet. Sets alternate A/B; different sets are not treated as equally difficult.','muted small'));
     if(result.pace)host.append(element('p','Matched check solving time: '+format(result.pace.before,'s')+' \u2192 '+format(result.pace.after,'s')+'. Same entry method and support conditions; breaks excluded.','muted small'));
-    const detail=element('details'),summary=element('summary','View all '+model.checks.length+' completed checks');detail.append(summary);
-    for(const c of [...model.checks].reverse()){const p=element('p',day(c.at)+' \u00b7 '+CHECK_LEVELS[c.stage]+' \u00b7 Set '+(c.form?'B':'A')+' \u00b7 '+c.responses.filter(r=>r.help).length+' activities with support','small');detail.append(p);}host.append(detail);
+    const detail=element('details'),summary=element('summary','View all '+checks.length+' completed checks');detail.append(summary);
+    for(const c of [...checks].reverse()){const p=element('p',day(c.at)+' \u00b7 '+CHECK_LEVELS[c.stage]+' \u00b7 Set '+(c.form?'B':'A')+' \u00b7 '+c.responses.filter(r=>r.help).length+' activities with support','small');detail.append(p);}host.append(detail);
   }
   $('improvementDimensionChoice').onchange=draw;$('improvementSearch').oninput=changes;$('improvementAll').onchange=changes;
   $('evidenceSyncNow').onclick=()=>sync();$('evidenceImportGuest').onclick=()=>{if(confirm('Copy the guest evidence saved on this device into this account? Only continue if it belongs to you. Existing account evidence is kept.'))importGuest();};

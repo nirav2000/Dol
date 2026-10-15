@@ -18,6 +18,7 @@ export function createImprovement({accountId,getState,getSessions,insights,scope
   const canStart=()=>!['running','paused'].includes(getState().phase);
   const snapshot=()=>{const data=store.snapshot();return {...data,rounds:normaliseRounds([...getSessions(),...data.rounds])};};
   check=createProgressCheck({store,canStart,defaultStage:()=>getState().stage,onDone:()=>ui.render()});
+  document.getElementById('improvementCheck')?.addEventListener('close',()=>ui?.render());
   ui=createImprovementUI({getSnapshot:snapshot,getStatus:store.status,startCheck:check.open,sync:()=>store.sync(),importGuest:()=>{store.importGuest({approved:true});store.sync();ui.render();},hasGuest:store.hasGuest,getDraft:store.getDraft,canStart});
   store.observe();
   function render(){store.append({events:insights.events,rounds:getSessions()});ui.render();}

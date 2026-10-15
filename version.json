@@ -1,5 +1,5 @@
 {
-  "version": "2.7.9",
+  "version": "2.7.10",
   "name": "Factor Frenzy",
-  "description": "Diagnose progress-check persistence under real Chromium and WebKit."
+  "description": "Refresh saved progress-check history on completion and modal close."
 }
