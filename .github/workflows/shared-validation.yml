@@ -1,21 +1,21 @@
 name: Shared release validation
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'validation.config.json'
-      - '.github/workflows/shared-validation.yml'
-      - 'index.html'
-      - 'learning-app.mjs'
-      - 'adaptive.mjs'
   workflow_dispatch:
-concurrency:
-  group: dol-shared-validation-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   validate:
-    uses: nirav2000/Apps/.github/workflows/static-app-validation.yml@main
-    with:
-      config: validation.config.json
-    permissions:
-      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: app
+      - uses: actions/checkout@v5
+        with:
+          repository: nirav2000/Apps
+          path: shared-apps
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: node shared-apps/validation/validate-static-app.mjs app validation.config.json

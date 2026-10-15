@@ -6,42 +6,35 @@ on:
 concurrency:
   group: dol-ci-${{ github.ref }}
   cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - name: Verify scripts
+      - name: Check scripts and release
         run: |
-          node --check logic.mjs
-          node --check adaptive.mjs
-          node --check learning-app.mjs
-          node --check dol-account.mjs
-          node --check strategy-model.mjs
-          node --check strategy-coach.mjs
-          node --check round-tools.mjs
-          node --check round-model.mjs
-          node --check visual-tools.mjs
-          node --check mobile-entry.mjs
-          node --check device-profile.mjs
-          node --check diagnostics.mjs
-          node --check layout-options.mjs
-          node --check factor-patterns.mjs
-          node --check tablet-keypad.mjs
+          node scripts/release-version.mjs --check
+          for file in *.mjs improvement/*.mjs; do node --check "$file"; done
       - name: Unit tests
         run: node --test tests/*.test.mjs
-      - name: Install browser test dependencies
-        run: |
-          npm install --no-save playwright@1.56.1
-          npx playwright install --with-deps chromium webkit
       - uses: actions/checkout@v5
         with:
           repository: nirav2000/Apps
           path: Apps-shared
-      - name: Browser smoke tests
+          persist-credentials: false
+      - name: Shared static validation
+        run: node Apps-shared/validation/validate-static-app.mjs . validation.config.json
+      - name: Install test dependencies
+        run: |
+          npm install --no-save playwright@1.56.1 firebase@12.0.0 @firebase/rules-unit-testing@5.0.0 firebase-tools@14.22.0
+          npx playwright install --with-deps chromium webkit
+      - name: Browser smoke and progress checks
         run: |
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
           sleep 2
@@ -52,13 +45,54 @@ jobs:
           node tests/mobile-dock-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
           if grep -q 'diagnostic-recipe:tablet-factor-visibility-v1' ui/pairboard-tablet.css; then APPS_CHECKOUT=Apps-shared node tests/diagnostic-25-browser.mjs; fi
-      - name: Save browser screenshots
+          APPS_CHECKOUT=Apps-shared node tests/improvement-browser.mjs
+      - name: Firestore emulator ownership and sync
+        run: |
+          mkdir -p .firebase-test
+          cp Apps-shared/learning-sync/v1/firestore.rules .firebase-test/firestore.rules
+          printf '%s\n' '{"firestore":{"rules":"firestore.rules"},"emulators":{"firestore":{"port":8085},"ui":{"enabled":false}}}' > .firebase-test/firebase.json
+          APPS_CHECKOUT=Apps-shared npx firebase emulators:exec --only firestore --project demo-dol-evidence --config .firebase-test/firebase.json 'node tests/evidence-firestore-emulator.mjs'
+      - uses: actions/upload-artifact@v5
         if: always()
-        uses: actions/upload-artifact@v5
         with:
           name: factor-frenzy-browser
           path: |
             browser-desktop.png
             browser-mobile.png
             artifacts/*.png
+          if-no-files-found: ignore
+  live:
+    name: Verify deployed release
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Wait for this revision's Pages deployment
+        id: pages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tests/wait-pages-release.mjs
+      - name: Install live browser checks
+        if: steps.pages.outputs.current == 'true'
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Verify deployed interface
+        if: steps.pages.outputs.current == 'true'
+        run: |
+          node tests/wait-live-release.mjs
+          node tests/live-diagnostics-browser.mjs
+          DOL_BASE_URL=https://nirav2000.github.io/Dol/ node tests/improvement-browser.mjs
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: factor-frenzy-live
+          path: artifacts/*.png
           if-no-files-found: ignore

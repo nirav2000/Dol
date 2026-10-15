@@ -1,5 +1,5 @@
 {
-  "version": "2.6.20",
+  "version": "2.7.0",
   "name": "Factor Frenzy",
-  "description": "Synchronize visible header, footer, and cached asset versions."
+  "description": "Progress checks, matched comparisons, account evidence sync and consistent release versions."
 }

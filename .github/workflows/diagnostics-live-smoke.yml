@@ -1,43 +1,18 @@
 name: Dol deployed diagnostics smoke
 on:
-  workflow_run:
-    workflows: ["pages build and deployment"]
-    types: [completed]
   workflow_dispatch:
-concurrency:
-  group: dol-live-smoke-main
-  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
   live:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - name: Verify deployed interface and module assets
-        run: |
-          set -e
-          expected=$(node -p "require('./version.json').version")
-          base=https://nirav2000.github.io/Dol
-          echo "Checking deployed Dol $expected"
-          for path in / /device-profile.mjs /diagnostics.mjs /ui/pairboard-phone.css /ui/pairboard-tablet.css /ui/pairboard-desktop.css /version.json; do
-            curl --fail --location --retry 8 --retry-delay 3 --retry-all-errors --silent --show-error "$base$path" -o /tmp/dol-live
-            test -s /tmp/dol-live
-            if [ "$path" = / ]; then grep -q "Dol v$expected" /tmp/dol-live; grep -q 'diagnostics.mjs' /tmp/dol-live; fi
-            if [ "$path" = /version.json ]; then grep -q "\\\"$expected\\\"" /tmp/dol-live; fi
-          done
-          curl --fail --location --retry 8 --retry-delay 3 --retry-all-errors --silent --show-error https://nirav2000.github.io/Apps/diagnostics/releases/1.0.0/index.mjs -o /tmp/shared-live
-          grep -q 'initialise' /tmp/shared-live
-          echo "Live Dol $expected and shared module verified."
-      - name: Test deployed phone and tablet interfaces
-        run: |
+      - run: |
           npm install --no-save playwright@1.56.1
           npx playwright install --with-deps chromium webkit
+          node tests/wait-live-release.mjs
           node tests/live-diagnostics-browser.mjs
