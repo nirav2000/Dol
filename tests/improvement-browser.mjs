@@ -8,7 +8,7 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.locator('#startButton').waitFor({state:'visible',timeout:25000});
-  assert.equal(await page.locator('body').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(5, 5, 5)');
+  assert.equal(await page.locator('html').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(5, 5, 5)');
   assert.equal((await page.locator('.version').textContent()).trim(),'Dol v2.7.2');
   await page.locator('[data-view="progress"]').click();
   await page.locator('#improvementPanel').waitFor({state:'attached',timeout:25000});
