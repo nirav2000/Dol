@@ -1,0 +1,36 @@
+name: Verify published Dol interface
+on:
+  workflow_run:
+    workflows: ["Factor Frenzy tests"]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  live:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install Chromium and WebKit
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Wait for exact published release
+        run: node tests/wait-live-release.mjs
+      - name: Verify published phone and tablet interfaces
+        env:
+          DOL_BASE_URL: https://nirav2000.github.io/Dol/
+        run: node tests/improvement-browser.mjs
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: dol-live-browser-evidence
+          path: artifacts/
+          if-no-files-found: ignore
