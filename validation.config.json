@@ -1,10 +1,7 @@
 {
   "ignore": [
     "version-lab-data",
-    "node_modules",
-    "Apps-shared",
-    ".firebase-test",
-    "artifacts"
+    "node_modules"
   ],
   "pages": [
     {
