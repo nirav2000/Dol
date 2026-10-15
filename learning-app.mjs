@@ -18,7 +18,7 @@ let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
 function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
 function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
-function focusAnswer(){if(document.body.dataset.dolLayout==='pairboard'&&['phone','tablet'].includes(document.body.dataset.dolProfile))return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
+function focusAnswer(){if(document.body.classList.contains('focus-menu-revealed'))return;if(document.body.dataset.dolLayout==='pairboard'&&['phone','tablet'].includes(document.body.dataset.dolProfile))return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const accountId=activeAccount();
 const scoped=key=>accountId==='guest'?key:key+':account:'+accountId;
 const storageKey=scoped('dol-factor-frenzy-v1'),settingsKey=scoped('dol-learning-settings-v2');
@@ -518,12 +518,12 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
 $('focusToggle').addEventListener('click',()=>setFocus(!focusMode));
 $('focusSetting').addEventListener('change',e=>setFocus(e.target.checked));
-const reveal=()=>{if(!focusMode)return;document.body.classList.add('focus-menu-revealed');};
-const hide=()=>{if(!focusMode)return;if(!document.querySelector('.topbar:focus-within'))document.body.classList.remove('focus-menu-revealed');};
-document.addEventListener('pointermove',e=>{if(!focusMode)return;if(e.pointerType==='mouse'||e.pointerType==='pen'){if(e.clientY<56)reveal();else if(e.clientY>140)hide();}});
+const reveal=()=>{if(!focusMode)return;document.body.classList.add('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','true');};
+const hide=()=>{if(!focusMode)return;if(!document.querySelector('.topbar:focus-within')){document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}};
+document.addEventListener('pointermove',e=>{if(!focusMode)return;if(e.target instanceof Element&&e.target.closest('#menuReveal,.topbar'))return;if(e.pointerType==='mouse'||e.pointerType==='pen'){if(e.clientY<56)reveal();else if(e.clientY>140)hide();}});
 $('menuReveal').addEventListener('click',()=>{reveal();$('focusToggle').focus();});
 document.querySelector('.topbar').addEventListener('focusin',reveal);
-document.querySelector('.topbar').addEventListener('focusout',()=>setTimeout(hide,0));
+document.querySelector('.topbar').addEventListener('focusout',e=>{if(!e.currentTarget.contains(e.relatedTarget)&&e.relatedTarget!==$('menuReveal'))hide();});
 roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
   markAssisted:()=>{tick();if(state.phase==='running'){insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
   fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}

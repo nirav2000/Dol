@@ -1,5 +1,5 @@
 {
-  "version": "2.7.4",
+  "version": "2.7.5",
   "name": "Factor Frenzy",
-  "description": "Correct mobile Progress navigation in Chromium and WebKit regression tests."
+  "description": "Fix focus menu pointer interception and verify responsive Progress navigation."
 }
