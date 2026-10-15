@@ -13,6 +13,7 @@ export const activeAccount=()=>{const v=localStorage.getItem(activeKey)||'guest'
 const app=getApps().find(x=>x.name==='apps-identity')||initializeApp(config,'apps-identity');
 const firebaseAuth=getAuth(app);
 const db=firestore.getFirestore(app);
+export function evidenceTransport(){return createFirestoreTransport({db,auth:firebaseAuth,sdk:{...firestore,getDocs:firestore.getDocsFromServer}})}
 export function preferencesStore(){return {db,firestore,auth:firebaseAuth}}
 export function transport(){return createFirestoreTransport({db,auth:firebaseAuth,sdk:firestore})}
 export async function initAccountUI({onUser,notice}={}){

@@ -30,6 +30,13 @@ jobs:
           node --check diagnostics.mjs
           node --check layout-options.mjs
           node --check factor-patterns.mjs
+          node --check improvement/model.mjs
+          node --check improvement/store.mjs
+          node --check improvement/check.mjs
+          node --check improvement/clock.mjs
+          node --check improvement/index.mjs
+          node --check improvement/ui.mjs
+          node --check learning-app.mjs
           node --check tablet-keypad.mjs
       - name: Unit tests
         run: node --test tests/*.test.mjs
@@ -46,6 +53,7 @@ jobs:
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
           sleep 2
           node tests/browser-smoke.mjs
+          node tests/improvement-browser.mjs
           node tests/strategy-browser.mjs
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs

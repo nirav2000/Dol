@@ -12,6 +12,7 @@ import {createMobileEntry} from './mobile-entry.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
 const $=id=>document.getElementById(id);
 let roundTools,insights,mobileEntry,strategySupport,layoutOptions;
+let improvement=null,improvementLoading=null,improvementUser=null;
 const focusKey='dol-focus-mode-v1';
 let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
@@ -54,7 +55,7 @@ function setView(view){
   document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view+'View');
   document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));
   if(view==='learn')renderLearn();
-  if(view==='progress')renderProgress();
+  if(view==='progress'){renderProgress();loadImprovement();}
   roundTools?.viewChanged();
   mobileEntry?.sync();
   strategySupport?.viewChanged();
@@ -159,7 +160,7 @@ function start(){
   state.target=suggestion?.number||chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
   state.visualHelp=false;state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
   state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.helpOpen=state.mode==='guided';state.mistakes=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
-  state.startedWithScore=state.score;state.startedAt=Date.now();
+  state.startedWithScore=state.score;state.startedAt=Date.now();state.roundId=crypto.randomUUID();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
   $('pairInput').value='';
   mobileEntry?.reset();
@@ -219,7 +220,7 @@ function finish(reason){
   if(correct===total)state.score+=2;
   const earned=state.score-state.startedWithScore;
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
-  const session={mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
+  const session={timestamp:Date.now(),mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
   learning.session(session);
   ledger.finish();
   try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Learning cloud sync deferred',error));}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
@@ -228,7 +229,7 @@ function finish(reason){
   for(const [key,v] of Object.entries(state.numberHistory)){if(Number(key)!==state.target)v.recentlySeen=Math.max(0,(v.recentlySeen||0)-.15);}
   state.result={reason,correct,total,earned,assisted:state.hintedPairs.size};
   if(reason==='time')state.remainingMs=0;
-  state.phase='finished';insights?.finish(state);persist();render();celebrateNumberResult();
+  state.phase='finished';insights?.finish(state);try{improvement?.recordRound(state,session);}catch(e){console.warn('Progress evidence deferred',e);}persist();render();celebrateNumberResult();
 }
 const ANIMATION_DEFAULT=5;
 const ANIMATION_KEY='dol-animation-duration-v1';
@@ -460,6 +461,23 @@ function drawImprovementChart(){
  for(const [i,label] of ['Then','Now'].entries()){const row=document.createElement('div'),name=document.createElement('span'),track=document.createElement('div'),bar=document.createElement('div'),value=document.createElement('b');row.className='improvement-bar-row';name.textContent=label;track.className='improvement-track';bar.className='improvement-bar '+label.toLowerCase();bar.style.width=Math.max(0,Math.min(100,values[i]/max*100))+'%';value.textContent=(unit==='s'?values[i].toFixed(1):Math.round(values[i]))+unit;track.append(bar);row.append(name,track,value);area.append(row);}
 }
 
+
+// Improvement is deliberately lazy and isolated from the game bootstrap.
+// An unavailable feature module must never blank the playable interface.
+function loadImprovement(){
+ if(improvement){try{improvement.render();}catch(error){console.warn('Progress panel deferred',error);}return;}
+ if(improvementLoading)return;
+ improvementLoading=import('./improvement/index.mjs').then(({createImprovement})=>{
+   improvement=createImprovement({accountId,getState:()=>state,getSessions:()=>learning.getState().sessions||[],insights,scope:scoped});
+   if(improvementUser)improvement.connect(improvementUser.uid,improvementUser.transport()).catch(error=>console.warn('Evidence sync deferred',error));
+   improvement.render();
+ }).catch(error=>{
+   console.warn('Enhanced progress temporarily unavailable; original progress remains usable.',error);
+   const progress=document.getElementById('progressView');
+   if(progress&&!document.getElementById('improvementFallback')){const p=document.createElement('p');p.id='improvementFallback';p.className='muted';p.textContent='Detailed progress checks are temporarily unavailable. Your original progress remains saved.';progress.append(p);}
+ }).finally(()=>{improvementLoading=null;});
+}
+
 function renderProgress(){
   renderImprovement();
   const data=learning.getState(),sessions=data.sessions||[],summary=learning.summary();
@@ -494,8 +512,8 @@ $('startButton').addEventListener('click',start);$('pauseButton').addEventListen
 $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
-$('resetProgress').addEventListener('click',()=>{if(accountId!=='guest'){alert('Cloud learning history cannot yet be deleted safely. Sign out to reset guest learning, or export your records first.');return;}if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();try{learningSync?.resetGuest();}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
-$('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+$('resetProgress').addEventListener('click',()=>{if(accountId!=='guest'){alert('Cloud learning history cannot yet be deleted safely. Sign out to reset guest learning, or export your records first.');return;}if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();try{learningSync?.resetGuest();}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();try{improvement?.resetGuest();}catch(e){console.warn('Evidence reset deferred',e);}strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
+$('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export(),detailedEvidence:improvement?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
 $('focusToggle').addEventListener('click',()=>setFocus(!focusMode));
@@ -520,7 +538,9 @@ render();setView('play');
 
 // Auth is initialised only after the game UI has mounted. Cloud sync is scoped to the
 // actual Firebase UID and never runs for a guest or a mismatched account.
-import('./dol-account.mjs').then(({initAccountUI,transport,preferencesStore})=>initAccountUI({onUser:async user=>{
+import('./dol-account.mjs').then(({initAccountUI,transport,preferencesStore,evidenceTransport})=>initAccountUI({onUser:async user=>{
+  improvementUser=user?.uid===accountId&&user?{uid:user.uid,transport:evidenceTransport}:null;
+  if(improvement&&improvementUser)improvement.connect(improvementUser.uid,improvementUser.transport()).catch(e=>console.warn('Evidence sync deferred',e));
   await syncAnimationPreference(user,preferencesStore());
   if(!user||user.uid!==accountId||!learningSync)return;
   try{
