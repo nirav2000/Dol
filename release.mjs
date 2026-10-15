@@ -1,2 +1,2 @@
 // Generated from version.json.
-export const VERSION='2.7.0';
+export const VERSION='2.7.1';

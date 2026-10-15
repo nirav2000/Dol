@@ -1,5 +1,5 @@
 {
-  "version": "2.7.0",
+  "version": "2.7.1",
   "name": "Factor Frenzy",
-  "description": "Progress checks, matched comparisons, account evidence sync and consistent release versions."
+  "description": "Repair missing progress styles and improve startup resilience."
 }
