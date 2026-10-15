@@ -56,7 +56,7 @@ export function createInsights({getState,refresh,storageScope=k=>k,onRecord=()=>
  function summary(){grid();conceptsView();renderSpeed();document.getElementById('adaptiveExplanation').textContent='Adaptive level '+(level+1)+' of 5: '+stages[level][0]+' (limit '+stages[level][1]+'). '+reason+' Repeated numbers are limited where possible; weaker multiplication facts receive extra practice.';}
  function resetEvidence(){events=[];save(storageScope(KEY),events);summary();}
  const pairClock=createActiveClock(),roundClock=createActiveClock(),inputMethods=new Set();
- const entryMethod=()=>document.body.dataset.dolTouchpad==='phone'?'phone-pad':document.body.dataset.dolTouchpad==='tablet'?'tablet-pad':'keyboard';
+ const entryMethod=()=>document.body.dataset.dolTouchpad==='tablet'?'tablet-pad':document.body.dataset.dolProfile==='phone'?'phone-pad':'keyboard';
  function holdTime(reason){pairClock.hold(reason);roundClock.hold(reason);}
  function releaseTime(reason){pairClock.release(reason);roundClock.release(reason);}
  function record(pair,outcome,{ms=null,hints=false,errors=0,target=null}={}){

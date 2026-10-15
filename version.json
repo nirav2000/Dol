@@ -1,5 +1,5 @@
 {
-  "version": "2.7.6",
+  "version": "2.7.7",
   "name": "Factor Frenzy",
-  "description": "Restore enhanced Progress evidence, fix duplicate IDs and preserve focus navigation."
+  "description": "Correct focus-mode tablet navigation verification and distinguish touch entry evidence."
 }
