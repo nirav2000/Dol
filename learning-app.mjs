@@ -52,6 +52,7 @@ function persist(){
 }
 function setView(view){
   state.view=view;
+  if(view==='play')insights?.releaseTime('other-view');else insights?.holdTime('other-view');
   document.querySelectorAll('.view').forEach(el=>el.hidden=el.id!==view+'View');
   document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));
   if(view==='learn')renderLearn();
@@ -529,18 +530,21 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
   fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
 });
 layoutOptions=createLayoutOptions({getState:()=>state});
-applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render});
+applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render,onRecord:event=>improvement?.record(event)});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
 strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason)});
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
 render();setView('play');
+document.body.dataset.dolReady='true';
+loadImprovement();
 
 // Auth is initialised only after the game UI has mounted. Cloud sync is scoped to the
 // actual Firebase UID and never runs for a guest or a mismatched account.
 import('./dol-account.mjs').then(({initAccountUI,transport,preferencesStore,evidenceTransport})=>initAccountUI({onUser:async user=>{
   improvementUser=user?.uid===accountId&&user?{uid:user.uid,transport:evidenceTransport}:null;
   if(improvement&&improvementUser)improvement.connect(improvementUser.uid,improvementUser.transport()).catch(e=>console.warn('Evidence sync deferred',e));
+  else improvement?.disconnect();
   await syncAnimationPreference(user,preferencesStore());
   if(!user||user.uid!==accountId||!learningSync)return;
   try{

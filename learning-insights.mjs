@@ -1,11 +1,13 @@
+import {createActiveClock} from './improvement/clock.mjs';
+import {normaliseEvents} from './improvement/model.mjs';
 import {factStatus,speedGroups,pairKey} from './confidence-model.mjs';
 import {factorPairs} from './logic.mjs';
 const KEY='dol-fact-evidence-v1',PREF='dol-auto-difficulty-v1';
 const stages=[['foundation',24],['fluency',144],['systematic',256],['strategic',512],['expert',1024]];
 const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f;}catch{return f;}};
 const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
-export function createInsights({getState,refresh,storageScope=k=>k}){
- let events=read(storageScope(KEY),[]),auto=read(storageScope(PREF),true),lastAt=performance.now(),mistakes=0,assisted=false,level=read(storageScope('dol-adaptive-level-v1'),0),lastLevelChange=read(storageScope('dol-last-level-change-v1'),0),reason='Beginning with foundation numbers; accuracy and independent recall determine progression.';
+export function createInsights({getState,refresh,storageScope=k=>k,onRecord=()=>{}}){
+ let events=normaliseEvents(Array.isArray(read(storageScope(KEY),[]))?read(storageScope(KEY),[]):[]),auto=read(storageScope(PREF),true),lastAt=performance.now(),mistakes=0,assisted=false,level=read(storageScope('dol-adaptive-level-v1'),0),lastLevelChange=read(storageScope('dol-last-level-change-v1'),0),reason='Beginning with foundation numbers; accuracy and independent recall determine progression.';
  const section=document.createElement('section');section.className='insight-section';section.innerHTML='<div class="insight-header"><h2>Multiplication fact map</h2><p>Each square shows the product. Colours reflect your own attempts, not a fixed multiplication-table rainbow.</p></div><div class="insight-legend"><span>● Not attempted</span><span>● Needs practice</span><span>● Developing</span><span>● Immediate fluency</span><span>● Confident</span><span>● Mastered</span></div><div class="insight-grid-wrap"><div id="insightGrid" class="insight-grid" role="group" aria-label="Multiplication fact confidence chart"></div></div><p id="factDetail" class="muted">Select any square to see its history and next steps.</p><p id="adaptiveExplanation" class="muted"></p>';
  document.getElementById('progressView').append(section);
  const guide=document.createElement('details');guide.className='insight-section confidence-guide';guide.innerHTML='<summary>How confidence and mastery work <span class="guide-chevron">⌄</span></summary><p class="muted">Correct, independent answers build fluency. Returning after a week and a month demonstrates retention. These are learning indicators, not diagnostic scores.</p><div class="confidence-steps"><div><span class="guide-icon">?</span><article><strong>Not attempted / Needs practice</strong><p>Insufficient evidence or recurring mistakes.</p></article></div><div><span class="guide-icon">↗</span><article><strong>Developing</strong><p>At least one independent, error-free correct response.</p></article></div><div><span class="guide-icon blue">ϟ</span><article><strong>Immediate fluency</strong><p>Three independent, error-free correct responses, each within 12 seconds.</p></article></div><div><span class="guide-icon green">✓</span><article><strong>Confident</strong><p>A fresh, independent and correct response at least 7 days after initial fluency.</p></article></div><div><span class="guide-icon purple">♜</span><article><strong>Mastered</strong><p>Another independent, correct response at least 30 days after initial fluency, following the successful week-one review.</p></article></div></div><p class="muted">An error flags a fact for review without erasing a previously earned level. A new answer is required at each retention milestone.</p>';section.before(guide);
@@ -53,16 +55,25 @@ export function createInsights({getState,refresh,storageScope=k=>k}){
  if(!grouped.size)c.textContent='No detailed factor evidence yet. New attempts will appear here.';}
  function summary(){grid();conceptsView();renderSpeed();document.getElementById('adaptiveExplanation').textContent='Adaptive level '+(level+1)+' of 5: '+stages[level][0]+' (limit '+stages[level][1]+'). '+reason+' Repeated numbers are limited where possible; weaker multiplication facts receive extra practice.';}
  function resetEvidence(){events=[];save(storageScope(KEY),events);summary();}
- function record(pair,outcome,{ms=null,hints=false,errors=0,target=null}={}){if(!pair||!pair.length)return;const [a,b]=pair.map(Number);if(!Number.isSafeInteger(a)||!Number.isSafeInteger(b)||a<1||b<1)return;const e={id:crypto.randomUUID?.()||Date.now()+'-'+Math.random(),at:Date.now(),key:pairKey(a,b),divisor:Math.min(a,b),target:target||a*b,outcome,assisted:!!hints,errors,ms:ms===null?null:Math.round(ms)};events.push(e);if(events.length>10000)events=events.slice(-10000);save(storageScope(KEY),events);}
- let heldAt=null,heldMs=0;const holds=new Set();
- function holdTime(reason){if(holds.has(reason))return;if(!holds.size)heldAt=performance.now();holds.add(reason);}
- function releaseTime(reason){if(!holds.delete(reason))return;if(!holds.size&&heldAt!==null){heldMs+=Math.max(0,performance.now()-heldAt);heldAt=null;}}
- function restartActiveClock(){lastAt=performance.now();heldMs=0;if(holds.size)heldAt=lastAt;}
- function activeElapsed(){const now=performance.now();return Math.max(1,now-lastAt-heldMs-(heldAt===null?0:now-heldAt));}
- function answer(pair,outcome,help){const elapsed=activeElapsed();if(outcome==='incorrect'){mistakes++;record(pair,'incorrect',{ms:elapsed,errors:mistakes,target:getState().target});}else if(outcome==='correct'){record(pair,'correct',{ms:elapsed,hints:help||assisted,errors:mistakes,target:getState().target});restartActiveClock();mistakes=0;assisted=false;}}
- function start(){restartActiveClock();mistakes=0;assisted=false;}
+ const pairClock=createActiveClock(),roundClock=createActiveClock(),inputMethods=new Set();
+ const entryMethod=()=>document.body.dataset.dolTouchpad==='phone'?'phone-pad':document.body.dataset.dolTouchpad==='tablet'?'tablet-pad':'keyboard';
+ function holdTime(reason){pairClock.hold(reason);roundClock.hold(reason);}
+ function releaseTime(reason){pairClock.release(reason);roundClock.release(reason);}
+ function record(pair,outcome,{ms=null,hints=false,errors=0,target=null}={}){
+  if(!pair||!pair.length)return;const [a,b]=pair.map(Number);if(!Number.isSafeInteger(a)||!Number.isSafeInteger(b)||a<1||b<1)return;
+  const state=getState(),input=entryMethod();inputMethods.add(input);
+  const event={kind:'pair',id:crypto.randomUUID(),at:Date.now(),key:pairKey(a,b),divisor:Math.min(a,b),target:target||a*b,outcome,assisted:!!hints,errors,ms:ms===null?null:Math.round(ms),roundId:state.roundId,mode:state.mode,stage:state.stage,showCount:state.showCount,input,timing:'active-v1',position:state.found.size};
+  events.push(event);events=events.slice(-10000);save(storageScope(KEY),events);
+  try{onRecord(event);}catch(error){console.warn('Optional evidence capture deferred',error);}
+ }
+ function answer(pair,outcome,help){const elapsed=Math.max(1,pairClock.elapsed());if(outcome==='incorrect'){mistakes++;record(pair,'incorrect',{ms:elapsed,errors:mistakes,target:getState().target});}else if(outcome==='correct'){record(pair,'correct',{ms:elapsed,hints:help||assisted,errors:mistakes,target:getState().target});pairClock.reset();mistakes=0;assisted=false;}}
+ function start(){releaseTime('finished');releaseTime('paused');pairClock.reset();roundClock.reset();inputMethods.clear();mistakes=0;assisted=false;}
+ function mergeEvents(incoming){events=normaliseEvents([...events,...incoming]).slice(-10000);save(storageScope(KEY),events);}
+ document.addEventListener('visibilitychange',()=>document.hidden?holdTime('hidden'):releaseTime('hidden'));
+ window.addEventListener('blur',()=>holdTime('blur'));window.addEventListener('focus',()=>releaseTime('blur'));
+ if(document.hidden)holdTime('hidden');
  function help(){assisted=true;}
- function finish(state){for(const [a,b] of state.pairs)if(!state.found.has(a+'-'+b))record([a,b],'missed',{ms:null,target:state.target});if(!auto)return;
+ function finish(state){holdTime('finished');for(const [a,b] of state.pairs)if(!state.found.has(a+'-'+b))record([a,b],'missed',{ms:null,target:state.target});if(!auto)return;
  const completed=events.filter(e=>e.outcome==='correct'||e.outcome==='missed').slice(-40);const correct=completed.filter(e=>e.outcome==='correct'&&!e.assisted&&e.errors===0),slow=correct.filter(e=>e.ms!==null&&e.ms>18000);
  if(completed.length<10){reason='Collecting evidence: '+completed.length+' of 10 factor-pair observations.';return;}
  const ratio=correct.length/completed.length;const current=level;const distinctTargets=new Set(completed.map(e=>e.target)).size;const cooldown=events.filter(e=>e.at>lastLevelChange&&e.outcome==='correct').length>=12;
@@ -80,5 +91,5 @@ export function createInsights({getState,refresh,storageScope=k=>k}){
  return null;}
  function render(){config.querySelector('input').checked=auto;const state=getState(),running=['running','paused'].includes(state.phase);config.querySelector('input').disabled=running;if(auto&&!running){state.stage=stages[level][0];state.limit=stages[level][1];document.getElementById('stageSelect').value=state.stage;document.getElementById('limitSelect').value=state.limit;}document.getElementById('stageSelect').disabled=running||auto;document.getElementById('limitSelect').disabled=running||auto;}
  config.querySelector('input').onchange=e=>{auto=e.target.checked;save(storageScope(PREF),auto);render();refresh();};
- return {start,answer,help,finish,choose,render,summary,record,resetEvidence,holdTime,releaseTime,get events(){return events;},get auto(){return auto;},get level(){return level;}};
+ return {start,answer,help,finish,choose,render,summary,record,resetEvidence,holdTime,releaseTime,mergeEvents,activeRoundMs:()=>roundClock.elapsed(),roundInput:()=>inputMethods.size===1?[...inputMethods][0]:'mixed',get events(){return events;},get auto(){return auto;},get level(){return level;}};
 }

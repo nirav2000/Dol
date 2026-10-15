@@ -44,9 +44,9 @@ export function createEvidenceStore({accountId='guest',storage=globalThis.localS
   }
   function append({events=[],rounds=[],checks=[]}={}){
     if(!unreadable){try{mergeState(read());}catch(e){error=e.message;}}
-    const existing=snapshot(),ids=new Set([...existing.events,...existing.checks].map(e=>e.id)),signatures=new Set(existing.rounds.map(roundSignature));
+    const existing=snapshot(),ids=new Set([...existing.events,...existing.checks].map(e=>e.id)),signatures=new Map(existing.rounds.map(r=>[roundSignature(r),r]));
     const ev=[...normaliseEvents(events),...checks.map(normaliseCheck).filter(Boolean)].filter(e=>!ids.has(e.id));
-    const rs=normaliseRounds(rounds).filter(r=>!signatures.has(roundSignature(r)));
+    const rs=normaliseRounds(rounds).filter(r=>{const prior=signatures.get(roundSignature(r));return !prior||(r.detailed&&!prior.detailed);});
     if(!ev.length&&!rs.length)return 0;
     state.buffer.events.push(...copy(ev));state.buffer.sessions.push(...copy(rs));
     if(rounds.length||checks.length||state.buffer.events.length>=50)seal();

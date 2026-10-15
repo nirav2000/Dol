@@ -23,7 +23,7 @@ export function createImprovement({accountId,getState,getSessions,insights,scope
   function render(){store.append({events:insights.events,rounds:getSessions()});ui.render();}
   function recordRound(state,session){
     const previous=store.snapshot().rounds.filter(r=>r.target===state.target&&r.mode===state.mode).at(-1);
-    store.append({rounds:[{...session,id:state.roundId,startedAt:state.startedAt,stage:state.stage,showCount:state.showCount,activeMs:Math.round(insights.activeRoundMs?.()??session.durationMs),timing:'active-v1',input:insights.roundInput?.()??'unknown',detailed:true,reason:state.result?.reason||'complete'}]});
+    store.append({rounds:[{...session,id:state.roundId,startedAt:state.startedAt,stage:state.stage,showCount:state.showCount,activeMs:Math.round(insights.activeRoundMs()),timing:'active-v1',input:insights.roundInput(),detailed:true,reason:state.result?.reason||'complete'}]});
     let note=document.getElementById('improvementRoundNote');if(!note){note=document.createElement('p');note.id='improvementRoundNote';document.getElementById('finishedPanel').append(note);}
     note.textContent=previous&&session.correct===session.total&&previous.correct<previous.total?'You found every pair this time; your previous '+state.target+' round had '+previous.correct+' of '+previous.total+'. Helped answers count fully.':session.hints?'You explored this round with support. Those correct pairs count fully in your progress.':'This round has joined your learning record. Open Progress to compare like-for-like practice.';
     store.sync({pull:false});
