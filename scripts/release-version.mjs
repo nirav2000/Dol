@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+const version=JSON.parse(fs.readFileSync('version.json','utf8')).version;
+if(!/^\d+\.\d+\.\d+$/.test(version))throw Error('Invalid version');
+const entries=new Map();
+let html=fs.readFileSync('index.html','utf8');
+html=html.replace(/(\?v=)\d+\.\d+\.\d+/g,'$1'+version);
+html=html.replace(/(data-dol-version[^>]*>)(?:Dol )?v\d+\.\d+\.\d+/g,(_,start)=>start+'Dol v'+version);
+entries.set('index.html',html);
+let worker=fs.readFileSync('service-worker.js','utf8').replace(/apps-pwa-dol-v\d+-\d+-\d+/,'apps-pwa-dol-v'+version.replaceAll('.','-'));
+entries.set('service-worker.js',worker);
+const labels=[...html.matchAll(/data-dol-version[^>]*>([^<]*)/g)].map(x=>x[1]);
+if(labels.length<2||labels.some(s=>s!=='Dol v'+version))throw Error('Header/footer version markers inconsistent');
+if(process.argv.includes('--check')){for(const [path,value] of entries)if(fs.readFileSync(path,'utf8')!==value)throw Error('Release mismatch in '+path);if(/v2\.6\.16/.test(html))throw Error('Stale release text');}else for(const [path,value] of entries)fs.writeFileSync(path,value);
+console.log('Release consistency verified: '+version);

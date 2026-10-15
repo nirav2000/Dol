@@ -14,6 +14,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+      - name: Verify release consistency
+        run: node scripts/release-version.mjs --check
       - name: Verify scripts
         run: |
           node --check logic.mjs
