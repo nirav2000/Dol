@@ -1,5 +1,5 @@
 {
-  "version": "2.7.8",
+  "version": "2.7.9",
   "name": "Factor Frenzy",
-  "description": "Verify full progress-check completion, saved drafts, reload persistence and published mobile interfaces."
+  "description": "Diagnose progress-check persistence under real Chromium and WebKit."
 }

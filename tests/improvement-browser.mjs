@@ -42,6 +42,14 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
     await press('#checkNext');
   }
   await press(page.getByRole('button',{name:'Back to my progress'}));
+  const checkEvidence=await page.evaluate(()=>{
+    const raw=localStorage.getItem('dol-improvement-v1:guest');
+    const data=raw?JSON.parse(raw):null;
+    return {status:document.querySelector('#evidenceSyncStatus')?.textContent,body:document.querySelector('#checkBody')?.textContent?.slice(0,350),
+      chunks:data?Object.values(data.chunks).map(c=>c.events.filter(e=>e.kind==='check')):[],buffer:data?.buffer?.events?.filter(e=>e.kind==='check')||[],
+      history:document.querySelector('#improvementCheckHistory')?.textContent};
+  });
+  console.log('PROGRESS CHECK EVIDENCE',JSON.stringify(checkEvidence));
   assert.match(await page.locator('#improvementCheckHistory').textContent(),/100% correct submissions/);
   const duplicates=await page.locator('[id]').evaluateAll(els=>{const ids=els.map(e=>e.id);return ids.filter((id,i)=>ids.indexOf(id)!==i);});
   assert.deepEqual(duplicates,[],'No duplicate element IDs');
