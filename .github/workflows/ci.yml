@@ -3,9 +3,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+permissions:
+  contents: read
 concurrency:
   group: dol-ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -50,6 +52,8 @@ jobs:
         with:
           repository: nirav2000/Apps
           path: Apps-shared
+      - name: Shared static app validation
+        run: node Apps-shared/validation/validate-static-app.mjs . validation.config.json
       - name: Browser smoke tests
         run: |
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
@@ -72,3 +76,46 @@ jobs:
             browser-mobile.png
             artifacts/*.png
           if-no-files-found: ignore
+
+  deploy:
+    name: Publish only tested revision
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: dol-pages-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Confirm exact tested commit and version
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$TESTED_SHA"
+          node scripts/release-version.mjs --check
+      - name: Stage immutable Pages artifact
+        run: |
+          mkdir -p _pages
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='Apps-shared/' --exclude='artifacts/' --exclude='_pages/' --exclude='tests/' --exclude='scripts/' --exclude='version-lab-data/' --exclude='_release-candidate/' --exclude='.firebase-test/' --exclude='browser-desktop.png' --exclude='browser-mobile.png' ./ _pages/
+          test -s _pages/index.html
+          test -s _pages/version.json
+          test -s _pages/learning-app.mjs
+          test -s _pages/improvement/ui.mjs
+          touch _pages/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _pages
+      - name: Deploy verified artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
