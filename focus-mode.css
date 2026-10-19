@@ -37,3 +37,6 @@
  body.focus-mode .topbar:focus-within{visibility:visible;pointer-events:auto;transform:translateY(0)!important}
  body.focus-mode:not(.focus-menu-revealed) .menu-reveal{display:block;opacity:.65}
 }
+
+/* Keep touch navigation available when the user opens the menu. */
+@media(max-width:700px) and (pointer:coarse){body.focus-mode.focus-menu-revealed .topbar{transform:none!important;visibility:visible!important;pointer-events:auto!important}body.focus-mode .menu-reveal{z-index:45;min-width:48px;min-height:44px}body.focus-mode.focus-menu-revealed .menu-reveal{opacity:1;pointer-events:auto;top:auto;bottom:calc(12px + env(safe-area-inset-bottom));right:12px;background:#252525}}
