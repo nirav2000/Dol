@@ -40,3 +40,13 @@
 
 /* Keep touch navigation available when the user opens the menu. */
 @media(max-width:700px) and (pointer:coarse){body.focus-mode.focus-menu-revealed .topbar{transform:none!important;visibility:visible!important;pointer-events:auto!important}body.focus-mode .menu-reveal{z-index:45;min-width:48px;min-height:44px}body.focus-mode.focus-menu-revealed .menu-reveal{opacity:1;pointer-events:auto;top:auto;bottom:calc(12px + env(safe-area-inset-bottom));right:12px;background:#252525}}
+
+/* v2.7.15: Touch navigation is a fixed, independently tappable panel, not a hidden translated header. */
+@media(max-width:700px) and (pointer:coarse){
+ body.focus-mode.focus-menu-revealed .topbar{position:fixed!important;top:calc(env(safe-area-inset-top) + 54px)!important;left:12px!important;right:12px!important;width:auto!important;max-height:calc(100dvh - 110px);overflow-y:auto;z-index:100!important;display:flex!important;flex-direction:column!important;gap:12px!important;transform:none!important;visibility:visible!important;pointer-events:auto!important;padding:16px!important;border:1px solid #777!important;border-radius:16px!important;box-shadow:0 12px 40px #000e!important}
+ body.focus-mode.focus-menu-revealed .topbar nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+ body.focus-mode.focus-menu-revealed .topbar nav button{min-height:52px;touch-action:manipulation}
+ body.focus-mode.focus-menu-revealed .topbar .header-actions{display:flex!important;flex-wrap:wrap;justify-content:center}
+ body.focus-mode .menu-reveal{position:fixed!important;top:calc(env(safe-area-inset-top) + 5px)!important;right:12px!important;bottom:auto!important;z-index:110!important;min-width:70px!important;min-height:44px!important;pointer-events:auto!important;opacity:1!important;visibility:visible!important;touch-action:manipulation}
+ body.focus-mode.focus-menu-revealed .menu-reveal{background:#555!important}
+}
