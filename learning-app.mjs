@@ -16,7 +16,7 @@ let improvement=null,improvementLoading=null,improvementUser=null;
 const focusKey='dol-focus-mode-v1';
 let focusMode=readFocus();
 function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
-function applyFocus(){document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
+function applyFocus(){if(!focusMode){document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
 function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
 function focusAnswer(){if(document.body.classList.contains('focus-menu-revealed'))return;if(document.body.dataset.dolLayout==='pairboard'&&['phone','tablet'].includes(document.body.dataset.dolProfile))return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const accountId=activeAccount();
@@ -502,7 +502,7 @@ function renderProgress(){
   for(const [name,c] of due){const d=document.createElement('div');d.className='session';const a=document.createElement('span');a.textContent=name.replaceAll(':',' · ').replaceAll('x',' × ');const b=document.createElement('small');b.textContent=Math.round(c.mastery*100)+'% learning estimate · '+c.attempts+' attempts';d.append(a,b);sug.append(d);}
   insights?.summary();
 }
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{setView(b.dataset.view);document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(['running','paused'].includes(state.phase))return;state.mode=b.dataset.mode;state.helpOpen=state.mode==='guided';persist();render();}));
 $('stageSelect').addEventListener('change',e=>{state.stage=e.target.value;persist();render();});
 $('limitSelect').addEventListener('change',e=>{state.limit=Number(e.target.value);persist();render();});
@@ -522,7 +522,7 @@ $('focusSetting').addEventListener('change',e=>setFocus(e.target.checked));
 const reveal=()=>{if(!focusMode)return;document.body.classList.add('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','true');};
 const hide=()=>{if(!focusMode)return;if(!document.querySelector('.topbar:focus-within')){document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}};
 document.addEventListener('pointermove',e=>{if(!focusMode)return;if(e.target instanceof Element&&e.target.closest('#menuReveal,.topbar'))return;if(e.pointerType==='mouse'||e.pointerType==='pen'){if(e.clientY<56)reveal();else if(e.clientY>140)hide();}});
-$('menuReveal').addEventListener('click',()=>{reveal();$('focusToggle').focus();});
+$('menuReveal').addEventListener('click',()=>{if(document.body.classList.contains('focus-menu-revealed')){document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}else reveal();});
 document.querySelector('.topbar').addEventListener('focusin',reveal);
 document.querySelector('.topbar').addEventListener('focusout',e=>{if(!e.currentTarget.contains(e.relatedTarget)&&e.relatedTarget!==$('menuReveal'))hide();});
 roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
