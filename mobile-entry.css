@@ -89,3 +89,6 @@
 
 /* Keep keypad and action-key geometry unchanged; make feedback visible in its existing header. */
 @media (max-width:700px) and (pointer:coarse){#playView .mobile-entry-label.has-error{color:#ffb3b3;letter-spacing:0;font-size:12px;line-height:16px;text-transform:none}#playView #entryFeedback{visibility:hidden;min-height:0;margin:0;height:0}#playView .slots{gap:3px}#playView .slot{min-height:26px}}
+
+/* Keep the mobile navigation above all play surfaces. */
+@media(max-width:700px) and (pointer:coarse){body.focus-mode .menu-reveal{z-index:110!important}}
