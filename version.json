@@ -1,5 +1,5 @@
 {
-  "version": "2.7.17",
+  "version": "2.7.18",
   "name": "Factor Frenzy",
-  "description": "Repair focus-mode browser navigation regression test and verify keypad and learning progress release."
+  "description": "Repair tablet keypad submission regression and retain immediate feedback."
 }

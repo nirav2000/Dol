@@ -1,5 +1,5 @@
 import {currentProfile} from './device-profile.mjs';
-// Optional touch-tablet pad; shares the canonical answer form and scoring.
+// Optional touch-tablet pad. The phone keypad is separate and never modified.
 export function initTabletKeypad(){
  const play=document.getElementById('playView'),form=document.getElementById('answerForm');
  const input=document.getElementById('pairInput'),activePanel=document.getElementById('activePanel');
@@ -30,6 +30,7 @@ export function initTabletKeypad(){
  function running(){return !play.hidden&&!activePanel.hidden;}
  function isEnabled(){return media.matches&&opened&&(running()||finished());}
  const action=()=>keyButtons.get('action');
+ // An incomplete pair is not displayed as "3x": x is added only when both factors exist.
  function writeInput(){input.value=values[0]&&values[1]?values.join('x'):values[0]||'';}
  function sync(){
    buttons.forEach((b,i)=>{b.textContent=values[i]||'—';b.setAttribute('aria-pressed',String(i===part));});
@@ -51,6 +52,8 @@ export function initTabletKeypad(){
      return;
    }
    if(finished()){
+     // Preserve the SAME action key at its exact on-screen coordinates while review replaces play.
+     // The other keypad keys vanish; review content remains free to scroll behind it.
      if(!pad.classList.contains('is-finished'))recordRect();
      if(pad.parentElement!==play)play.append(pad);
      pad.classList.add('is-finished');pad.hidden=false;
@@ -98,22 +101,15 @@ export function initTabletKeypad(){
      if(Number(candidate)<=1024){values[part]=candidate;sync();}
    }
  }
- let lastTouch=-Infinity;
  keys.forEach(k=>{
    const b=document.createElement('button');b.type='button';b.dataset.tabletKey=k;
    b.setAttribute('aria-label',k==='clear'?'Delete digit':k==='action'?'Next factor':'Digit '+k);
    b.textContent=k==='clear'?'⌫':k==='action'?'×':k;
-   let ackTimer;
-   b.addEventListener('pointerdown',e=>{
-     // Do not wait for a delayed click or discard overlapping second-finger taps.
-     if(e.pointerType==='touch'||e.pointerType==='pen'){
-       e.preventDefault();lastTouch=performance.now();press(k);
-       b.classList.add('key-captured');clearTimeout(ackTimer);
-       ackTimer=setTimeout(()=>b.classList.remove('key-captured'),165);
-     }
-   });
-   b.addEventListener('click',e=>{
-     if(e.detail>0&&performance.now()-lastTouch<650){e.preventDefault();return;}
+   let feedbackTimer;
+   b.addEventListener('click',()=>{
+     b.classList.add('key-captured');
+     clearTimeout(feedbackTimer);
+     feedbackTimer=setTimeout(()=>b.classList.remove('key-captured'),165);
      press(k);
    });
    keyButtons.set(k,b);grid.append(b);
@@ -127,8 +123,11 @@ export function initTabletKeypad(){
  });
  document.addEventListener('dol-layoutchange',()=>{input.readOnly=opened&&media.matches;if(input.readOnly)input.blur();refresh();});
  const observer=new MutationObserver(()=>{
+   // A new round must clear stale keypad values; keep the user's show/hide preference.
    const target=document.getElementById('roundValue')?.textContent+':'+document.getElementById('numberValue')?.textContent;
-   if(running()&&target!==lastTarget){lastTarget=target;values=['',''];part=0;}
+   if(running()&&target!==lastTarget){
+     lastTarget=target;values=['',''];part=0;
+   }
    refresh();
  });
  observer.observe(activePanel,{attributes:true,attributeFilter:['hidden']});
@@ -137,6 +136,7 @@ export function initTabletKeypad(){
  const resize=()=>{if(finished()&&lastActionRect){const width=Math.min(lastActionRect.width,innerWidth-16);pad.style.left=Math.max(8,Math.min(lastActionRect.left,innerWidth-width-8))+'px';pad.style.top=Math.max(8,Math.min(lastActionRect.top,innerHeight-lastActionRect.height-8))+'px';pad.style.width=width+'px';}else recordRect();};
  media.addEventListener('change',refresh);window.addEventListener('resize',resize);
  window.addEventListener('scroll',recordRect,{passive:true});
+ // Physical keyboard input and the touch pad must share the existing canonical answer form.
  input.addEventListener('input',()=>{
    if(!running())return;
    const match=input.value.match(/^\s*(\d*)\s*[xX×*]\s*(\d*)\s*$/);
