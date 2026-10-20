@@ -1,5 +1,5 @@
 {
-  "version": "2.7.16",
+  "version": "2.7.17",
   "name": "Factor Frenzy",
-  "description": "Restore verified release consistency; safer sync retry, responsive keypads, and visible learning journey."
+  "description": "Repair focus-mode browser navigation regression test and verify keypad and learning progress release."
 }
