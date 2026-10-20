@@ -4,7 +4,6 @@ export function createMobileEntry({getState,submit}){
  const input=document.getElementById('pairInput'),play=document.getElementById('playView');
  const wrap=document.createElement('div');wrap.id='mobileEntry';wrap.className='mobile-entry';wrap.hidden=true;
  wrap.innerHTML='<div class="mobile-entry-label" id="mobileEntryStatus" role="status" aria-live="polite">ENTER A FACTOR PAIR</div><div class="mobile-factors"><button type="button" id="mobileFirst" aria-label="First factor" aria-pressed="true">\u2014</button><span aria-hidden="true">\u00d7</span><button type="button" id="mobileSecond" aria-label="Second factor" aria-pressed="false">\u2014</button></div><div id="mobileKeypad" class="mobile-keypad" role="group" aria-label="Factor keypad"></div>';
- // Outside both panels: never reparent or replace the button during a gesture.
  play.append(wrap);
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
  const media=window.matchMedia('(max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse)');
@@ -17,7 +16,7 @@ export function createMobileEntry({getState,submit}){
    const vv=window.visualViewport,visibleHeight=vv?.height||innerHeight;
    const bottom=innerWidth>innerHeight&&visibleHeight<=500?12:Math.max(64,Math.min(104,visibleHeight*.1));
    const top=Math.max(4,(vv?.offsetTop||0)+visibleHeight-bottom-wrap.getBoundingClientRect().height);
-   wrap.style.setProperty('top',top+'px','important');
+   if(!Number.isFinite(parseFloat(wrap.style.top))||Math.abs(parseFloat(wrap.style.top)-top)>.5)wrap.style.setProperty('top',top+'px','important');
    wrap.style.setProperty('bottom','auto','important');
  }
  function reserveSpace(){
@@ -57,17 +56,24 @@ export function createMobileEntry({getState,submit}){
    }
    if(/^\d$/.test(key)){if(parts[active].length>=4)return;const value=String(Number(parts[active]+key));if(Number(value)>1024)return;parts[active]=value;updateInput();sync();}
  }
+ let lastTouch=-Infinity;
  for(const key of ['1','2','3','4','5','6','7','8','9','clear','0','action']){
    const b=document.createElement('button');b.type='button';b.dataset.key=key;
    b.textContent=key==='clear'?'\u232b':key==='action'?'\u00d7':key;
    b.setAttribute('aria-label',key==='clear'?'Delete digit':key==='action'?'Next factor':'Digit '+key);
-   let lastTouch=-Infinity;
+   let ackTimer;
    b.addEventListener('pointerdown',e=>{
-     if((e.pointerType==='touch'||e.pointerType==='pen')&&e.isPrimary){e.preventDefault();lastTouch=performance.now();press(key);}
+     // Two-thumb typing can briefly overlap. Secondary touch contacts are real
+     // key presses too; requiring isPrimary silently dropped those digits.
+     if(e.pointerType==='touch'||e.pointerType==='pen'){
+       e.preventDefault();lastTouch=performance.now();press(key);
+       b.classList.add('key-captured');clearTimeout(ackTimer);
+       ackTimer=setTimeout(()=>b.classList.remove('key-captured'),165);
+     }
    });
-   // Suppress only the synthetic click for a touch already handled above.
-   // Separate pointerdowns always work, including repeated rapid taps of one digit.
-   b.addEventListener('click',e=>{if(performance.now()-lastTouch<700){e.preventDefault();return;}press(key);});
+   // Suppress the follow-up click, including browser retargeting after a render.
+   // New pointerdowns are never debounced; keyboard clicks (detail 0) still work.
+   b.addEventListener('click',e=>{if(e.detail>0&&performance.now()-lastTouch<650){e.preventDefault();return;}press(key);});
    pad.append(b);
  }
  first.addEventListener('click',()=>activate(0));second.addEventListener('click',()=>activate(1));
@@ -93,7 +99,6 @@ export function createMobileEntry({getState,submit}){
    else if(e.key==='Backspace'){e.preventDefault();e.stopImmediatePropagation();press('clear');}
    else if(e.key==='x'||e.key==='X'||e.key==='*'){e.preventDefault();e.stopImmediatePropagation();if(active===0)press('action');}
  },true);
- // Only reserve the real footprint, never an invisible four-row keypad in review.
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(reserveSpace).observe(wrap);
  const settleDock=()=>{placeDock();requestAnimationFrame(()=>requestAnimationFrame(placeDock));};
  window.visualViewport?.addEventListener('scroll',settleDock,{passive:true});

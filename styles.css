@@ -82,3 +82,8 @@
 .number-celebration{animation-duration:var(--number-celebration-duration,2.3s)}
 .number-celebration::before,.number-celebration-label{animation-duration:var(--number-celebration-duration,2.3s)}
 .number-celebration-spark{animation-duration:calc(var(--number-celebration-duration,2.3s) * .652)}
+
+/* Within-stage evidence signal; confidence levels continue to require timed returns. */
+.fact-cell{position:relative;padding-bottom:10px}
+.fact-cell::after{content:'';position:absolute;left:5px;bottom:3px;height:4px;max-width:calc(100% - 10px);width:var(--fact-progress,0%);background:#e3f7ee;opacity:.93;border-radius:4px;pointer-events:none}
+.fact-cell.unknown::after{opacity:0}

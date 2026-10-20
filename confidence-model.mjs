@@ -55,3 +55,21 @@ export function speedGroups(entries,type='fact'){
  }
  return [...groups.values()].map(g=>({...g,stats:speedStats(g.events)})).filter(g=>g.stats);
 }
+
+export function factMomentum(status){
+ const attempts=status?.attempts||[],kind=status?.kind||'unknown';
+ if(!attempts.length)return {fill:0,detail:'No recorded attempts',fastStreak:0};
+ const recent=attempts.slice(-8),right=recent.filter(e=>e.outcome==='correct').length;
+ const cleanRecent=recent.filter(fast).length;
+ let fastStreak=0;
+ for(let i=attempts.length-1;i>=0&&fast(attempts[i]);i--)fastStreak++;
+ const accuracy=Math.round(100*right/recent.length);
+ let fill=0;
+ if(kind==='weak')fill=Math.min(23,6+recent.length*2+Math.round(right/recent.length*10));
+ else if(kind==='developing')fill=Math.min(64,24+Math.min(2,fastStreak)*10+Math.min(3,cleanRecent)*4+Math.min(6,recent.length));
+ else if(kind==='fluent')fill=Math.min(84,68+Math.round(accuracy/10));
+ else if(kind==='confident')fill=Math.min(99,86+Math.round(accuracy/10));
+ else if(kind==='mastered')fill=100;
+ const detail=right+' of last '+recent.length+' attempts correct (including help); '+fastStreak+' consecutive fast independent error-free responses. The bar is a practice signal, not a mastery percentage.';
+ return {fill,detail,fastStreak,recentCorrect:right,recentTotal:recent.length};
+}

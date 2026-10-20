@@ -1,4 +1,5 @@
 import {improvementSummary,compareChecks} from './model.mjs';
+import {buildJourney} from './journey.mjs';
 import {CHECK_LEVELS} from './check.mjs';
 const format=(v,unit='')=>v==null?'Collecting evidence':(unit==='s'?v.toFixed(1):Math.round(v))+unit;
 const day=t=>new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
@@ -9,6 +10,15 @@ export function createImprovementUI({getSnapshot,getStatus,startCheck,sync,impor
   root.innerHTML=`<div class="improvement-heading"><div><p class="eyebrow">YOUR IMPROVEMENT</p><h2>How your learning is changing</h2></div><span id="improvementQuality" class="pill"></span></div>
   <h3 id="improvementHeadline" class="improvement-headline"></h3><p id="improvementExplanation" class="muted"></p>
   <p class="improvement-help"><strong>Hints are part of learning.</strong> Answers reached with help count equally towards accuracy and completeness. We notice when supported exploration becomes familiar, without setting a target to avoid help.</p>
+  <section class="journey-section" aria-label="Your learning journey">
+    <div class="journey-intro"><div><p class="eyebrow">FROM YOUR FIRST RECORDED SESSION</p><h3>Your learning journey</h3></div><span class="journey-badge" id="journeySpan"></span></div>
+    <div class="journey-facts" id="journeyFacts"></div>
+    <div class="journey-chart-head"><strong>Practice through time</strong><span id="journeyChartScale" class="muted small"></span></div>
+    <div class="journey-week-bars" id="journeyWeeks" aria-label="Weekly recorded rounds" role="img"></div>
+    <div class="journey-timeline"><span id="journeyStart"></span><span id="journeyEnd"></span></div>
+    <div class="journey-progress" id="journeyChange" aria-live="polite"></div>
+    <p class="muted small" id="journeyDisclosure"></p>
+  </section>
   <div class="evidence-sync"><p id="evidenceSyncStatus" role="status"></p><button class="text-button" id="evidenceSyncNow" type="button">Sync details</button><button class="text-button" id="evidenceImportGuest" type="button" hidden>Import my guest evidence</button></div>
   <p id="improvementCoverage" class="muted small"></p><div id="improvementDimensions" class="improvement-dimensions"></div>
   <section class="improvement-chart"><div class="improvement-chart-head"><h3>Then and now</h3><label>Dimension <select id="improvementDimensionChoice"><option value="accuracy">Accuracy</option><option value="completeness">Completeness</option><option value="pace">Matched pace</option><option value="breadth">Challenge breadth</option></select></label></div><p id="improvementMatchNote" class="muted small"></p><div id="improvementChart"></div><div id="improvementWhiskers"></div><p id="improvementSample" class="muted small"></p></section>
@@ -20,6 +30,64 @@ export function createImprovementUI({getSnapshot,getStatus,startCheck,sync,impor
   const definitions=[['accuracy','Accuracy'],['familiarity','Growing familiarity'],['completeness','Completeness'],['pace','Pace'],['breadth','Challenge breadth'],['retention','Retention']];
   const dimensionCards=new Map();
   for(const [key,title] of definitions){const card=element('article'),main=element('strong'),detail=element('small');card.dataset.dimension=key;card.append(element('h3',title),main,detail);$('improvementDimensions').append(card);dimensionCards.set(key,{card,main,detail});}
+  function renderJourney(){
+    const journey=buildJourney(getSnapshot());
+    const host=$('journeyFacts'),bars=$('journeyWeeks'),difference=$('journeyChange');
+    host.replaceChildren();bars.replaceChildren();difference.replaceChildren();
+    $('journeySpan').textContent=journey.startedAt?journey.daysElapsed+' calendar days covered':'Awaiting first record';
+    const addStat=(label,value)=>{
+      const card=element('div',null,'journey-stat');
+      card.append(element('small',label),element('strong',String(value)));
+      host.append(card);
+    };
+    if(!journey.startedAt){
+      addStat('Recorded start','Not yet');
+      addStat('Practice days',0);
+      addStat('Rounds',0);
+      addStat('Factor observations',0);
+      $('journeyChartScale').textContent='No dated history yet';
+      $('journeyStart').textContent='First session';
+      $('journeyEnd').textContent='Today';
+      difference.append(element('strong','Your baseline starts with your first saved practice.'));
+      $('journeyDisclosure').textContent='Undated historical scores cannot be assigned invented start dates. No learning evidence has been discarded.';
+      return;
+    }
+    addStat('First recorded',day(journey.startedAt));
+    addStat('Days practised',journey.activeDays);
+    addStat('Dated rounds',journey.rounds);
+    addStat('Pair observations',journey.observations);
+    const max=Math.max(1,...journey.weeks.map(w=>w.rounds));
+    for(const w of journey.weeks){
+      const cell=element('span',null,'journey-week');
+      const height=w.rounds?Math.max(7,Math.round(100*w.rounds/max)):0;
+      cell.style.setProperty('--journey-height',height+'%');
+      cell.classList.toggle('journey-idle',w.rounds===0);
+      const desc=day(w.start)+': '+w.rounds+' recorded rounds, '+w.observations+' factor observations.';
+      cell.title=desc;
+      cell.setAttribute('aria-label',desc);
+      bars.append(cell);
+    }
+    $('journeyChartScale').textContent='Rounds per calendar week · high '+max;
+    $('journeyStart').textContent='Chart from '+day(journey.weeks[0].start);
+    $('journeyEnd').textContent='Latest '+day(journey.lastAt);
+    const available=[
+      {label:'Accuracy',value:model?.accuracy,better:v=>v>=5,change:v=>(v>0?'+':'')+Math.round(v)+' percentage points',delta:v=>v},
+      {label:'Complete rounds',value:model?.completeness,better:v=>v>=5,change:v=>(v>0?'+':'')+Math.round(v)+' percentage points',delta:v=>v},
+      {label:'Matched solving pace',value:model?.pace,better:v=>v<=-.5,change:v=>(v>0?'+':'')+v.toFixed(1)+'s',delta:v=>-v}
+    ].filter(x=>x.value&&Number.isFinite(x.value.before)&&Number.isFinite(x.value.after));
+    const improved=available.filter(x=>x.better(x.value.after-x.value.before)).sort((a,b)=>b.delta(b.value.after-b.value.before)-a.delta(a.value.after-a.value.before));
+    const main=improved[0]||available[0];
+    if(main){
+      const delta=main.value.after-main.value.before;
+      difference.append(element('span',improved.length?'EVIDENCE OF IMPROVEMENT':'MATCHED PRACTICE','journey-change-tag'));
+      difference.append(element('strong',main.label+': '+format(main.value.before,main.label==='Matched solving pace'?'s':'%')+' → '+format(main.value.after,main.label==='Matched solving pace'?'s':'%')));
+      difference.append(element('span',main.change(delta)+' · '+main.value.n+' observations per period, in comparable conditions.'));
+    }else{
+      difference.append(element('strong','You are building measurable evidence.'));
+      difference.append(element('span','When matching questions have been repeated, this will show how your performance has changed, not just how much you have practised.'));
+    }
+    $('journeyDisclosure').textContent='Bars count recorded rounds, not skill or difficulty. Earlier activity with no dated records cannot be reconstructed. Improvement compares matching tasks; hints count towards correct work.';
+  }
   function status(){
     const s=getStatus();let text=s.accountId==='guest'?'Saved on this device. Sign in to synchronise detailed evidence.':'Saved on this device. Waiting for your account connection.';
     if(!s.durable)text='Some evidence is only in memory: device storage is unavailable. Export the learning record.';
@@ -31,7 +99,7 @@ export function createImprovementUI({getSnapshot,getStatus,startCheck,sync,impor
   }
   function comparisonNote(c){return c?c.n+' observations per period across '+c.groups.length+' matching contexts. Earlier: '+range(c.firstRange)+'. Recent: '+range(c.lastRange)+'.':'More repeated, comparable observations are needed. Missing evidence does not mean you have not improved.';}
   function render(){
-    model=improvementSummary(getSnapshot());status();const m=model;
+    model=improvementSummary(getSnapshot());status();renderJourney();const m=model;
     $('improvementQuality').textContent=m.quality;$('improvementHeadline').textContent=m.headline;$('improvementExplanation').textContent=m.detail;
     $('improvementCoverage').textContent=m.coverage.rounds+' detailed round records and '+m.coverage.events+' factor-pair observations available. '+(m.coverage.legacyTimes?m.coverage.legacyTimes+' older timing observations preserved separately from new active timings.':'Existing scores and round totals are unchanged.');
     const data={accuracy:[format(m.accuracy?.after,'%'),m.accuracy?'Then '+format(m.accuracy.before,'%')+' on matching questions. Helped answers count fully.':'Repeated targets and complete attempt records will establish a comparison.'],

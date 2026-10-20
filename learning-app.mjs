@@ -480,7 +480,8 @@ function loadImprovement(){
 }
 
 function renderProgress(){
-  renderImprovement();
+  // The enhanced UI has its own IDs. Do not mount the obsolete duplicate panel.
+  if(!improvement)loadImprovement();
   const data=learning.getState(),sessions=data.sessions||[],summary=learning.summary();
   ledger.updateHistory(sessions.length);
    $('statRounds').textContent=ledger.data.completedRounds;$('statRounds').previousElementSibling.textContent=ledger.data.legacyRoundsIndicated?'ROUNDS (INCLUDES ESTIMATE)':'ROUNDS COMPLETED';$('statConcepts').textContent=summary.concepts;
@@ -517,6 +518,20 @@ $('resetProgress').addEventListener('click',()=>{if(accountId!=='guest'){alert('
 $('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export(),detailedEvidence:improvement?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
+$('dolRetryCloud')?.addEventListener('click',async()=>{
+  if(!learningSync||accountId==='guest')return;
+  const button=$('dolRetryCloud');button.disabled=true;
+  $('dolSyncStatus').textContent='Retrying cloud synchronisation...';
+  try{
+    learningSync.capture(learning.getState());
+    await learningSync.sync();
+    $('dolSyncStatus').textContent='Cloud learning record synchronised';
+    if(state.view==='progress')renderProgress();
+  }catch(error){
+    $('dolSyncStatus').textContent='Saved on this device · cloud sync pending: '+(error.code||error.message);
+    console.warn('Dol learning sync retry deferred',error);
+  }finally{button.disabled=false;}
+});
 $('focusToggle').addEventListener('click',()=>setFocus(!focusMode));
 $('focusSetting').addEventListener('change',e=>setFocus(e.target.checked));
 const reveal=()=>{if(!focusMode)return;document.body.classList.add('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','true');};
@@ -546,17 +561,26 @@ import('./dol-account.mjs').then(({initAccountUI,transport,preferencesStore,evid
   if(improvement&&improvementUser)improvement.connect(improvementUser.uid,improvementUser.transport()).catch(e=>console.warn('Evidence sync deferred',e));
   else improvement?.disconnect();
   await syncAnimationPreference(user,preferencesStore());
+  if($('dolRetryCloud'))$('dolRetryCloud').hidden=!user||user.uid!==accountId;
   if(!user||user.uid!==accountId||!learningSync)return;
   try{
-    const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onSnapshot:merged=>{
+    const service=createLearningSync({appId:'dol',learnerId:'local',accountId,transport:transport(),onChange:syncState=>{
+      const message=document.getElementById('dolSyncStatus');
+      if(!message)return;
+      if(syncState.working)message.textContent='Synchronising your saved learning history...';
+      else if(syncState.pending)message.textContent='Saved locally · '+syncState.pending+' cloud batch(es) awaiting synchronisation';
+    },onSnapshot:merged=>{
       if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);service.adoptSnapshot(merged);ledger.updateHistory(merged.sessions.length);renderProgress();}
     }});
+    // Keep an authenticated transport even when the first cloud attempt fails.
+    // Otherwise all later rounds incorrectly stay on the local-only instance.
+    learningSync=service;
     service.capture(learning.getState());
     if(localStorage.getItem('dol-guest-imported:'+accountId)!=='yes'&&confirm('Copy the learning history saved on this device into this account? Only do this if it belongs to you.')){
       service.importGuest({approved:true});localStorage.setItem('dol-guest-imported:'+accountId,'yes');
     }
-    await service.sync();service.observeOnline();
-    learningSync=service;
+    service.observeOnline();
+    await service.sync();
     document.getElementById('dolSyncStatus').textContent='Cloud learning record synchronised';
   }catch(error){document.getElementById('dolSyncStatus').textContent='Offline/local progress saved. Sync: '+(error.code||error.message);console.warn('Dol sync unavailable',error);}
 }})).catch(error=>{document.getElementById('dolAccountStatus').textContent='Account service unavailable: '+error.message});

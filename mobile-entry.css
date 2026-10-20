@@ -92,3 +92,6 @@
 
 /* Keep the mobile navigation above all play surfaces. */
 @media(max-width:700px) and (pointer:coarse){body.focus-mode .menu-reveal{z-index:110!important}}
+
+/* Immediate feedback for touch/pen input even on very short taps. */
+#playView .mobile-keypad button.key-captured{filter:brightness(1.55);outline:2px solid #a1efd5;outline-offset:-3px}

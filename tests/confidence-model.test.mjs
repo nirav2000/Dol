@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {DAY_MS,factStatus,pairKey,speedStats,speedGroups} from '../confidence-model.mjs';
+import {DAY_MS,factStatus,factMomentum,pairKey,speedStats,speedGroups} from '../confidence-model.mjs';
 const t=Date.UTC(2026,0,1),key=pairKey(8,3);
 const e=(day,ms=8000,outcome='correct',assisted=false,errors=0)=>({key,at:t+day*DAY_MS,ms,outcome,assisted,errors});
 test('fluency needs three fast clean responses; assisted, mistakes and slow answers do not qualify',()=>{
@@ -27,4 +27,14 @@ test('speed statistics use quartiles and trend; factor family includes either op
  assert.equal(speedGroups(events,'fact').length,1);
  assert.equal(speedGroups(events,'factor').length,2);
  assert.equal(speedGroups(events,'factor').find(g=>g.label==='Factor 3').stats.count,6);
+});
+
+test('within-stage progress is visible without claiming mastery',()=>{
+ const one=factMomentum(factStatus([e(0)],key));
+ const two=factMomentum(factStatus([e(0),e(.01)],key));
+ assert.ok(one.fill>0);assert.ok(two.fill>one.fill);
+ assert.equal(factStatus([e(0),e(.01)],key).kind,'developing');
+ const fluent=factMomentum(factStatus([e(0),e(.01),e(.02)],key));
+ assert.ok(fluent.fill>two.fill);assert.equal(fluent.fastStreak,3);
+ assert.equal(factMomentum(factStatus([],key)).fill,0);
 });

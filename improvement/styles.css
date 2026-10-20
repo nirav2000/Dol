@@ -3,3 +3,26 @@
 .improvement-heading,.improvement-chart-head,.evidence-sync,.improvement-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}.improvement-panel .improvement-headline{font-size:clamp(19px,3vw,26px)}.improvement-check-card,.improvement-changes{border:1px solid #41494c;border-radius:14px;padding:16px;margin:18px 0}.improvement-filter input{max-width:100%;min-height:44px}.improvement-check-card button,.improvement-panel button{min-height:44px}.improvement-dialog{max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;border-radius:16px;background:#171d22;color:#fff;border:1px solid #64747b;padding:20px}.improvement-dialog::backdrop{background:#000b}.improvement-dialog button,.improvement-dialog input{min-height:44px}.improvement-change-row{padding:12px 0;border-bottom:1px solid #384149;display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between}.improvement-whisker-row{display:grid;grid-template-columns:44px 1fr 65px;gap:10px;align-items:center}.improvement-whisker{height:24px;position:relative}.improvement-whisker .range{position:absolute;top:11px;height:2px;background:#a3bfe8}.improvement-whisker .box{position:absolute;top:5px;height:14px;background:#9fe4c6}.improvement-whisker .median{position:absolute;top:2px;height:20px;width:3px;background:#fff}@media(max-width:550px){.improvement-heading,.improvement-chart-head{align-items:stretch}.improvement-panel{padding:14px}}
 
 .improvement-dialog{width:min(680px,calc(100vw - 24px));padding:clamp(16px,3vw,28px)}.improvement-dialog header{display:flex;align-items:start;justify-content:space-between;gap:16px;flex-wrap:wrap}.check-entry{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:10px;align-items:end;margin:22px 0}.check-entry label{display:grid;gap:8px;min-width:0}.check-entry input{width:100%;min-height:52px;padding:8px 12px;font-size:22px}.check-entry button{grid-column:1/-1}.check-options{display:grid;gap:12px;margin:22px 0}.check-options button{text-align:left;white-space:normal;line-height:1.5}.check-hint{padding:14px;border-radius:12px;background:#293c36}.check-setup{display:grid;gap:10px;max-width:300px;margin:20px 0}
+
+/* Learning journey: honest dated activity + fair matched improvement */
+.journey-section{margin:18px 0 22px;padding:clamp(14px,2.4vw,24px);border:1px solid #475b60;border-radius:16px;background:linear-gradient(145deg,#1b292c 0%,#171d22 55%,#121a20 100%)}
+.journey-intro,.journey-chart-head,.journey-timeline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.journey-intro h3{font-size:clamp(21px,2.5vw,28px);margin:3px 0 0}
+.journey-badge{font-size:12px;color:#bae9da;text-align:right}
+.journey-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:18px 0}
+.journey-stat{min-width:0;background:#111b20;padding:12px;border:1px solid #374c54;border-radius:12px}
+.journey-stat small{display:block;color:#bacbd1;font-size:12px;margin-bottom:8px}
+.journey-stat strong{font-variant-numeric:tabular-nums;font-size:clamp(17px,2vw,23px);overflow-wrap:anywhere}
+.journey-chart-head{margin:16px 0 8px;flex-wrap:wrap}
+.journey-chart-head strong{font-size:14px}
+.journey-week-bars{display:flex;align-items:end;gap:4px;height:115px;border-bottom:1px solid #52636b;background:repeating-linear-gradient(to top,transparent 0,transparent 27px,#ffffff12 28px,transparent 29px);padding:0 3px}
+.journey-week{flex:1 1 0;min-width:3px;max-width:34px;height:var(--journey-height,0%);background:linear-gradient(0deg,#46bba4,#a1efd5);border-radius:5px 5px 0 0;position:relative}
+.journey-week.journey-idle{height:3px;background:#556369}
+.journey-week:hover{filter:brightness(1.2);outline:1px solid #e3fff6;outline-offset:1px}
+.journey-timeline{font-size:11px;color:#b9c8cf;margin:8px 0 17px}
+.journey-progress{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:14px;background:#213630;border-left:3px solid #a1efd5;border-radius:5px 12px 12px 5px;line-height:1.5}
+.journey-progress strong{font-size:17px;flex-basis:100%;color:#f2fff9}
+.journey-progress span{font-size:12px;color:#c6e6dc}
+.journey-change-tag{letter-spacing:1px;font-weight:800;font-size:10px!important}
+#journeyDisclosure{margin:12px 0 0;line-height:1.5}
+@media(max-width:650px){.journey-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.journey-week-bars{height:90px}.journey-section{padding:13px}.journey-badge{max-width:110px}}
