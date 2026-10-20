@@ -28,7 +28,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    const phone=viewport.width===390;
    const action=page.locator(phone?'#mobileKeypad [data-key=action]':'.tablet-pad [data-tablet-key=action]');
    const digit=n=>page.locator(phone?`#mobileKeypad [data-key="${n}"]`:`.tablet-pad [data-tablet-key="${n}"]`);
-   async function enter(a,b){for(const n of String(a))await digit(n).tap();await action.tap();for(const n of String(b))await digit(n).tap();await action.tap();}
+   async function enter(a,b){for(const n of String(a))await digit(n).tap();await action.tap();for(const n of String(b))await digit(n).tap();await action.tap();console.log('DIAG25 entry',name,viewport.width,layout,a,b,JSON.stringify({heading:await page.locator('#foundHeading').textContent(),feedback:await page.locator('#entryFeedback').textContent(),first:await page.locator('#mobileFirst').textContent(),second:await page.locator('#mobileSecond').textContent(),input:await page.locator('#pairInput').inputValue()}));}
    await enter(1,231);await enter(3,77);await enter(7,33);
    assert.match(await page.locator('#foundHeading').textContent(),/3/);
    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
