@@ -61,19 +61,19 @@ export function createMobileEntry({getState,submit}){
    const b=document.createElement('button');b.type='button';b.dataset.key=key;
    b.textContent=key==='clear'?'\u232b':key==='action'?'\u00d7':key;
    b.setAttribute('aria-label',key==='clear'?'Delete digit':key==='action'?'Next factor':'Digit '+key);
-   let ackTimer;
+   let ackTimer, suppressClick=false, suppressTimer;
    b.addEventListener('pointerdown',e=>{
      // Two-thumb typing can briefly overlap. Secondary touch contacts are real
      // key presses too; requiring isPrimary silently dropped those digits.
      if(e.pointerType==='touch'||e.pointerType==='pen'){
-       e.preventDefault();lastTouch=performance.now();press(key);
+       e.preventDefault();lastTouch=performance.now();suppressClick=true;clearTimeout(suppressTimer);suppressTimer=setTimeout(()=>{suppressClick=false},800);press(key);
        b.classList.add('key-captured');clearTimeout(ackTimer);
        ackTimer=setTimeout(()=>b.classList.remove('key-captured'),165);
      }
    });
    // Suppress the follow-up click, including browser retargeting after a render.
    // New pointerdowns are never debounced; keyboard clicks (detail 0) still work.
-   b.addEventListener('click',e=>{if(e.detail>0&&performance.now()-lastTouch<650){e.preventDefault();return;}press(key);});
+   b.addEventListener('click',e=>{if(suppressClick){suppressClick=false;clearTimeout(suppressTimer);e.preventDefault();return;}press(key);});
    pad.append(b);
  }
  first.addEventListener('click',()=>activate(0));second.addEventListener('click',()=>activate(1));

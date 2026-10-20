@@ -1,5 +1,5 @@
 {
-  "version": "2.7.18",
+  "version": "2.7.19",
   "name": "Factor Frenzy",
-  "description": "Repair tablet keypad submission regression and retain immediate feedback."
+  "description": "Fix duplicate digits from touch compatibility clicks and preserve every intended keypad press."
 }
