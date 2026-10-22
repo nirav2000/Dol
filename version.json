@@ -1,5 +1,5 @@
 {
-  "version": "2.7.19",
+  "version": "2.8.0",
   "name": "Factor Frenzy",
-  "description": "Fix duplicate digits from touch compatibility clicks and preserve every intended keypad press."
+  "description": "Interactive discovery hints, prime-factor regrouping, and square-number/search-limit teaching and practice."
 }

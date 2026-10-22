@@ -26,6 +26,10 @@ jobs:
           node --check dol-account.mjs
           node --check strategy-model.mjs
           node --check strategy-coach.mjs
+          node --check teaching-model.mjs
+          node --check teaching-question.mjs
+          node --check teaching-coach.mjs
+          node --check square-workshop.mjs
           node --check round-tools.mjs
           node --check round-model.mjs
           node --check visual-tools.mjs
@@ -61,6 +65,7 @@ jobs:
           node tests/browser-smoke.mjs
           node tests/improvement-browser.mjs
           node tests/strategy-browser.mjs
+          node tests/teaching-browser.mjs
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
           node tests/mobile-dock-browser.mjs
@@ -111,6 +116,8 @@ jobs:
           test -s _pages/version.json
           test -s _pages/learning-app.mjs
           test -s _pages/improvement/ui.mjs
+          test -s _pages/teaching-coach.mjs
+          test -s _pages/square-workshop.mjs
           touch _pages/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
