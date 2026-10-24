@@ -13,6 +13,8 @@ await page.locator('#startButton').click();
 const target=Number(await page.locator('#numberValue').textContent());
 assert.ok(target>=2&&target<=24);
 const scoreBeforeHint=await page.locator('#scoreValue').textContent();
+if(!(await page.locator('#helpToggle').isVisible())){console.error('HINT_HIDDEN_DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>({ready:document.body.dataset.dolReady,helpHidden:document.querySelector('#helpToggle')?.hidden,helpStyle:getComputedStyle(document.querySelector('#helpToggle')).display,startHidden:document.querySelector('#startButton')?.hidden,challenge:document.querySelector('#challengeLabel')?.textContent,number:document.querySelector('#numberValue')?.textContent,activeHidden:document.querySelector('#activePanel')?.hidden,bodyClass:document.body.className}))),JSON.stringify(errors));}
+assert.equal(await page.locator('#helpToggle').isVisible(),true,'Hint must remain accessible after start');
 await page.locator('#helpToggle').click();
 assert.equal(await page.locator('#strategyHintDialog').isVisible(),true);
 assert.match(await page.locator('#coachHeading').textContent(),/work it out/);
