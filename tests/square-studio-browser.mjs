@@ -7,13 +7,13 @@ const base=process.env.DOL_BASE_URL||'http://127.0.0.1:8000/';
 const live=base.startsWith('https:');
 fs.mkdirSync('artifacts',{recursive:true});
 for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]) {
- const browser=await engine.launch({headless:true,args:['--no-sandbox']});
+ const browser=await engine.launch({headless:true,args:name==='chromium'?['--no-sandbox']:[]});
  try{
   for(const viewport of [{width:320,height:568},{width:390,height:844},{width:834,height:1194},{width:1194,height:834}]){
    const context=await browser.newContext({viewport,isMobile:viewport.width<900,hasTouch:viewport.width<900,serviceWorkers:'block'});
    try{
     await testNetwork(context,{base,apps:process.env.APPS_CHECKOUT||'Apps-shared'});
-    await context.addInitScript(()=>localStorage.setItem('dol-focus-mode-v1','false'));
+    await context.addInitScript(()=>{if(localStorage.getItem('dol-focus-mode-v1')===null)localStorage.setItem('dol-focus-mode-v1','false');});
     const page=await context.newPage(),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     page.setDefaultTimeout(20000);
@@ -47,6 +47,12 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]) {
     assert.equal(await page.locator('#sqComplete').isVisible(),true);
     assert.match(await page.locator('#sqSeen').innerText(),/1\/32/);
     assert.equal(await page.locator('#scoreValue').innerText(),score,'Lessons never change factor-game points');
+    const squareCard=page.locator('#memoryList .clickable-learning-card');
+    assert.equal(await squareCard.count(),1,'The original square memory card must open the course');
+    await squareCard.click();
+    assert.equal(await page.locator('#sqLesson').isVisible(),true,'Tapping the whole square card opens a real lesson');
+    await squareCard.focus();await squareCard.press('Enter');
+    assert.equal(await page.locator('#sqLesson').isVisible(),true,'Square card works with a keyboard');
     const evidence=await page.evaluate(()=>JSON.parse(localStorage.getItem('apps-learning-v1:dol:local')||'null'));
     assert.ok(evidence?.events?.some(e=>e.concept==='square:6'&&e.correct),'Square fact recorded in shared Learning SDK');
     assert.ok(evidence?.events?.some(e=>e.concept==='square-root:6'&&e.correct),'Inverse question has distinct evidence');
@@ -83,6 +89,11 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]) {
     await page.locator('#sqNext').click();
     assert.equal(await page.locator('#sqComplete').isVisible(),true);
     assert.equal(await page.locator('#scoreValue').innerText(),score);
+    await page.evaluate(()=>localStorage.setItem('dol-focus-mode-v1','true'));
+    await page.reload({waitUntil:'networkidle'});
+    assert.equal(await page.locator('#readySquareLesson').isVisible(),true,'Square course entry remains visible with Focus mode on');
+    await page.locator('#readySquareLesson').click();
+    assert.equal(await page.locator('#squareStudio').isVisible(),true,'Focus-mode CTA opens the course');
     assert.deepEqual(errors,[],name+' '+viewport.width+'x'+viewport.height+' browser exceptions');
     await page.screenshot({path:'artifacts/squares-'+name+'-'+viewport.width+'x'+viewport.height+(live?'-live':'')+'.png',fullPage:false});
     console.log('PASS squares '+name+' '+viewport.width+'x'+viewport.height+(live?' live':''));
