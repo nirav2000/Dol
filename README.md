@@ -1,4 +1,4 @@
-# Factor Frenzy — Dol v2.0.0
+# Factor Frenzy — Dol v2.9.0
 
 A solo maths learning app with three modes: guided learning (no timer), independent practice (no timer), and timed challenge (30/60/90 seconds). Uses a responsive black/grey/white design, progressive factor hints, a selectable divisor grid, 23 documented techniques and adaptive target selection.
 
@@ -35,3 +35,8 @@ Focus mode is enabled on first visit and persists as a browser preference. It hi
 ## v2.4.0 — iPhone-first play
 
 Touch devices up to 700px use a compact gameplay layout and a dedicated numeric keypad. The keypad action key starts as × to move to the second factor, then becomes ↵ to submit. Either factor can be edited, and Backspace deletes a digit. No native iOS QWERTY keyboard is needed. The existing answer form remains the authoritative validation/scoring path; desktop typing and the shared Learning SDK are unchanged. The screen accounts for safe areas and short viewports, with the target, timer, discovered pairs, input and keypad arranged vertically.
+
+## v2.9.0 — Square Numbers Studio
+
+Square-number learning is now a connected course rather than just a reference card: a tappable entry from the Focus-friendly Play screen and Learn cards, individual lesson tiles for 1²–32², odd-number visual patterns, mental-square memory techniques, roots, factor-search boundaries and area examples, plus five-question guided lessons, ten-question mixed workouts, assisted recovery, per-skill retention and a dedicated **Review due** queue. All practice flows through the existing Learning SDK and Learning Sync adapter, with scores unaffected. See [Squares Studio details](docs/SQUARE-NUMBERS-STUDIO.md).
+

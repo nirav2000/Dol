@@ -4,11 +4,11 @@ const KEY='dol-strategy-history-v1';
 const $=id=>document.getElementById(id);
 function element(tag,attributes={},text){const node=document.createElement(tag);for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));if(text!==undefined)node.textContent=text;return node;}
 /** Interactive calculation support plus the existing, separate strategy-choice workout. */
-export function createStrategySupport({getState,setView,pause,focusAnswer,learning,storageScope=k=>k,holdTime=()=>{},releaseTime=()=>{}}){
+export function createStrategySupport({getState,setView,pause,focusAnswer,learning,storageScope=k=>k,holdTime=()=>{},releaseTime=()=>{},onLearningRecord=()=>{}}){
   let saved;try{saved=JSON.parse(localStorage.getItem(storageScope(KEY)));}catch{}
   let history=cleanStrategyHistory(saved),ownsSessionPause=false,quiz=null;
   function save(){try{localStorage.setItem(storageScope(KEY),JSON.stringify(history));}catch{}}
-  const coach=createTeachingCoach({getState,pause,focusAnswer,learning,storageScope,holdTime,releaseTime});
+  const coach=createTeachingCoach({getState,pause,focusAnswer,learning,storageScope,holdTime,releaseTime,onLearningRecord,navigateToLearn:()=>setView('learn')});
   const entry=element('section',{class:'technique-entry'});
   entry.innerHTML='<div><p class="eyebrow">PRACTISE THE DECISION</p><h2>Choose the move.</h2><p>No factor answers to type. Five situations, three possible moves. Learn which tools help, and when.</p></div><button type="button" class="primary" id="techniqueStart">Start a technique workout</button>';
   $('learnView').querySelector('.page-head').after(entry);
@@ -84,7 +84,7 @@ export function createStrategySupport({getState,setView,pause,focusAnswer,learni
   window.visualViewport?.addEventListener('resize',placeMobileHint,{passive:true});window.visualViewport?.addEventListener('scroll',placeMobileHint,{passive:true});window.addEventListener('resize',placeMobileHint,{passive:true});
   function render(){placeMobileHint();coach.render();$('helpToggle').hidden=!['running','paused'].includes(getState().phase);$('helpToggle').disabled=false;}
   summary();
-  return {render,viewChanged,resetRound:coach.resetRound,openHint:coach.open,assistanceFor:coach.assistanceFor,accepted:coach.accepted,
+  return {render,viewChanged,resetRound:coach.resetRound,openHint:coach.open,openSquareStudio:coach.openSquareStudio,assistanceFor:coach.assistanceFor,accepted:coach.accepted,
     export:()=>({...history,teaching:coach.export()}),resetProgress:()=>{history=cleanStrategyHistory(null);quiz=null;save();summary();coach.resetProgress();}
   };
 }

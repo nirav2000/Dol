@@ -115,7 +115,7 @@ function render(){
   $('pausedOverlay').hidden=state.phase!=='paused';
   $('challengeLabel').textContent=ready?'READY WHEN YOU ARE':finished?'ROUND COMPLETE':state.phase==='paused'?'ROUND PAUSED':'FIND EVERY FACTOR PAIR OF';
   $('readyPanel').hidden=!ready;$('activePanel').hidden=!active;$('finishedPanel').hidden=!finished;
-  $('startButton').hidden=active;$('startButton').innerHTML=finished?'Next round <span>→</span>':'Start round <span>→</span>';
+  $('startButton').hidden=active;$('readySquareLesson').hidden=!ready;$('startButton').innerHTML=finished?'Next round <span>→</span>':'Start round <span>→</span>';
   $('pauseButton').hidden=!active||state.mode!=='timed';$('pauseButton').textContent=state.phase==='paused'?'Resume':'Pause';
   $('finishButton').hidden=!active;
   $('stageSelect').value=state.stage;$('limitSelect').value=state.limit;$('durationSelect').value=state.duration;
@@ -416,7 +416,9 @@ function renderLearn(){
     const title=document.createElement('h3');title.textContent=topic.title;
     const detail=document.createElement('p');detail.textContent=topic.detail;
     const example=document.createElement('div');example.className='example';example.textContent=topic.example;
-    article.append(level,title,detail,example);list.append(article);
+    article.append(level,title,detail,example);
+    if(/square|root/i.test(topic.title+' '+topic.detail)){const jump=document.createElement('button');jump.type='button';jump.className='secondary';jump.textContent='Learn, practise & review square numbers →';jump.addEventListener('click',()=>strategySupport?.openSquareStudio());article.append(jump);}
+    list.append(article);
   }
   const mem=$('memoryList');mem.replaceChildren();
   const essentials=[
@@ -428,7 +430,7 @@ function renderLearn(){
     ['Systematic completeness','Test divisors through the square root, count reversals once, and include square middle pairs.'],
     ['Understand, do not memorise','Do not memorise every target’s complete factor list. Reconstruct pairs from multiplication and division facts.']
   ];
-  for(const [title,desc] of essentials){const d=document.createElement('div'),s=document.createElement('strong'),p=document.createElement('p');s.textContent=title;p.textContent=desc;d.append(s,p);mem.append(d);}
+  for(const [title,desc] of essentials){const d=document.createElement('div'),s=document.createElement('strong'),p=document.createElement('p');s.textContent=title;p.textContent=desc;d.append(s,p);if(/Squares through/.test(title)){d.classList.add('clickable-learning-card');d.tabIndex=0;d.setAttribute('role','button');d.setAttribute('aria-label','Open interactive square-number learning course');const open=()=>strategySupport?.openSquareStudio();d.addEventListener('click',open);d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});p.textContent=desc+' · Tap to learn and practise →';}mem.append(d);}
 }
 
 function improvementMetrics(){
@@ -547,7 +549,8 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
 layoutOptions=createLayoutOptions({getState:()=>state});
 applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render,onRecord:event=>improvement?.record(event)});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
-strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason)});
+strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason),onLearningRecord:()=>{try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Square learning cloud sync deferred',error));}catch(error){console.warn('Square learning saved in the learning store; cloud capture deferred',error);}}});
+$('readySquareLesson')?.addEventListener('click',()=>strategySupport?.openSquareStudio());
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
 render();setView('play');

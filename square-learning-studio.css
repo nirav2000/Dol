@@ -1,0 +1,98 @@
+/* Square Numbers Studio — scoped to Learn and Progress; never changes gameplay geometry. */
+.memory-grid>div.clickable-learning-card{cursor:pointer;border:1px solid #74ab99;background:#21352c}
+.memory-grid>div.clickable-learning-card:hover{background:#2a483b}
+.memory-grid>div.clickable-learning-card:focus-visible{outline:3px solid #a6eac7;outline-offset:3px}
+#readySquareLesson{line-height:1.4}
+#squareStudio{--sq-line:#39454c;--sq-ink:#f6f7f7;--sq-muted:#b5c3ca;color:var(--sq-ink);min-width:0}
+#squareStudio *{box-sizing:border-box}
+#squareStudio button{min-height:44px;touch-action:manipulation;cursor:pointer}
+#squareStudio button:disabled{opacity:.45;cursor:default}
+#squareStudio :focus-visible,.sq-progress :focus-visible{outline:3px solid #98dfff;outline-offset:3px}
+#squareStudio .sq-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(185px,.7fr);gap:22px;padding:clamp(17px,3vw,27px);border:1px solid #425960;border-radius:18px;background:linear-gradient(126deg,#233237 0%,#182126 66%,#10191e 100%);align-items:center}
+#squareStudio .sq-hero h2{font-size:clamp(25px,3.3vw,37px);letter-spacing:-.8px;line-height:1.12;margin:8px 0 14px}
+#squareStudio .sq-hero p{max-width:660px;line-height:1.6;margin:0 0 10px;color:#dde6e8}
+#squareStudio .sq-hero p.eyebrow{letter-spacing:.17em;font-size:11px;color:#ace8d0;font-weight:800}
+#squareStudio .sq-hero .sq-subnote{font-size:12px;color:#a7c7bd}
+#squareStudio .sq-hero-actions{display:grid;gap:10px}
+#squareStudio .sq-hero-actions button{width:100%;line-height:1.35;padding:12px 14px}
+#squareStudio .sq-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 30px}
+#squareStudio .sq-metrics>div{background:#20282b;border:1px solid #39454a;border-radius:13px;padding:15px 12px;min-width:0}
+#squareStudio .sq-metrics strong{display:block;font-size:clamp(21px,3vw,28px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#f9ffff}
+#squareStudio .sq-metrics span{display:block;margin-top:6px;font-size:12px;color:#b9c8cd;line-height:1.3}
+#squareStudio .sq-map-header{display:flex;justify-content:space-between;gap:14px;align-items:end;margin:12px 0 14px;flex-wrap:wrap}
+#squareStudio .sq-map-header h3{font-size:23px;letter-spacing:-.35px;margin:0 0 6px}
+#squareStudio .sq-map-header p{font-size:13px;color:var(--sq-muted);line-height:1.5;margin:0}
+#squareStudio .sq-hide{font-size:13px;display:flex;align-items:center;gap:9px;color:#dce6e8;min-height:44px;cursor:pointer}
+#squareStudio .sq-hide input{width:18px;height:18px;accent-color:#a6e5c9}
+#squareStudio .sq-bands{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+#squareStudio .sq-band{background:#252d30;border:1px solid #465358;border-radius:40px;padding:9px 14px;font-size:12px;font-weight:750;color:#c9d5d8}
+#squareStudio .sq-band:hover,#squareStudio .sq-band.active{background:#d3efe4;border-color:#d3efe4;color:#142520}
+#squareStudio .sq-fact-map{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:22px}
+#squareStudio .sq-fact{background:#23292c;border:1px solid #4b555b;border-radius:13px;color:#f0f5f7;display:grid;gap:3px;text-align:center;justify-items:center;align-content:center;padding:10px 5px;min-height:92px;min-width:0}
+#squareStudio .sq-fact strong{font-size:clamp(18px,2.6vw,24px);line-height:1.1}
+#squareStudio .sq-fact span{font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+#squareStudio .sq-fact small{font-size:10px;color:#c3cdd1}
+#squareStudio .sq-fact:hover{border-color:#a9e6d5;background:#304342}
+#squareStudio .sq-fact.seen{background:#193c35;border-color:#3f8271}
+#squareStudio .sq-fact.due{background:#43321b;border-color:#c7a25f}
+#squareStudio .sq-fact.selected{outline:3px solid #d9fff0;outline-offset:2px}
+#squareStudio .sq-lesson{padding:clamp(15px,3vw,23px);background:#1c2529;border:1px solid #4a5b61;border-radius:17px;margin:15px 0}
+#squareStudio .sq-lesson-head{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}
+#squareStudio .sq-lesson-head h3{font-size:clamp(26px,3.5vw,38px);margin:5px 0;letter-spacing:-.8px}
+#squareStudio .sq-lesson-head p{color:#c3d2d7;line-height:1.5}
+#squareStudio .sq-lesson-head .eyebrow{font-size:11px;color:#9fe4cc}
+#squareStudio .sq-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;border-bottom:1px solid #435158;padding-bottom:10px}
+#squareStudio .sq-tabs button{background:#293237;color:#dce6e8;border:1px solid #3e4d54;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:750;flex:1 1 132px}
+#squareStudio .sq-tabs button.active{background:#d2efe5;border-color:#d2efe5;color:#11231d}
+#squareStudio .sq-lesson-content{max-width:800px;padding-top:18px;color:#dfebeb;font-size:15px;line-height:1.7}
+#squareStudio .sq-lesson-content h4{font-size:16px;margin:14px 0 6px;color:#f7ffff}
+#squareStudio .sq-lesson-content p{margin:0 0 14px;line-height:1.7}
+#squareStudio .sq-step-note{background:#203f39;border-left:3px solid #8edac1;padding:12px 14px;border-radius:0 10px 10px 0;color:#ecfff8}
+#squareStudio .sq-caution{color:#b9c9d0;font-size:13px}
+#squareStudio .sq-grid-frame{margin:10px 0 20px;background:#141b1e;border-radius:15px;border:1px solid #3e5357;padding:18px;max-width:600px}
+#squareStudio .sq-grid-caption{font-weight:650}
+#squareStudio .sq-tile-grid{display:grid;width:min(100%,380px);aspect-ratio:1;gap:1px;margin:16px auto;background:#0a1011;border:2px solid #a1c9c1;border-radius:4px;padding:1px}
+#squareStudio .sq-tile{display:block;background:#344c52;border-radius:1px;min-width:0;min-height:0}
+#squareStudio .sq-tile.added{background:#a9e8be}
+#squareStudio .sq-grid-note{font-size:13px;color:#d1ebdf;text-align:center}
+#squareStudio .sq-quiz{margin:24px 0;padding:clamp(16px,3vw,26px);border:2px solid #91cbbb;background:#151e20;border-radius:18px}
+#squareStudio .sq-quiz-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#squareStudio .sq-quiz-head .eyebrow{color:#9ce2c4;font-size:11px}
+#squareStudio .sq-quiz-kind{font-weight:800;color:#a6d3c4;font-size:13px;margin:14px 0 3px}
+#squareStudio .sq-quiz h3{font-size:clamp(26px,4.5vw,37px);line-height:1.25;margin:8px 0 18px}
+#squareStudio .sq-quiz form label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+#squareStudio .sq-answer-line{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#squareStudio #sqAnswer{height:55px;width:min(100%,190px);min-width:0;border:1px solid #648378;border-radius:11px;color:#fff;background:#243136;padding:10px 13px;font-size:25px;font-weight:800;font-variant-numeric:tabular-nums}
+#squareStudio #sqCheck{min-height:55px}
+#squareStudio .sq-feedback{font-weight:600;color:#e7f5ec;min-height:23px;line-height:1.5;margin:12px 0}
+#squareStudio .sq-support{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+#squareStudio .sq-support button{flex:1 1 130px}
+#squareStudio .sq-support .text-button{flex:0 1 auto}
+#squareStudio .sq-worked{margin:18px 0 0;padding:16px;background:#253a38;border:1px solid #467667;border-radius:13px;line-height:1.6}
+#squareStudio .sq-worked h4{margin:0 0 6px}
+#squareStudio .sq-worked p{margin:0}
+#squareStudio .sq-quiz-footnote{font-size:12px;color:#aebfbc;line-height:1.5;margin:16px 0 0}
+#squareStudio .sq-complete{border:1px solid #91cead;border-radius:14px;background:#1f342c;padding:22px;margin:22px 0}
+#squareStudio .sq-complete h3{font-size:22px;margin:0 0 8px}
+#squareStudio .sq-complete p{line-height:1.6}
+#squareStudio .sq-review-note{line-height:1.6;color:#b4c7cb;font-size:12px}
+.sq-progress{border-color:#477060}
+.sq-progress button{min-height:48px;margin:9px 0}
+.sq-progress p{color:#cbd5d4}
+@media(max-width:780px){
+ #squareStudio .sq-hero{grid-template-columns:1fr}
+ #squareStudio .sq-hero-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #squareStudio .sq-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #squareStudio .sq-fact-map{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:510px){
+ #squareStudio .sq-hero-actions{grid-template-columns:1fr}
+ #squareStudio .sq-fact-map{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ #squareStudio .sq-fact{min-height:83px}
+ #squareStudio .sq-lesson-head button{width:100%}
+ #squareStudio .sq-support button{flex-basis:100%}
+ #squareStudio .sq-answer-line>*{flex:1}
+ #squareStudio #sqAnswer{width:100%;max-width:none}
+ #squareStudio .sq-metrics>div{padding:12px 9px}
+ #squareStudio .sq-bands .sq-band{flex:1 1 auto}
+}

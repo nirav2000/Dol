@@ -5,7 +5,7 @@ const HISTORY_KEY = 'dol-teaching-history-v1';
 function cleanHistory(value) {
   return {schema: 1, events: (Array.isArray(value?.events) ? value.events : []).filter(e => e && typeof e.skill === 'string' && typeof e.correct === 'boolean' && Number.isFinite(e.at)).slice(-500), support: (Array.isArray(value?.support) ? value.support : []).filter(e => e && typeof e.skill === 'string' && Number.isFinite(e.at)).slice(-300)};
 }
-export function createTeachingCoach({getState, pause, focusAnswer = () => {}, learning, storageScope = k => k, holdTime = () => {}, releaseTime = () => {}}) {
+export function createTeachingCoach({getState, pause, focusAnswer = () => {}, learning, storageScope = k => k, holdTime = () => {}, releaseTime = () => {}, onLearningRecord = () => {}, navigateToLearn = () => {}}) {
   let saved; try {saved = JSON.parse(localStorage.getItem(storageScope(HISTORY_KEY)));} catch {}
   let history = cleanHistory(saved), lesson = null, index = 0, cards = new Map(), roundKey = '', ownedPause = false, held = false;
   const exposures = new Map();
@@ -19,7 +19,7 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
   function record(result, source = 'guided', target = lesson?.target) {
     const event = {at: Date.now(), skill: result.step.skill, target, correct: result.correct, hints: result.hints || 0, source, evidence: source === 'guided' ? 'guided-application' : result.hints ? 'supported-practice' : 'practice-before-extra-help'};
     history.events.push(event); history.events = history.events.slice(-500); save(); summary();
-    try {learning?.record({concept: 'teaching:' + event.skill, correct: event.correct, hints: source === 'guided' ? Math.max(1, event.hints) : event.hints, mode: source === 'guided' ? 'teaching' : 'square-practice', context: {target, evidence: event.evidence, skill: event.skill}});} catch (error) {console.warn('Teaching record remains saved locally.', error?.message);}
+    try {learning?.record({concept: 'teaching:' + event.skill, correct: event.correct, hints: source === 'guided' ? Math.max(1, event.hints) : event.hints, mode: source === 'guided' ? 'teaching' : 'square-practice', context: {target, evidence: event.evidence, skill: event.skill}}); onLearningRecord();} catch (error) {console.warn('Teaching record remains saved locally.', error?.message);}
   }
   function support(step, kind, count, source = 'guided') {
     history.support.push({at: Date.now(), skill: step.skill, kind, count, source}); history.support = history.support.slice(-300); save();
@@ -35,7 +35,8 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
     }
     progress.append(grid);
   }
-  const workshop = installSquareWorkshop({record, supported: support});
+  const workshop = installSquareWorkshop({record, supported: support, learning, onLearningRecord, navigateToLearn});
+  dialog.querySelector('#coachNote').after(button('Learn square numbers & square roots →', () => {close();navigateToLearn();workshop.focus();}, {id:'coachSquareLink',class:'text-button'}));
   function identity() {const s = getState(); return `${s.round}:${s.target}`;}
   function expose(scope = [], level = 1, skill = 'factorisation') {
     for (const key of scope) if (!getState().found.has(key)) {
@@ -123,7 +124,8 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
   document.getElementById('helpToggle')?.setAttribute('aria-controls', 'strategyHintDialog');
   summary();
   return {open, close, render, resetRound, isOpen: () => dialog.open,
-    viewChanged() {if (getState().view === 'progress') summary(); if (dialog.open && getState().view !== 'play') close(false);},
+    viewChanged() {if (getState().view === 'progress') summary(); if (['learn','progress'].includes(getState().view)) workshop.refresh(); if (dialog.open && getState().view !== 'play') close(false);},
+    openSquareStudio() {if(dialog.open)close();navigateToLearn();workshop.focus();},
     assistanceFor: pair => exposures.get(pairKey(...pair))?.level || 0,
     accepted(pair) {const info = exposures.get(pairKey(...pair)); if (info) try {learning?.record({concept: 'technique-use:' + info.skill, correct: true, hints: info.level, mode: getState().mode, context: {target: getState().target, pair: pairKey(...pair), evidence: 'supported-application'}});} catch {}},
     export: () => history,
