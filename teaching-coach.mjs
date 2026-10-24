@@ -35,7 +35,7 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
     }
     progress.append(grid);
   }
-  const workshop = installSquareWorkshop({record, supported: support, learning, onLearningRecord, navigateToLearn});
+  const workshop = installSquareWorkshop({record, supported: support, learning, onLearningRecord, navigateToLearn, storageScope});
   dialog.querySelector('#coachNote').after(button('Learn square numbers & square roots →', () => {close();navigateToLearn();workshop.focus();}, {id:'coachSquareLink',class:'text-button'}));
   function identity() {const s = getState(); return `${s.round}:${s.target}`;}
   function expose(scope = [], level = 1, skill = 'factorisation') {
@@ -126,6 +126,7 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
   return {open, close, render, resetRound, isOpen: () => dialog.open,
     viewChanged() {if (getState().view === 'progress') summary(); if (['learn','progress'].includes(getState().view)) workshop.refresh(); if (dialog.open && getState().view !== 'play') close(false);},
     openSquareStudio() {if(dialog.open)close();navigateToLearn();workshop.focus();},
+    openSquareQuick() {if(dialog.open)close();navigateToLearn();workshop.startQuick();},
     assistanceFor: pair => exposures.get(pairKey(...pair))?.level || 0,
     accepted(pair) {const info = exposures.get(pairKey(...pair)); if (info) try {learning?.record({concept: 'technique-use:' + info.skill, correct: true, hints: info.level, mode: getState().mode, context: {target: getState().target, pair: pairKey(...pair), evidence: 'supported-application'}});} catch {}},
     export: () => history,

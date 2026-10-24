@@ -84,7 +84,7 @@ export function createStrategySupport({getState,setView,pause,focusAnswer,learni
   window.visualViewport?.addEventListener('resize',placeMobileHint,{passive:true});window.visualViewport?.addEventListener('scroll',placeMobileHint,{passive:true});window.addEventListener('resize',placeMobileHint,{passive:true});
   function render(){placeMobileHint();coach.render();$('helpToggle').hidden=!['running','paused'].includes(getState().phase);$('helpToggle').disabled=false;}
   summary();
-  return {render,viewChanged,resetRound:coach.resetRound,openHint:coach.open,openSquareStudio:coach.openSquareStudio,assistanceFor:coach.assistanceFor,accepted:coach.accepted,
+  return {render,viewChanged,resetRound:coach.resetRound,openHint:coach.open,openSquareStudio:coach.openSquareStudio,openSquareQuick:coach.openSquareQuick,assistanceFor:coach.assistanceFor,accepted:coach.accepted,
     export:()=>({...history,teaching:coach.export()}),resetProgress:()=>{history=cleanStrategyHistory(null);quiz=null;save();summary();coach.resetProgress();}
   };
 }

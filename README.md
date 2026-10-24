@@ -1,4 +1,4 @@
-# Factor Frenzy — Dol v2.9.0
+# Factor Frenzy — Dol v2.10.0
 
 A solo maths learning app with three modes: guided learning (no timer), independent practice (no timer), and timed challenge (30/60/90 seconds). Uses a responsive black/grey/white design, progressive factor hints, a selectable divisor grid, 23 documented techniques and adaptive target selection.
 
@@ -35,6 +35,12 @@ Focus mode is enabled on first visit and persists as a browser preference. It hi
 ## v2.4.0 — iPhone-first play
 
 Touch devices up to 700px use a compact gameplay layout and a dedicated numeric keypad. The keypad action key starts as × to move to the second factor, then becomes ↵ to submit. Either factor can be edited, and Backspace deletes a digit. No native iOS QWERTY keyboard is needed. The existing answer form remains the authoritative validation/scoring path; desktop typing and the shared Learning SDK are unchanged. The screen accounts for safe areas and short viewports, with the target, timer, discovered pairs, input and keypad arranged vertically.
+
+## v2.10.0 — Rapid fluency practice and squares 1–100
+
+One-tap **Quick square practice** is available from the Focus-friendly Play screen, the Learn Studio and Progress. In the fast drill, a complete answer autocommits after a short correction window (or immediately on Enter), and correct fast responses advance automatically. Slow, assisted or incorrect responses pause with an example, and Enter resumes. Phones have a large native Dol number pad with an optional iOS keyboard. The next 10 new/due items are picked from the chosen range (12, 20, 32, 50, 75, 100); confident facts are not repeatedly recycled before their due dates. Fast unassisted square recall is spaced at 7/14/30/60/90 days on successful revisits, while slow, incorrect and helped facts return sooner. These times are initial heuristics, not diagnostic scores.
+
+The square-learning map now teaches 1² through 100², with near-anchor mental techniques, 25/50/75 mirror patterns and correct mathematical explanations. Large area models use scaled schematics rather than generating 10,000 individual tiles. The factor game itself continues to use targets no larger than 1024. Learner evidence remains in the shared Learning SDK, and older evidence is never erased by this release. Read docs/SQUARE-NUMBERS-STUDIO.md for lessons, speed criteria and test cases.
 
 ## v2.9.0 — Square Numbers Studio
 

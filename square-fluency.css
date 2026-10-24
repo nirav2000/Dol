@@ -1,0 +1,66 @@
+/* Rapid square recall: one-tap entrance, single-field or touch keypad, stable question position. */
+#squareStudio .sq-quick{background:#111b1e;border:2px solid #6ca897;border-radius:19px;padding:clamp(15px,2.7vw,24px);margin:0 0 22px;color:#f4fbf8;overscroll-behavior:contain;min-width:0}
+#squareStudio .sq-quick[hidden],#squareStudio .sq-quick [hidden]{display:none!important}
+#squareStudio .sq-quick-top{display:flex;justify-content:space-between;gap:12px;align-items:start}
+#squareStudio .sq-quick-top h3{font-size:clamp(26px,4vw,35px);margin:4px 0 8px}
+#squareStudio .sq-quick-top .eyebrow{font-size:11px;color:#a8e2c9}
+#squareStudio .sq-quick-top .sq-quick-note{color:#c3d7d4;line-height:1.5;margin:0;font-size:13px;max-width:650px}
+#squareStudio .sq-quick-top button{flex:none}
+#squareStudio .sq-quick-settings{margin:17px 0 18px;border:1px solid #405457;border-radius:11px;background:#1d2c2f;padding:0 13px}
+#squareStudio .sq-quick-settings summary{font-size:13px;color:#d4ece5;font-weight:750;cursor:pointer;min-height:43px;display:flex;align-items:center}
+#squareStudio .sq-quick-prefs{display:flex;align-items:end;gap:12px;flex-wrap:wrap;border-top:1px solid #3d5659;padding:12px 0}
+#squareStudio .sq-quick-prefs label{display:grid;gap:6px;color:#c7ddd8;font-size:12px;flex:1 1 138px}
+#squareStudio .sq-quick-prefs select{width:100%;border:1px solid #728e86;border-radius:8px;color:#fff;background:#263438;padding:9px;min-height:44px}
+#squareStudio .sq-quick-main{max-width:700px;margin:auto}
+#squareStudio .sq-quick-question{text-align:center;border-bottom:1px solid #415250;padding-bottom:15px}
+#squareStudio .sq-quick-question h3{font-size:clamp(45px,9vw,68px);line-height:1.12;letter-spacing:-1px;margin:10px 0}
+#squareStudio .sq-quick-question p{font-size:12px;color:#aecfc0;line-height:1.5;margin:0}
+#squareStudio #sqQuickCounter{font-size:11px;text-align:center;letter-spacing:.1em;color:#a7dec9;margin:10px 0 0}
+#squareStudio .sq-quick form{margin:14px auto 0}
+#squareStudio .sq-quick form label{font-size:12px;color:#b7cac5;display:block;margin-bottom:6px}
+#squareStudio .sq-quick-input-row{display:flex;gap:9px;align-items:stretch}
+#squareStudio .sq-quick-input-row input{width:100%;min-width:0;flex:1 1 120px;min-height:62px;border:2px solid #688c7d;border-radius:12px;padding:8px 16px;text-align:center;font-size:30px;letter-spacing:1.4px;font-variant-numeric:tabular-nums;color:#fff;background:#1f2f31}
+#squareStudio .sq-quick-input-row input:disabled{opacity:1;background:#273c34;color:#e4f9ed}
+#squareStudio .sq-quick-input-row button{min-height:60px;min-width:105px}
+#squareStudio .sq-quick-pad{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px auto}
+#squareStudio .sq-quick-pad button{min-height:50px;border:1px solid #48655d;border-radius:10px;background:#243735;color:#fff;font-size:24px;font-weight:750}
+#squareStudio .sq-quick-pad button:active{background:#48715d}
+#squareStudio .sq-quick-pad button[data-key]{font-size:15px}
+#squareStudio .sq-quick-feedback{color:#e1f3e7;font-size:14px;font-weight:700;line-height:1.5;min-height:23px;margin:12px 0}
+#squareStudio .sq-quick-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#squareStudio .sq-quick-actions button{flex:1 1 115px;line-height:1.3}
+#squareStudio .sq-quick-actions button.text-button{flex:0 1 auto}
+#squareStudio #sqQuickKeyboard{min-height:40px;display:block;margin:0 auto}
+#squareStudio .sq-quick-explanation{padding:14px;background:#234239;border:1px solid #508d75;border-radius:10px;margin:10px 0}
+#squareStudio .sq-quick-explanation h4{font-size:16px;margin:0 0 8px}
+#squareStudio .sq-quick-explanation p{line-height:1.6;font-size:14px;margin:0}
+#squareStudio .sq-quick-hint{font-size:12px;color:#bad3c7;line-height:1.6;margin:20px 0 0}
+#squareStudio .sq-quick-done{text-align:center;border:1px solid #6e9b84;background:#213c31;padding:20px;border-radius:14px;margin:20px 0}
+#squareStudio .sq-quick-done h4{font-size:23px;margin:0 0 10px}
+#squareStudio .sq-quick-done p{line-height:1.6}
+#squareStudio .sq-quick-done button{min-height:50px}
+#readyQuickSquares{min-height:44px!important;white-space:normal}
+#squareStudio .sq-large-visual{width:min(100%,380px);aspect-ratio:1;border:2px solid #aed7c8;background:#a6e6bf;position:relative;margin:16px auto;border-radius:5px;overflow:hidden}
+#squareStudio .sq-large-core{position:absolute;top:0;left:0;background:#37545a;border:1px solid #283f43}
+@media(max-width:700px){
+ #squareStudio .sq-quick{position:fixed;inset:0;z-index:155;border-radius:0;border:0;border-top:4px solid #91d4b2;padding:max(8px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden}
+ #squareStudio .sq-quick-top h3{font-size:26px;margin:2px 0 4px}
+ #squareStudio .sq-quick-top .eyebrow{margin:0}
+ #squareStudio .sq-quick-top .sq-quick-note{font-size:11px;line-height:1.4}
+ #squareStudio .sq-quick-top button{padding:8px 11px;font-size:12px}
+ #squareStudio .sq-quick-settings{margin:9px 0}
+ #squareStudio .sq-quick-settings summary{min-height:38px;font-size:12px}
+ #squareStudio .sq-quick-question{padding-bottom:7px}
+ #squareStudio .sq-quick-question h3{font-size:clamp(42px,11vw,58px);margin:8px 0 4px}
+ #squareStudio .sq-quick-main form{margin:9px 0 0}
+ #squareStudio .sq-quick-input-row input{min-height:52px;font-size:27px}
+ #squareStudio .sq-quick-pad:not([hidden]){display:grid}
+ #squareStudio .sq-quick-pad button{min-height:clamp(43px,8.3dvh,58px);padding:4px 8px}
+ #squareStudio .sq-quick-feedback{margin:5px 0;min-height:0}
+ #squareStudio .sq-quick-actions{position:sticky;bottom:0;padding:7px 0;background:#111b1e;z-index:1}
+ #squareStudio .sq-quick-actions button{min-height:43px;font-size:12px}
+ #squareStudio .sq-quick-hint{font-size:11px}
+ #squareStudio #sqQuickKeyboard{font-size:11px;text-align:center}
+}
+@media(min-width:701px){#squareStudio .sq-quick-pad:not([hidden]){display:none!important}}
+@media(prefers-reduced-motion:reduce){#squareStudio .sq-quick *,#squareStudio .sq-large-visual{transition:none!important}}

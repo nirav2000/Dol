@@ -37,7 +37,7 @@ export async function exerciseTeachingHarness(page,label){
  await page.evaluate(()=>{state.round++;state.target=595;state.found=new Set(['1-595']);tutor.render();});await click('#helpToggle');
  await click('#coachApproach summary');await page.locator('#coachFactor').fill('3');await click('#coachExplore');await click('#coachChoices [data-choice="no"]');
  assert.match(await page.locator('#coachFeedback').innerText(),/not a factor/);assert.equal(await page.evaluate(()=>tutor.assistanceFor([5,119])),0);await click('#coachTry');
- await click('#squareReference summary');assert.equal(await page.locator('.square-reference span').count(),32);await click('#squareReference summary');
+ await click('#squareReference summary');assert.equal(await page.locator('.square-reference span').count(),100);await click('#squareReference summary');
  await click('#squareStart');
  for(let i=0;i<5;i++){
   if(i===2){await click('#squareReveal');await click('#squareNext');continue;}

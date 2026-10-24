@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {squareMemory,squareQuestion,squareReview,squareSummary,squareDeck,chooseSquareFacts,SQUARE_BANDS,REVIEW_DAYS} from '../square-learning-model.mjs';
+import {squareMemory,squareQuestion,squareReview,squareSummary,squareDeck,chooseSquareFacts,quickSquareDeck,mirrorPattern,SQUARE_BANDS,REVIEW_DAYS,FAST_REVIEW_DAYS} from '../square-learning-model.mjs';
 
 const DAY=86400000;
 const AT=Date.UTC(2026,9,24,12);
 const item=(n,t,{correct=true,hints=0}={})=>({concept:'square:'+n,correct,hints,timestamp:t});
 test('complete squares curriculum with correct roots, odd-number differences and factor-search limits',()=>{
-  assert.equal(SQUARE_BANDS.length,3);
+  assert.equal(SQUARE_BANDS.length,6);
   assert.deepEqual(REVIEW_DAYS,[1,3,7,14,30]);
-  for(let n=1;n<=32;n++){
+  for(let n=1;n<=100;n++){
     const m=squareMemory(n);
     assert.equal(m.square,n*n);
     assert.equal(m.gap,2*n-1);
@@ -18,13 +18,13 @@ test('complete squares curriculum with correct roots, odd-number differences and
     assert.equal(squareQuestion(n,'neighbour').answer,2*n-1);
     assert.equal(squareQuestion(n,'area').answer,n*n);
     assert.equal(squareQuestion(n,'boundary').answer,Math.floor(Math.sqrt(m.boundaryTarget)));
-    assert.ok(m.boundaryTarget<=1024);
+    assert.ok(m.boundaryTarget<=10000);
   }
   assert.match(squareMemory(15).strategy,/append 25/);
   assert.match(squareMemory(18).strategy,/400/);
   assert.match(squareMemory(25).strategy,/625/);
   assert.match(squareMemory(32).boundary,/INCLUDING|Include/);
-  assert.throws(()=>squareMemory(33),/root/);
+  assert.throws(()=>squareMemory(101),/root/);
   assert.throws(()=>squareQuestion(9,'unknown'),/Unknown/);
 });
 test('first clean recall due next day; early grinding does not boost a retention interval',()=>{
@@ -85,4 +85,54 @@ test('guided lessons include explanations, inverse questions, factor-search limi
   assert.equal(mixed.length,10);
   assert.ok(mixed.some(q=>q.kind==='neighbour'));
   assert.ok(mixed.some(q=>q.kind==='boundary'));
+});
+
+test('square symmetry holds for paired numbers around any multiple of 25, including 21 and 29',()=>{
+  for(const center of [25,50,75,100]){
+    for(let d=1;d<=25;d++){
+      const a=center-d,b=center+d;
+      if(a<1||b>100)continue;
+      assert.equal((a*a)%100,(b*b)%100,center+' ± '+d);
+      assert.equal(b*b-a*a,4*center*d);
+    }
+  }
+  assert.equal(mirrorPattern(21).partner,29);
+  assert.equal(mirrorPattern(79).partner,71);
+  assert.match(squareMemory(21).mirror.explanation,/multiple of 100/);
+  assert.equal(squareQuestion(21,'mirror').answer,29);
+});
+test('rapid fluent recall schedules week-long reviews and builds up to 90 days without early inflation',()=>{
+  let at=AT,rows=[];
+  for(const [i,days] of [7,14,30,60,90].entries()){
+    rows.push({concept:'square:29',correct:true,hints:0,durationMs:1800,mode:'square-fluency',timestamp:at,context:{fastLimitMs:4000}});
+    const f=squareReview(rows,29,at);
+    assert.equal(f.fastStreak,i+1);
+    assert.equal(f.nextDue,at+days*DAY);
+    at=f.nextDue;
+  }
+  assert.equal(squareReview(rows,29,at).due,true);
+  rows.push({concept:'square:29',correct:true,hints:0,durationMs:2000,mode:'square-fluency',timestamp:at-2*DAY,context:{fastLimitMs:4000}});
+  assert.equal(squareReview(rows,29,at).nextDue,at,'Early practise must not delay the due date');
+});
+test('slow answers and errors return sooner; assisted answers are not marked fluent',()=>{
+ const first={concept:'square:45',correct:true,hints:0,durationMs:1500,mode:'square-fluency',timestamp:AT,context:{fastLimitMs:4000}};
+ const slow={...first,timestamp:AT+7*DAY,durationMs:6500};
+ const firstState=squareReview([first],45,AT);
+ assert.equal(firstState.nextDue,AT+7*DAY);
+ const following=squareReview([first,slow],45,AT+7*DAY);
+ assert.equal(following.fastStreak,0);
+ assert.equal(following.nextDue,AT+8*DAY);
+ const incorrect={...first,timestamp:AT+8*DAY,correct:false};
+ assert.equal(squareReview([first,slow,incorrect],45,AT+8*DAY).nextDue,AT+9*DAY);
+ const supported={...first,timestamp:AT+8*DAY+50,hints:1};
+ assert.equal(squareReview([first,slow,incorrect,supported],45,AT+8*DAY+50).fastStreak,0);
+});
+test('quick deck serves due and unseen facts, but rests already-fluent ones',()=>{
+ const fluent={concept:'square:6',correct:true,hints:0,durationMs:1200,mode:'square-fluency',timestamp:AT,context:{fastLimitMs:4000}};
+ const due={concept:'square:7',correct:true,hints:0,durationMs:7000,mode:'square-fluency',timestamp:AT-DAY,context:{fastLimitMs:4000}};
+ const deck=quickSquareDeck({upTo:12,count:5,events:[fluent,due],now:AT,random:()=>0});
+ assert.equal(deck.length,5);
+ assert.equal(deck[0].n,7);
+ assert.ok(deck.every(q=>q.n!==6));
+ assert.equal(quickSquareDeck({upTo:12,count:20,events:[fluent],now:AT}).length,11);
 });

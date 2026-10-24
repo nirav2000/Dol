@@ -32,6 +32,7 @@ jobs:
           node --check square-workshop.mjs
           node --check square-learning-model.mjs
           node --check square-learning-studio.mjs
+          node --check square-fluency.mjs
           node --check round-tools.mjs
           node --check round-model.mjs
           node --check visual-tools.mjs
@@ -122,6 +123,8 @@ jobs:
           test -s _pages/teaching-coach.mjs
           test -s _pages/square-workshop.mjs
           test -s _pages/square-learning-studio.mjs
+          test -s _pages/square-fluency.mjs
+          test -s _pages/square-fluency.css
           test -s _pages/square-learning-studio.css
           touch _pages/.nojekyll
       - uses: actions/configure-pages@v5

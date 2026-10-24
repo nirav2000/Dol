@@ -115,7 +115,7 @@ function render(){
   $('pausedOverlay').hidden=state.phase!=='paused';
   $('challengeLabel').textContent=ready?'READY WHEN YOU ARE':finished?'ROUND COMPLETE':state.phase==='paused'?'ROUND PAUSED':'FIND EVERY FACTOR PAIR OF';
   $('readyPanel').hidden=!ready;$('activePanel').hidden=!active;$('finishedPanel').hidden=!finished;
-  $('startButton').hidden=active;$('readySquareLesson').hidden=!ready;$('startButton').innerHTML=finished?'Next round <span>→</span>':'Start round <span>→</span>';
+  $('startButton').hidden=active;$('readySquareLesson').hidden=!ready;$('readyQuickSquares').hidden=!ready;$('startButton').innerHTML=finished?'Next round <span>→</span>':'Start round <span>→</span>';
   $('pauseButton').hidden=!active||state.mode!=='timed';$('pauseButton').textContent=state.phase==='paused'?'Resume':'Pause';
   $('finishButton').hidden=!active;
   $('stageSelect').value=state.stage;$('limitSelect').value=state.limit;$('durationSelect').value=state.duration;
@@ -551,6 +551,7 @@ applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,ref
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
 strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason),onLearningRecord:()=>{try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Square learning cloud sync deferred',error));}catch(error){console.warn('Square learning saved in the learning store; cloud capture deferred',error);}}});
 $('readySquareLesson')?.addEventListener('click',()=>strategySupport?.openSquareStudio());
+$('readyQuickSquares')?.addEventListener('click',()=>strategySupport?.openSquareQuick());
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
 render();setView('play');
