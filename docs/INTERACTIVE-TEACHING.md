@@ -1,4 +1,4 @@
-# Interactive teaching - Dol 2.10.1 (first implemented in 2.8.0)
+# Interactive teaching - Dol 2.10.2 (first implemented in 2.8.0)
 
 ## Learner entry points
 
@@ -37,3 +37,9 @@ Example: For 990 the six accepted pairs are 1 × 990, 2 × 495, 3 × 330, 6 × 1
 The introductory hint lists the progress count and a transferable routine: inspect endings; transform known pairs; split/recombine; check candidates only up to floor(sqrt(target)). It does *not* show the uncompleted answers upfront. Each guided move takes one or two interactive responses and the learner can instead return to the board immediately. Advanced prime-piece grouping and systematic search remain opt-in; mistakes and scoring are never changed by the tutor, and assistance is scoped to still-unfinished pairs.
 
 The candidate picker explicitly acknowledges if a candidate's pair has already been found. A new hint opening regenerates proposed moves from the latest board. Property tests cover 1–1024, and Chromium/WebKit browser regression tests simulate the six-pair 990 scenario and assert that no known pair is marked assisted.
+
+## Two-way regrouping and completion proof (2.10.2)
+
+Some pairs cannot be reached by splitting only the larger factor. With 567 and known 3 × 189, 9 × 63, 21 × 27, the new reverse route asks the learner to divide 21 by 3 (=7) and then multiply 27 by 3 (=81). This produces the previously missing 7 × 81 while preserving the known pairs. The strategy planner now scores both directions of an exact factor move, and a simple 1 × target route covers all other unfinished identity pairs, including primes.
+
+To prove the new suggestion engine does not get stuck, regression tests simulate choosing the first recommendation repeatedly until the board is complete for every integer 1–1024, from an empty board, from the first four accepted pairs, and from every-other accepted pair. This is 3,072 completion cases. The 990 route priorities and non-repetition evidence continue to be tested. UI smoke checks cover 567 and 990 in Chromium and WebKit phone/tablet viewports.

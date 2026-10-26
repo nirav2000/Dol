@@ -35,6 +35,10 @@ export function planBoardShortcut(n, found = new Set()) {
         divisor === 2 ? 'Use an even-number fact' :
         divisor === 3 || divisor === 9 ? 'Use the digit sum' : 'Use the eleven rule'};
   }
+  // Every target also has a 1 × target pair, including primes and the number 1.
+  const identityKey = key(1,n);
+  if (!found.has(identityKey)) return {kind: 'shortcut', divisor: 1, partner: n,
+    goalKey: identityKey, label: 'Use the identity factor'};
   return null;
 }
 
@@ -62,19 +66,21 @@ export function planBoardRegroup(n, found = new Set(), avoid = new Set()) {
   const sources = [...known.filter(([a]) => a > 1), ...known.filter(([a]) => a === 1)];
   if (!sources.length) sources.push([1, n]);
   const moves = [];
-  for (const from of sources) {
-    const [a, b] = from;
-    const options = [...new Set([10, 5, 3, 2, ...primesOf(b)])];
+  for (const from of sources) for (const splitIndex of [1, 0]) {
+    const splitFactor = from[splitIndex], otherFactor = from[1 - splitIndex];
+    const options = [...new Set([10, 5, 3, 2, ...primesOf(splitFactor)])];
     for (const divisor of options) {
-      if (divisor >= b || b % divisor) continue;
-      const partner = b / divisor, goalKey = key(a * divisor, partner);
+      if (divisor >= splitFactor || splitFactor % divisor) continue;
+      const partner = splitFactor / divisor, goalKey = key(otherFactor * divisor, partner);
       if (found.has(goalKey) || avoid.has(goalKey)) continue;
-      const simple = divisor === 10 && b % 10 === 0 ? 0 :
-        divisor === 5 && b % 5 === 0 ? 1 :
+      const simple = divisor === 10 && splitFactor % 10 === 0 ? 0 :
+        divisor === 5 && splitFactor % 5 === 0 ? 1 :
         divisor === 3 ? 2 : divisor === 2 ? 3 : 4;
-      moves.push({kind: 'regroup', from, divisor, partner, to: [a * divisor, partner], goalKey,
-        fromBoard: found.has(key(a,b)), score: simple * 100 + (a === 1 ? 200 : 0) +
-          Math.min(99, Math.floor(Math.log10(b + 1)) * 5)});
+      const to = splitIndex === 0 ? [partner, otherFactor * divisor] : [otherFactor * divisor, partner];
+      moves.push({kind: 'regroup', from, divisor, partner, to, goalKey, splitIndex,
+        splitFactor, otherFactor, fromBoard: found.has(key(...from)),
+        score: simple * 100 + (from[0] === 1 ? 200 : 0) +
+          Math.min(99, Math.floor(Math.log10(splitFactor + 1)) * 5) + (splitIndex === 0 ? 2 : 0)});
     }
   }
   moves.sort((x, y) => x.score - y.score || Math.max(...x.to) - Math.max(...y.to));

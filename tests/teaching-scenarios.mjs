@@ -78,6 +78,18 @@ export async function exerciseTeachingHarness(page,label){
  assert.match(await page.locator('#coachPrompt').innerText(),/already found 165 × 6/);
  assert.equal(await page.evaluate(()=>tutor.assistanceFor([6,165])),0);
  await click('#coachTry');assert.equal(await page.evaluate(()=>holds),0);
+ // Reverse regrouping: the only nontrivial missing pair of 567 is 7 × 81.
+ await page.evaluate(()=>{state.round++;state.target=567;state.found=new Set(['3-189','9-63','21-27']);state.mode='practice';state.phase='running';tutor.render();});
+ await click('#helpToggle');
+ assert.match(await page.locator('#coachPrompt').innerText(),/3 of 5 factor pairs found; 2 still missing/);
+ await click('#coachRoutes [data-route="regroup"]');
+ assert.match(await page.locator('#coachPrompt').innerText(),/already found 21 × 27/);
+ await answer(7);await next();await answer(81);
+ assert.match(await page.locator('#coachFeedback').innerText(),/81 × 7 = 567/);
+ assert.equal(await page.evaluate(()=>tutor.assistanceFor([7,81])),1);
+ assert.equal(await page.evaluate(()=>tutor.assistanceFor([21,27])),0);
+ assert.equal(await page.evaluate(()=>state.score),218);
+ await click('#coachTry');
  await click('#squareReference summary');assert.equal(await page.locator('.square-reference span').count(),100);await click('#squareReference summary');
  await click('#squareStart');
  for(let i=0;i<5;i++){

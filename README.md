@@ -1,4 +1,4 @@
-# Factor Frenzy — Dol v2.10.1
+# Factor Frenzy — Dol v2.10.2
 
 A solo maths learning app with three modes: guided learning (no timer), independent practice (no timer), and timed challenge (30/60/90 seconds). Uses a responsive black/grey/white design, progressive factor hints, a selectable divisor grid, 23 documented techniques and adaptive target selection.
 
@@ -35,6 +35,12 @@ Focus mode is enabled on first visit and persists as a browser preference. It hi
 ## v2.4.0 — iPhone-first play
 
 Touch devices up to 700px use a compact gameplay layout and a dedicated numeric keypad. The keypad action key starts as × to move to the second factor, then becomes ↵ to submit. Either factor can be edited, and Backspace deletes a digit. No native iOS QWERTY keyboard is needed. The existing answer form remains the authoritative validation/scoring path; desktop typing and the shared Learning SDK are unchanged. The screen accounts for safe areas and short viewports, with the target, timer, discovered pairs, input and keypad arranged vertically.
+
+## v2.10.2 — Complete discovery with two-way regrouping
+
+The board-aware tutor now moves small factors in **either direction** when reusing a known pair. For example, from 21 × 27 = 567 it can divide 21 by 3 and multiply 27 by 3 to discover the new 7 × 81. The always-valid 1 × target pair is also available as a quick identity technique, so no prime number or nearly complete board gets stranded without a suggestion. All user-visible worked steps remain interactive and score-neutral.
+
+An exhaustive 3,072-case simulation (three starting-board states for each target from 1–1024) confirms that accepting successive recommended new pairs eventually completes the entire factor board without repeating a pair. Browser regression adds the 567 reverse-regroup case. The 990 six-pair case remains covered, including shortcuts to 10 × 99, balanced changes to 11 × 90, and regrouping to 30 × 33.
 
 ## v2.10.1 — Board-aware teaching and rapid mental routes
 

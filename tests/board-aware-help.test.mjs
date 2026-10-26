@@ -54,3 +54,38 @@ test('plans evolve immediately as more game pairs are accepted',()=>{
  const regroup=planBoardRegroup(990,found,new Set(['5-198']));
  assert.notEqual(regroup?.goalKey,'5-198');
 });
+
+test('567 can regroup backwards: divide 21 by 3 and multiply 27 by 3 to find 7 x 81',()=>{
+ const found=new Set(['3-189','9-63','21-27']);
+ const p=boardSuggestions(567,found);
+ assert.equal(p.total,5);
+ assert.equal(p.knownCount,3);
+ assert.equal(p.missingCount,2);
+ const move=planBoardRegroup(567,found);
+ assert.deepEqual(move.from,[21,27]);
+ assert.equal(move.splitIndex,0);
+ assert.equal(move.divisor,3);
+ assert.deepEqual(move.to,[7,81]);
+ assert.equal(move.goalKey,'7-81');
+});
+test('greedy suggested moves eventually complete every target from 1 through 1024',()=>{
+ const key=p=>p.slice().sort((a,b)=>a-b).join('-');
+ for(let n=1;n<=1024;n++){
+  const pairs=boardStatus(n,new Set()).missing;
+  for(const found of [
+   new Set(),new Set(pairs.slice(0,4).map(key)),
+   new Set(pairs.filter((_,i)=>i%2===0).map(key))
+  ]){
+   let success=false;
+   for(let i=0;i<=pairs.length;i++){
+    const plan=boardSuggestions(n,found);
+    if(!plan.missingCount){success=true;break;}
+    assert.ok(plan.choices.length,'There must be a remaining move for '+n);
+    const goal=plan.choices[0].goalKey;
+    assert.equal(found.has(goal),false,'Never repeat a known pair for '+n);
+    found.add(goal);
+   }
+   assert.ok(success,'Every pair must be discoverable for '+n);
+  }
+ }
+});

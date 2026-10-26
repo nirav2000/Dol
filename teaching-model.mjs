@@ -98,7 +98,10 @@ function shortcutSteps(n,plan) {
   const k = plan.divisor, q = plan.partner;
   let prompt = `What is ${n} ÷ ${k}?`;
   let hint = `Check that ${k} divides ${n} without a remainder.`;
-  if (k === 10) {
+  if (k === 1) {
+    prompt = `Every whole number is 1 × itself. What is the partner of 1 for ${n}?`;
+    hint = 'Multiplying by 1 leaves the number unchanged.';
+  } else if (k === 10) {
     prompt = `${n} ends in 0, so 10 must be one factor. Mentally divide ${n} by 10. What is the other factor?`;
     hint = 'Dividing a whole multiple of 10 by 10 removes its final zero.';
   } else if (k === 5) {
@@ -136,23 +139,26 @@ function boardReuseSteps(n,found,move=planBoardReuse(n,found)) {
 
 function regroupSteps(n,plan) {
   if (!plan) return [];
-  const [a,b] = plan.from,k=plan.divisor,q=plan.partner,scope=[plan.goalKey];
+  const [a,b] = plan.from, k=plan.divisor, q=plan.partner, scope=[plan.goalKey];
+  const split=plan.splitFactor, other=plan.otherFactor;
   const fromText = plan.fromBoard ? `You already found ${a} × ${b} = ${n}.` : `Start from ${a} × ${b} = ${n}.`;
-  let hint = `Find a friendly multiple of ${k} near ${b}, then adjust.`;
-  if (k === 10) hint = `Dividing ${b} by 10 removes the final zero.`;
-  else if (k === 5) hint = `Divide ${b} by 10, then double.`;
-  else if (k === 7) hint = `${b} = ${Math.floor(q / 10) * 10 * k} + ${b - Math.floor(q / 10) * 10 * k}; divide both parts by 7.`;
+  let hint = `Find a friendly multiple of ${k} near ${split}, then adjust.`;
+  if (k === 10) hint = `Dividing ${split} by 10 removes the final zero.`;
+  else if (k === 5) hint = `Divide ${split} by 10, then double.`;
+  else if (k === 7) {
+    const firstChunk = Math.floor(q / 10) * 10 * k;
+    hint = `${split} = ${firstChunk} + ${split - firstChunk}; divide each part by 7.`;
+  }
   return [
-    question(`regroup-split-${n}-${a}-${b}-${k}`,'regrouping','Split a known factor',
-      `${fromText} Split ${b} into groups of ${k}. How many groups are there?`,
-      q,[hint],`${b} = ${k} × ${q}. Now you can regroup ${a} × ${k} × ${q} without changing ${n}.`,{scope}),
-    question(`regroup-join-${n}-${a}-${b}-${k}`,'regrouping','Combine the small pieces',
-      `You have ${a} × ${k} × ${q}. What is ${a} × ${k}?`,
-      a*k,[`Use a familiar multiplication fact: ${a} × ${k}.`],
-      `${a*k} × ${q} = ${n}. This missing factor pair comes from splitting and regrouping one you had already found. Try it on your board.`,{scope})
+    question(`regroup-split-${n}-${a}-${b}-${k}`, 'regrouping', 'Split a known factor',
+      `${fromText} Split ${split} into groups of ${k}. How many groups are there?`,
+      q, [hint], `${split} = ${k} × ${q}. Now you can rearrange ${a} × ${b} as ${other} × ${k} × ${q}.`, {scope}),
+    question(`regroup-join-${n}-${a}-${b}-${k}`, 'regrouping', 'Combine the small pieces',
+      `You have ${other} × ${k} × ${q}. What is ${other} × ${k}?`,
+      other * k, [`Use a familiar multiplication fact: ${other} × ${k}.`],
+      `${other*k} × ${q} = ${n}. This missing pair comes from splitting and regrouping one you had already found. Try it on your board.`, {scope})
   ];
 }
-
 function chainSteps(n,found) {
   const missing=pairsFor(n).filter(([a,b])=>!found.has(pairKey(a,b))), scope=missing.map(pair=>pairKey(...pair));
   if (!missing.length) return [boundaryStep(n)];

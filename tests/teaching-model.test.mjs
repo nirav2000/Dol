@@ -90,3 +90,14 @@ test('990: six found pairs, six missing; fast, balancing and regrouping aim at d
  assert.equal(all.board.missing,0);
  assert.ok(all.choices.length===0);
 });
+
+test('567 uses reverse regrouping while keeping the known 21 x 27 pair untouched',()=>{
+ const found=new Set(['3-189','9-63','21-27']);
+ const lesson=teachingLesson(567,found,{route:'regroup'});
+ assert.deepEqual(lesson.steps.slice(1).map(s=>s.answer),[7,81]);
+ assert.match(lesson.steps[1].prompt,/already found 21 × 27/);
+ assert.match(lesson.steps[1].prompt,/Split 21 into groups of 3/);
+ assert.match(lesson.steps[2].feedback,/81 × 7 = 567/);
+ assert.deepEqual(lesson.steps[1].scope,['7-81']);
+ assert.deepEqual(lesson.steps[2].scope,['7-81']);
+});
