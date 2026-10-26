@@ -89,3 +89,15 @@ test('greedy suggested moves eventually complete every target from 1 through 102
   }
  }
 });
+
+test('identity route works for 1 and primes, and disappears once completed',()=>{
+ for(const n of [1,7,13,17,23,1019]){
+  const found=new Set(),first=boardSuggestions(n,found);
+  assert.equal(first.shortcut.goalKey,key(1,n));
+  assert.equal(first.shortcut.divisor,1);
+  found.add(key(1,n));
+  const after=boardSuggestions(n,found);
+  assert.equal(after.shortcut,null);
+  if(n===1||[7,13,17,23,1019].includes(n))assert.equal(after.missingCount,0);
+ }
+});
