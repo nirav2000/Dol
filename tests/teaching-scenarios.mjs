@@ -33,7 +33,7 @@ export async function exerciseTeachingHarness(page,label){
  await click('#coachTry');assert.equal(await page.evaluate(()=>holds),0);
  await page.evaluate(()=>{state.round++;state.target=625;state.found=new Set(['1-625']);state.mode='timed';state.phase='running';tutor.render();});
  await click('#helpToggle');assert.equal(await page.evaluate(()=>state.phase),'paused');
- await click('#coachRoutes [data-route="boundary"]');await answer(24);assert.ok(await page.locator('#coachReveal').isVisible());await answer(25);
+ await click('#coachApproach summary');await click('#coachOtherRoutes [data-route="boundary"]');await answer(24);assert.ok(await page.locator('#coachReveal').isVisible());await answer(25);
  assert.match(await page.locator('#coachFeedback').innerText(),/INCLUDING 25/);await click('#coachTry');assert.equal(await page.evaluate(()=>state.phase),'running');
  await page.evaluate(()=>{state.phase='paused';});await click('#helpToggle');await click('#coachClose');assert.equal(await page.evaluate(()=>state.phase),'paused','Do not resume a user-paused round');
  await page.evaluate(()=>{state.round++;state.target=36;state.found=new Set(['1-36','2-18','3-12']);state.mode='practice';state.phase='running';tutor.render();});
