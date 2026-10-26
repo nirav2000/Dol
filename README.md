@@ -1,4 +1,4 @@
-# Factor Frenzy — Dol v2.10.0
+# Factor Frenzy — Dol v2.10.1
 
 A solo maths learning app with three modes: guided learning (no timer), independent practice (no timer), and timed challenge (30/60/90 seconds). Uses a responsive black/grey/white design, progressive factor hints, a selectable divisor grid, 23 documented techniques and adaptive target selection.
 
@@ -35,6 +35,12 @@ Focus mode is enabled on first visit and persists as a browser preference. It hi
 ## v2.4.0 — iPhone-first play
 
 Touch devices up to 700px use a compact gameplay layout and a dedicated numeric keypad. The keypad action key starts as × to move to the second factor, then becomes ↵ to submit. Either factor can be edited, and Backspace deletes a digit. No native iOS QWERTY keyboard is needed. The existing answer form remains the authoritative validation/scoring path; desktop typing and the shared Learning SDK are unchanged. The screen accounts for safe areas and short viewports, with the target, timer, discovered pairs, input and keypad arranged vertically.
+
+## v2.10.1 — Board-aware teaching and rapid mental routes
+
+**Suggested hints never present a completed factor pair as a new discovery.** The tutor examines all accepted board pairs, counts the ones still missing and ranks several routes to *distinct* missing pairs. For 990 with 1 × 990, 2 × 495, 3 × 330, 6 × 165, 9 × 110 and 22 × 45 already found, it offers: (1) a one-question final-zero shortcut to 10 × 99; (2) halve/double the existing 22 × 45 to reach 11 × 90; and (3) split/regroup 3 × 330 to reach 30 × 33. It no longer asks the learner to rediscover 3 × 330 or 6 × 165. Three alternative route buttons are presented above an optional systematic check. The opening hint gives a reusable mental checklist and can be closed immediately so the learner works on the real board without extra interactions. A longer prime-pieces lesson is still available under 'Choose a different approach'.
+
+Opening help does not itself mark an answer assisted; only affected new pairs are marked. Game points, mistakes, saved rounds and existing learning records are preserved. Regression tests cover the board's exact 990 state, 595, evolving progress, every target 1–1024, and touch-friendly Chromium/WebKit browser scenarios.
 
 ## v2.10.0 — Rapid fluency practice and squares 1–100
 

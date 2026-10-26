@@ -1,5 +1,5 @@
 {
-  "version": "2.10.0",
+  "version": "2.10.1",
   "name": "Factor Frenzy",
-  "description": "Square-number lessons 1–100, mirror-pattern exploration, one-tap quick practice, keyboard and mobile keypad flow, latency-sensitive spaced retrieval."
+  "description": "Board-aware factor teaching, distinct short mental routes, independent hints, square fluency 1–100 and spaced retrieval."
 }

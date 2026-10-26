@@ -1,4 +1,5 @@
 // Pure teaching models. A supported answer is not evidence of fluent recall.
+import {boardSuggestions,planBoardReuse,planBoardRegroup} from './board-aware-help.mjs';
 export const MAX_TARGET = 1024;
 export const pairKey = (a, b) => [a, b].sort((x, y) => x - y).join('-');
 const mul = ' \u00d7 ', div = ' \u00f7 ';
@@ -92,41 +93,131 @@ function factorChoice(n, p, scope) {
   const checks = other.filter(k => k < p).map(k => ruleFor(n, k));
   return question(`choose-${n}`, 'divisibility', 'Find a small building block', `Which of these numbers divides ${n} exactly? Test the smaller candidates before guessing a large factor.`, String(p), [...checks, ruleFor(n, p)], `${p} divides ${n}. Now work out how many groups there are; you do not need to know the whole multiplication in advance.`, { type: 'choice', choices: [...other, p].sort((a, b) => a - b).map(String), scope, candidateTarget: n });
 }
-function chainSteps(n, found) {
-  const pieces = primePieces(n), missing = pairsFor(n).filter(([a, b]) => !found.has(pairKey(a, b))), scope = missing.map(([a, b]) => pairKey(a, b));
-  const source = pairsFor(n).find(([a, b]) => a > 1 && found.has(pairKey(a, b)) && primePieces(b).length > 1);
-  let current = source ? source[1] : n; const steps = [];
-  if (source) steps.push({ id: 'known', type: 'info', skill: 'regrouping', title: 'Start from your board', prompt: `You already found ${source[0]}${mul}${source[1]} = ${n}. Keep ${source[0]}, and split ${source[1]} into smaller factors. We will regroup the pieces without changing the product.`, scope: [] });
-  for (const p of primePieces(current).slice(0, -1)) {
-    steps.push(factorChoice(current, p, scope), ...divisionSteps(current, p, scope)); current /= p;
+function shortcutSteps(n,plan) {
+  if (!plan) return [];
+  const k = plan.divisor, q = plan.partner;
+  let prompt = `What is ${n} ÷ ${k}?`;
+  let hint = `Check that ${k} divides ${n} without a remainder.`;
+  if (k === 10) {
+    prompt = `${n} ends in 0, so 10 must be one factor. Mentally divide ${n} by 10. What is the other factor?`;
+    hint = 'Dividing a whole multiple of 10 by 10 removes its final zero.';
+  } else if (k === 5) {
+    prompt = `${n} ends in ${n % 10}, so 5 is a factor. What is ${n} ÷ 5?`;
+    hint = `First divide ${n} by 10, then double that number.`;
+  } else if (k === 2) {
+    prompt = `${n} is even. What is half of ${n}?`;
+    hint = 'Halve the hundreds, tens and units separately, then combine them.';
+  } else if (k === 3 || k === 9) {
+    prompt = `The digits of ${n} sum to ${String(n).split('').map(Number).reduce((a,b)=>a+b,0)}, so ${k} divides it. What is ${n} ÷ ${k}?`;
+    hint = `Break ${n} into friendly multiples of ${k}, divide those, then combine the answers.`;
+  } else if (k === 11) {
+    prompt = `${n} passes the 11 divisibility check. What is ${n} ÷ 11?`;
+    hint = `Try 11 × 10, 11 × 20 or another nearby familiar multiple.`;
   }
-  if (pieces.length > 1) {
-    const smallPrimes = Array.from({ length: Math.floor(Math.sqrt(current)) }, (_, i) => i + 1).filter(k => primePieces(k).length === 1 && k > 1);
-    steps.push({ id: `prime-${current}`, type: 'info', skill: 'prime-factors', title: 'Know when to stop splitting', prompt: `${current} is prime: ${smallPrimes.length ? `none of the primes ${smallPrimes.join(', ')} up to its square root divides it` : 'there are no prime candidates at or below its square root'}. Keep it as one building block. The prime pieces of ${n} are ${pieces.join(mul)}.`, scope });
-  }
-  if (pieces.length > 1 && missing.some(([a]) => a > 1)) steps.push({ id: `regroup-${n}`, skill: 'regrouping', type: 'group', title: 'Build a new factor from the pieces', prompt: `Tap pieces to put them on the left. Unselected pieces make the partner on the right. Find a pair not already on your board. Every piece is used exactly once.`, pieces, found: [...found], scope, hints: ['Combine two small prime pieces; leave the others as the partner.', 'Each piece can be used only once. Repeated primes have separate buttons because they are separate pieces.'] });
-  steps.push(boundaryStep(n)); return steps;
+  return [question(`shortcut-${n}-${k}`, 'quick-factors', plan.label, prompt, q,
+    [hint], `${k} × ${q} = ${n}. This is a new pair that is not on your board yet. Enter it in the game to earn its point.`,{scope:[plan.goalKey]})];
 }
-export function teachingLesson(n, found = new Set(), { route = 'suggest', candidate } = {}) {
-  whole(n); const valid = new Set(pairsFor(n).map(([a, b]) => pairKey(a, b))); found = new Set([...found].filter(key => valid.has(key)));
-  const missing = pairsFor(n).filter(([a, b]) => !found.has(pairKey(a, b))); let steps = [];
-  if (route === 'boundary') steps = [boundaryStep(n)];
-  else if (route === 'search') steps = [boundaryStep(n), { id: 'search', type: 'search', skill: 'systematic-search', title: 'Check every first-factor candidate', prompt: 'Test every whole number up to the boundary, not just primes. A composite number can also be a factor. Known pairs are already checked.', scope: [] }];
-  else if (route === 'reuse') {
-    const source = pairsFor(n).find(([a, b]) => found.has(pairKey(a, b)) && b % 2 === 0 && !found.has(pairKey(a * 2, b / 2)));
-    if (source) {
-      const [a, b] = source, scope = [pairKey(a * 2, b / 2)];
-      steps = [question('double', 'halve-double', 'Balance two changes', `You know ${a}${mul}${b} = ${n}. Double ${a}. What do you get?`, a * 2, [`${a} + ${a}.`], `Now halve the OTHER factor, ${b}, to keep the product unchanged.`, { scope }), question('halve', 'halve-double', 'Keep the same product', `What is half of ${b}?`, b / 2, [`Split ${b} into convenient even parts and halve each part.`], `${a * 2}${mul}${b / 2} = ${n}. Multiplying one side by 2 and dividing the other by 2 cancel out.`, { scope }), boundaryStep(n)];
-    } else steps = primePieces(n).length >= 2 ? chainSteps(n, found) : [boundaryStep(n)];
-  } else if (candidate !== undefined) {
-    whole(candidate); steps = [candidateStep(n, candidate)]; if (n % candidate === 0) steps.push(...divisionSteps(n, candidate));
-  } else if (route === 'regroup' && primePieces(n).length >= 2) steps = chainSteps(n, found);
-  else if (!found.has(pairKey(1, n))) steps = divisionSteps(n, 1);
-  else if (primePieces(n).length >= 3) steps = chainSteps(n, found);
-  else if (missing.length) { const k = missing[0][0]; steps = [factorChoice(n, k, scopeFor(n, k)), ...divisionSteps(n, k)]; }
-  else steps = [boundaryStep(n)];
-  return { target: n, route, found: [...found], steps: [{ id: 'intro', type: 'intro', skill: 'orientation', title: 'Choose the help you need', prompt: found.size ? `You have ${found.size} pair${found.size === 1 ? '' : 's'}. We can build on your work, or you can choose a different approach below.` : 'Start with a nudge, explore a candidate, or check where to stop. You can return to your board at any time.', scope: [] }, ...steps] };
+
+function boardReuseSteps(n,found,move=planBoardReuse(n,found)) {
+  if (!move) return [];
+  const [a,b] = move.from, dividend = move.dividend, multiplier = move.multiplier;
+  const first = dividend / 2, second = multiplier * 2, scope=[move.goalKey];
+  return [
+    question(`balance-half-${n}-${a}-${b}`, 'halve-double', 'Start from your own work',
+      `You have already found ${a} × ${b} = ${n}. If you halve ${dividend}, what do you get?`,
+      first,[`Divide ${dividend} into two equal parts.`],
+      `${dividend} ÷ 2 = ${first}. To keep the product ${n}, we must double the other factor.`,{scope}),
+    question(`balance-double-${n}-${a}-${b}`, 'halve-double', 'Balance the change',
+      `What is double ${multiplier}?`,
+      second,[`${multiplier} + ${multiplier} = ?`],
+      `${first} × ${second} = ${n}. This is a NEW pair, so try it on your board. The product stays fixed when you halve one factor and double the other.`,{scope})
+  ];
 }
+
+function regroupSteps(n,plan) {
+  if (!plan) return [];
+  const [a,b] = plan.from,k=plan.divisor,q=plan.partner,scope=[plan.goalKey];
+  const fromText = plan.fromBoard ? `You already found ${a} × ${b} = ${n}.` : `Start from ${a} × ${b} = ${n}.`;
+  let hint = `Find a friendly multiple of ${k} near ${b}, then adjust.`;
+  if (k === 10) hint = `Dividing ${b} by 10 removes the final zero.`;
+  else if (k === 5) hint = `Divide ${b} by 10, then double.`;
+  else if (k === 7) hint = `${b} = ${Math.floor(q / 10) * 10 * k} + ${b - Math.floor(q / 10) * 10 * k}; divide both parts by 7.`;
+  return [
+    question(`regroup-split-${n}-${a}-${b}-${k}`,'regrouping','Split a known factor',
+      `${fromText} Split ${b} into groups of ${k}. How many groups are there?`,
+      q,[hint],`${b} = ${k} × ${q}. Now you can regroup ${a} × ${k} × ${q} without changing ${n}.`,{scope}),
+    question(`regroup-join-${n}-${a}-${b}-${k}`,'regrouping','Combine the small pieces',
+      `You have ${a} × ${k} × ${q}. What is ${a} × ${k}?`,
+      a*k,[`Use a familiar multiplication fact: ${a} × ${k}.`],
+      `${a*k} × ${q} = ${n}. This missing factor pair comes from splitting and regrouping one you had already found. Try it on your board.`,{scope})
+  ];
+}
+
+function chainSteps(n,found) {
+  const missing=pairsFor(n).filter(([a,b])=>!found.has(pairKey(a,b))), scope=missing.map(pair=>pairKey(...pair));
+  if (!missing.length) return [boundaryStep(n)];
+  const plan=planBoardRegroup(n,found);
+  if (!plan) return [boundaryStep(n)];
+  const pieces=primePieces(n), [a,b]=plan.from,p=plan.divisor;
+  const steps=[
+    {id:`prime-known-${n}`,type:'info',skill:'regrouping',title:'Work from the pairs you found',
+      prompt:`You already know ${a} × ${b} = ${n}. We will split ${b}, then rearrange its prime pieces to make a DIFFERENT pair.`,scope:[]},
+    factorChoice(b,p,scope),...divisionSteps(b,p,scope),
+    {id:`prime-pieces-${n}`,type:'group',skill:'regrouping',title:'Make another factor pair',
+      prompt:`The prime pieces of ${n} are ${pieces.join(' × ')}. Tap any pieces to form the first factor; the others form its partner. A correct pair already on your board does not count: find a missing one.`,pieces,found:[...found],scope,
+      hints:['Group pieces to make a factor you do not already know.','Each prime piece must be used exactly once.']}
+  ];
+  steps.push(boundaryStep(n));
+  return steps;
+}
+
+export function teachingLesson(n,found=new Set(),{route='suggest',candidate}={}) {
+  whole(n);
+  const valid=new Set(pairsFor(n).map(([a,b])=>pairKey(a,b)));
+  found=new Set([...found].filter(key=>valid.has(key)));
+  const plan=boardSuggestions(n,found), missing=plan.missing;
+  const reused=boardReuseSteps(n,found,plan.balance);
+  const shortcut=shortcutSteps(n,plan.shortcut);
+  const regroup=regroupSteps(n,plan.regroup);
+  let steps=[];
+  if (route==='boundary') steps=[boundaryStep(n)];
+  else if (route==='search') steps=[boundaryStep(n),
+    {id:'search',type:'search',skill:'systematic-search',title:'Check every first-factor candidate',
+      prompt:'Test every whole number up to the boundary, not just primes. A composite number can also be a factor. Known pairs are already checked.',scope:[]}];
+  else if (candidate!==undefined) {
+    whole(candidate);
+    if(n%candidate===0&&found.has(pairKey(candidate,n/candidate))){
+      steps=[{id:`already-${n}-${candidate}`,type:'info',skill:'orientation',title:'Already on your board',
+        prompt:`You already found ${candidate} × ${n/candidate} = ${n}. You do not need to calculate the same pair again. Try another way to uncover a missing pair.`,scope:[]},
+        ...(shortcut.length?shortcut:reused.length?reused:regroup.length?regroup:[boundaryStep(n)])];
+    } else {
+      steps=[candidateStep(n,candidate)];
+      if(n%candidate===0)steps.push(...divisionSteps(n,candidate));
+    }
+  } else if(route==='shortcut')steps=shortcut.length?shortcut:reused.length?reused:regroup.length?regroup:[boundaryStep(n)];
+  else if(route==='reuse')steps=reused.length?reused:regroup.length?regroup:shortcut.length?shortcut:[boundaryStep(n)];
+  else if(route==='regroup')steps=regroup.length?regroup:reused.length?reused:shortcut.length?shortcut:[boundaryStep(n)];
+  else if(route==='prime-pieces')steps=primePieces(n).length>=2?chainSteps(n,found):[boundaryStep(n)];
+  else if(!missing.length)steps=[boundaryStep(n)];
+  else if(shortcut.length)steps=shortcut;
+  else if(reused.length)steps=reused;
+  else if(regroup.length)steps=regroup;
+  else if(!found.has(pairKey(1,n)))steps=divisionSteps(n,1);
+  else if(primePieces(n).length>=2)steps=chainSteps(n,found);
+  else steps=[boundaryStep(n)];
+  const status=`${plan.knownCount} of ${plan.total} factor pairs found; ${plan.missingCount} still missing.`;
+  let firstIdea='';
+  if(plan.shortcut)firstIdea=`Quick idea: ${plan.shortcut.label.toLowerCase()} to find a pair you have not entered.`;
+  else if(plan.balance)firstIdea=`Quick idea: start from your ${plan.balance.from.join(' × ')} pair. Can you halve one factor and double the other?`;
+  else if(plan.regroup)firstIdea=`Quick idea: start from ${plan.regroup.from.join(' × ')}. Can you split one factor and regroup it?`;
+  let intro='';
+  if (!missing.length)intro=`${status} Great — all the factor pairs are on your board. Use the square-root boundary to verify that your search is complete.`;
+  else intro=`${status} ${firstIdea} Try finding the pair on your game board before requesting a worked solution. Your quick mental checklist: check the final digit; scan known pairs for halve-and-double; split and regroup; finally check first factors only through ${squareBounds(n).limit}.`;
+  return {target:n,route,found:[...found],board:{total:plan.total,known:plan.knownCount,missing:plan.missingCount},
+    choices:plan.choices,
+    steps:[{id:'intro',type:'intro',skill:'orientation',title:'Find a pair you have not found yet',prompt:intro,scope:[]},...steps]};
+}
+
 export function assessStep(step, value) {
   if (step.type === 'group') {
     const g = groupPieces(step.pieces, value);

@@ -1,4 +1,4 @@
-# Interactive teaching - Dol 2.8.0
+# Interactive teaching - Dol 2.10.1 (first implemented in 2.8.0)
 
 ## Learner entry points
 
@@ -23,3 +23,17 @@ Timed help resumes only a timer it paused itself. Reset and close release held t
 ## Verification
 
 Pure-model tests cover every target from 1 to 1024, all teaching routes, exact/inexact boundaries, repeated prime tokens, candidate remainders and answer validation. Local isolated Chromium rendering checks cover 320x568, 390x844, 834x1194 and 1194x834. Full CI adds the real app and WebKit, then deploys only the tested revision. Published-interface checks exercise the live hint and square workshop in both browser engines at all four sizes. GitHub Actions results, not this document, are the authoritative release/deployment evidence.
+
+## Board-aware and quick help (2.10.1)
+
+An accepted pair is never suggested as an undiscovered goal. The model filters every pair of the target number, counts the remaining pairs, and selects different *unsolved* goals for a quick last-digit divisibility shortcut, halve-and-double using a pair on the board, and split-and-regroup using a known pair. The tutor prioritises the small mental moves rather than claiming a proven globally optimal path.
+
+Example: For 990 the six accepted pairs are 1 × 990, 2 × 495, 3 × 330, 6 × 165, 9 × 110 and 22 × 45. Of twelve total pairs the six missing ones are 5 × 198, 10 × 99, 11 × 90, 15 × 66, 18 × 55 and 30 × 33. Suggested paths are:
+
+- Final zero gives 10 as a factor; calculate 990 ÷ 10 = 99, to discover 10 × 99.
+- From the accepted 22 × 45, halve 22 and double 45 to discover 11 × 90.
+- From the accepted 3 × 330, split 330 into ten groups of 33, then combine 3 × 10 to discover 30 × 33.
+
+The introductory hint lists the progress count and a transferable routine: inspect endings; transform known pairs; split/recombine; check candidates only up to floor(sqrt(target)). It does *not* show the uncompleted answers upfront. Each guided move takes one or two interactive responses and the learner can instead return to the board immediately. Advanced prime-piece grouping and systematic search remain opt-in; mistakes and scoring are never changed by the tutor, and assistance is scoped to still-unfinished pairs.
+
+The candidate picker explicitly acknowledges if a candidate's pair has already been found. A new hint opening regenerates proposed moves from the latest board. Property tests cover 1–1024, and Chromium/WebKit browser regression tests simulate the six-pair 990 scenario and assert that no known pair is marked assisted.

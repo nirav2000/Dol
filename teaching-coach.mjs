@@ -48,15 +48,34 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
     const step = lesson.steps[index], state = cardState(step), free = ['intro', 'info'].includes(step.type);
     $('coachBack').disabled = index === 0;
     $('coachNext').hidden = index === lesson.steps.length - 1 || (!free && !state.resolved);
-    $('coachNext').textContent = step.type === 'intro' ? 'Start the suggested steps' : 'Next step';
+    $('coachNext').textContent = step.type === 'intro' ? 'Teach me the quickest move' : 'Next step';
   }
   function replace(options = {}, skipIntro = false) {
     lesson = teachingLesson(getState().target, getState().found, options); cards = new Map(); index = skipIntro ? 1 : 0; $('coachPickerMessage').textContent = ''; $('coachApproach').open = false; paint();
   }
-  const routes = [['Build on my board', 'suggest'], ['Regroup prime pieces', 'regroup'], ['Where can I stop?', 'boundary'], ['Check every candidate', 'search'], ['Try halve and double', 'reuse']];
-  for (const [label, route] of routes) {
-    $('coachRoutes').append(button(label, () => replace({route}, true), {'data-route': route}));
-    $('coachOtherRoutes').append(button(label, () => replace({route}, true), {'data-route': route}));
+  // Suggestions are recomputed against the actual accepted board pairs on each opening.
+  // Present different mental methods for *different* missing pairs.
+  function paintRoutes() {
+    const choices = lesson?.choices || [];
+    const other = [
+      ['Explore prime pieces in depth', 'prime-pieces'],
+      ['Find where the search stops', 'boundary'],
+      ['Check every first-factor candidate', 'search']
+    ];
+    for (const id of ['coachRoutes','coachOtherRoutes']) {
+      const root = $(id);
+      root.replaceChildren();
+      for (const choice of choices) root.append(button(
+        choice.title + ' · ' + choice.teaser,
+        () => replace({route: choice.route}, true),
+        {'data-route': choice.route, 'aria-label': choice.title + ': ' + choice.teaser}
+      ));
+      if (id === 'coachRoutes') {
+        root.append(button('Check candidates systematically',()=>replace({route:'search'},true),{'data-route':'search'}));
+      } else {
+        for (const [title,route] of other) root.append(button(title,()=>replace({route},true),{'data-route':route}));
+      }
+    }
   }
   function renderSearch(step, state) {
     const limit = squareBounds(lesson.target).limit;
@@ -79,7 +98,10 @@ export function createTeachingCoach({getState, pause, focusAnswer = () => {}, le
   function paint() {
     if (!lesson) return; const step = lesson.steps[index], state = cardState(step);
     $('coachTarget').textContent = `WORKING ON ${lesson.target}`;
-    $('coachProgress').textContent = step.type === 'intro' ? 'Choose a route, or start the suggested steps.' : `Step ${index} of ${lesson.steps.length - 1} \u00b7 stop whenever you are ready`;
+    $('coachProgress').textContent = step.type === 'intro'
+      ? `${lesson.board.known} of ${lesson.board.total} found · ${lesson.board.missing} remaining`
+      : `Step ${index} of ${lesson.steps.length - 1} · stop whenever you are ready`;
+    paintRoutes();
     $('coachRoutes').hidden = step.type !== 'intro';
     // The opening menu carries no assistance. Actual scaffolds apply only to affected, unfinished pairs.
     expose(step.scope, 1, step.skill);

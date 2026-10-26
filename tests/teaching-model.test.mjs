@@ -6,15 +6,21 @@ test('595: grouping 5 and 7 discovers 35, with partner 17',()=>{
  const g=groupPieces([5,7,17],[0,1]);assert.equal(g.a,35);assert.equal(g.b,17);assert.equal(g.key,'17-35');
  assert.deepEqual(pairsFor(595),[[1,595],[5,119],[7,85],[17,35]]);
 });
-test('reuse actual board work; teach 119 as 70 plus 49, not unexplained division',()=>{
- const l=teachingLesson(595,new Set(['1-595','5-119','7-85']));
- assert.deepEqual(l.steps[0].scope,[]);assert.equal(l.steps[0].type,'intro');
- assert.equal(l.steps.find(s=>s.id==='choose-119').answer,'7');
- assert.equal(l.steps.find(s=>s.id==='remain-119-7').answer,49);
- assert.equal(l.steps.find(s=>s.id==='groups-119-7').answer,7);
- assert.equal(l.steps.find(s=>s.id==='partner-119-7').answer,17);
- assert.ok(!l.steps.some(s=>s.id==='near-595-5'));
- const regroup=l.steps.find(s=>s.type==='group');assert.deepEqual(regroup.scope,['17-35']);assert.ok(assessStep(regroup,[0,1]).correct);
+test('595 quickly builds 35 × 17 from an existing pair and retains deep optional teaching',()=>{
+ const found=new Set(['1-595','5-119','7-85']), lesson=teachingLesson(595,found);
+ assert.deepEqual(lesson.steps.slice(1).map(s=>s.answer),[17,35]);
+ assert.match(lesson.steps[1].prompt,/already found 7 × 85/);
+ assert.match(lesson.steps[2].feedback,/35 × 17 = 595/);
+ assert.ok(lesson.steps.slice(1).every(s=>s.scope[0]==='17-35'));
+ const deep=teachingLesson(595,found,{route:'prime-pieces'});
+ assert.equal(deep.steps[1].type,'info');
+ assert.equal(deep.steps.find(s=>s.id==='choose-85').answer,'5');
+ assert.equal(deep.steps.find(s=>s.id==='near-85-5').answer,20);
+ assert.equal(deep.steps.find(s=>s.id==='adjust-85-5').answer,3);
+ assert.equal(deep.steps.find(s=>s.id==='partner-85-5').answer,17);
+ const regroup=deep.steps.find(s=>s.type==='group');
+ assert.deepEqual(regroup.scope,['17-35']);
+ assert.ok(assessStep(regroup,[0,1]).correct);
 });
 test('595 divided by 5 uses 600 divided by 5 minus one group',()=>{
  const steps=divisionSteps(595,5);assert.deepEqual(steps.map(s=>s.answer),[120,1,119]);
@@ -31,7 +37,7 @@ test('inclusive square boundaries for all supported targets',()=>{
 test('every generated step is solvable and exposures name real pairs',()=>{
  for(let n=1;n<=1024;n++)for(const known of [new Set(),new Set([pairKey(1,n)]),new Set(pairsFor(n).map(([a,b])=>pairKey(a,b)))]){
   const valid=new Set(pairsFor(n).map(([a,b])=>pairKey(a,b)));
-  for(const route of ['suggest','regroup','reuse','boundary','search']){
+  for(const route of ['suggest','shortcut','regroup','reuse','prime-pieces','boundary','search']){
    const l=teachingLesson(n,known,{route});
    for(const s of l.steps){
     for(const key of s.scope)assert.ok(valid.has(key),`${n}/${s.id}/${key}`);
@@ -59,4 +65,28 @@ test('blank and malformed numeric answers are not marked attempts',()=>{
 });
 test('practice covers foundations, extended squares, and maximum 1024',()=>{
  for(const b of [12,20,32]){assert.equal(rootPractice(0,b,()=>0).answer,1);assert.equal(rootPractice(0,b,()=>0.999999).answer,b*b);}
+});
+
+test('990: six found pairs, six missing; fast, balancing and regrouping aim at distinct unknowns',()=>{
+ const found=new Set(['1-990','2-495','3-330','6-165','9-110','22-45']);
+ const quick=teachingLesson(990,found), balanced=teachingLesson(990,found,{route:'reuse'});
+ const regroup=teachingLesson(990,found,{route:'regroup'});
+ assert.deepEqual(quick.board,{total:12,known:6,missing:6});
+ assert.match(quick.steps[0].prompt,/6 of 12 factor pairs found; 6 still missing/);
+ assert.deepEqual(quick.steps.slice(1).map(s=>s.answer),[99]);
+ assert.deepEqual(quick.steps[1].scope,['10-99']);
+ assert.match(quick.steps[1].feedback,/10 × 99 = 990/);
+ assert.deepEqual(balanced.steps.slice(1).map(s=>s.answer),[11,90]);
+ assert.deepEqual(balanced.steps[2].scope,['11-90']);
+ assert.match(balanced.steps[1].prompt,/already found 22 × 45/);
+ assert.deepEqual(regroup.steps.slice(1).map(s=>s.answer),[33,30]);
+ assert.deepEqual(regroup.steps[2].scope,['30-33']);
+ assert.match(regroup.steps[1].prompt,/already found 3 × 330/);
+ assert.deepEqual(quick.choices.map(s=>s.goalKey),['10-99','11-90','30-33']);
+ const knownCandidate=teachingLesson(990,found,{candidate:165});
+ assert.equal(knownCandidate.steps[1].title,'Already on your board');
+ assert.ok(knownCandidate.steps.slice(1).every(s=>s.id!=='partner-990-165'));
+ const all=teachingLesson(990,new Set(pairsFor(990).map(pair=>pairKey(...pair))));
+ assert.equal(all.board.missing,0);
+ assert.ok(all.choices.length===0);
 });
