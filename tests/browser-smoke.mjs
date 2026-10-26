@@ -21,9 +21,14 @@ assert.match(await page.locator('#coachHeading').textContent(),/work it out/);
 await page.locator('#coachNext').click();
 assert.match(await page.locator('#coachProgress').textContent(),/Step 1/);
 assert.equal(await page.locator('#coachAnswer').isVisible(),true);
-await page.locator('#coachAnswer').fill(String(target));
+// The quickest valid lesson may use 2, 3, 5 or 10 rather than always 1 × target.
+const teachingAnswer=await page.evaluate(async n=>
+  (await import('./teaching-model.mjs')).teachingLesson(n,new Set()).steps[1].answer,target);
+await page.locator('#coachAnswer').fill(String(teachingAnswer));
 await page.locator('#coachCheck').click();
-assert.match(await page.locator('#coachFeedback').textContent(),new RegExp('1.*'+target));
+const teachingFeedback=await page.locator('#coachFeedback').textContent();
+assert.match(teachingFeedback,new RegExp(String(target)));
+assert.doesNotMatch(teachingFeedback,/Not quite/);
 assert.equal(await page.locator('#scoreValue').textContent(),scoreBeforeHint,'A teaching answer does not score a game pair');
 await page.locator('#coachTry').click();
 await page.locator('#pairInput').fill('1x'+target);
