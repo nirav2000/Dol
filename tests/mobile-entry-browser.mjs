@@ -36,7 +36,17 @@ try{
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow');
  await page.screenshot({path:'artifacts/mobile-game-390.png',fullPage:true});
  if(await page.locator('#activePanel').isVisible())await page.locator('#finishButton').click();
- await page.locator('#mobileKeypad [data-key="action"]').waitFor({state:'visible'});
+ const visibility=await page.evaluate(()=>{
+   const action=document.querySelector('#mobileKeypad [data-key="action"]');
+   const chain=[];
+   for(let e=action;e;e=e.parentElement){
+     const style=getComputedStyle(e),r=e.getBoundingClientRect();
+     chain.push({tag:e.tagName,id:e.id,className:typeof e.className==='string'?e.className.slice(0,100):'',hidden:e.hidden,inline:e.getAttribute('style'),display:style.display,visibility:style.visibility,opacity:style.opacity,rect:[r.x,r.y,r.width,r.height]});
+   }
+   return {phase:document.querySelector('#playView').dataset.mobilePhase,focus:document.body.className,profile:document.body.dataset.dolProfile,layout:document.body.dataset.dolLayout,chain};
+ });
+ console.log('MOBILE-REVIEW-NEXT-DIAGNOSTIC',JSON.stringify(visibility));
+ await page.locator('#mobileKeypad [data-key="action"]').waitFor({state:'visible',timeout:2500});
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
  assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
  assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'reviewNextSlot','review action stays in the reading flow');
