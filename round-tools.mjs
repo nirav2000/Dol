@@ -1,13 +1,14 @@
 import {pairKey,reviewScore,createAutoAdvance} from './round-model.mjs';
 import {createVisualTools} from './visual-tools.mjs';
 import {boardSuggestions} from './board-aware-help.mjs';
+import {makeFocusPlan,explainPairMotion} from './focus-learning-model.mjs';
 const $=id=>document.getElementById(id);
 const STORAGE='dol-round-tools-v1';
 const el=(tag,attrs={},text)=>{const n=document.createElement(tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;};
 function numberTile(value){return el('span',{class:'pair-number'},value);}
 function pairContent(button,a,b){button.append(numberTile(a),el('span',{class:'pair-times','aria-hidden':'true'},'×'),numberTile(b));}
 /** Thin UI adapter. Manual review marks intentionally never rewrite learning evidence. */
-export function createRoundTools({getState,persist,startNext,refresh,markAssisted,fillPair,openHint=()=>{},exitFocus=()=>{}}){
+export function createRoundTools({getState,persist,startNext,refresh,markAssisted,markFocusHelp=()=>{},fillPair,openHint=()=>{},exitFocus=()=>{}}){
   let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE))||{};}catch{}
   const preferences={autoNext:saved.autoNext===true,delay:[3,5,8,12].includes(saved.delay)?saved.delay:8};
   const save=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(preferences));}catch{}};
@@ -77,9 +78,78 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   $('roundBarArray').addEventListener('click',()=>openVisual('arrays'));
   // Guided factor reasoning follows the live board. It never reveals or scores a missing pair.
   const coach=el('section',{id:'roundCoachPanel',class:'round-coach',hidden:''});
-  coach.innerHTML='<div class="round-coach-heading"><span class="eyebrow">YOUR NEXT DISCOVERY</span><strong id="roundCoachCount"></strong></div><p id="roundCoachText" role="status" aria-live="polite"></p><p id="roundCoachBoundary" class="small muted"></p><div class="round-coach-actions"><button type="button" class="secondary" id="roundCoachHint">Work it out with me</button><button type="button" class="secondary" id="roundCoachRainbow">Factor rainbow</button><button type="button" class="secondary" id="roundCoachArray">Build an array</button></div>';
+  coach.innerHTML='<div class="round-coach-heading"><span class="eyebrow">YOUR NEXT DISCOVERY</span><strong id="roundCoachCount"></strong></div><p id="roundCoachText" role="status" aria-live="polite"></p><p id="roundCoachBoundary" class="small muted"></p><div id="roundCoachMotion" role="img" aria-label="Factor relationship animation" hidden></div><div class="round-coach-actions"><button type="button" class="secondary" id="roundCoachStep">One clue</button><button type="button" class="secondary" id="roundCoachDifferent">Another route</button><button type="button" class="secondary" id="roundCoachHint">Work it out with me</button><button type="button" class="secondary" id="roundCoachRainbow">Factor rainbow</button><button type="button" class="secondary" id="roundCoachArray">Build an array</button></div>';
   document.querySelector('.number-section .action-row').after(coach);
   $('roundCoachHint').addEventListener('click',()=>{if(['running','paused'].includes(getState().phase))openHint();});
+
+  // The next move is always derived from the live solved board. A teaser is
+  // free; pressing One clue reveals a scaffold and records helpful assistance
+  // without changing the learner's game score or labelling help as failure.
+  let livePlan=null,coachKey='',routeIndex=0,stepIndex=0,motionTimer=null,motionNonce=0;
+  const motionRoot=$('roundCoachMotion');
+  function stopPairMotion(){
+    motionNonce++;clearTimeout(motionTimer);motionTimer=null;
+    motionRoot.hidden=true;motionRoot.replaceChildren();coach.dataset.motion='false';
+    document.getElementById('mobileEntryStatus')?.classList.remove('is-math-motion');
+  }
+  $('roundCoachStep').addEventListener('click',()=>{
+    const s=getState(),route=livePlan?.routes[routeIndex];
+    if(!route||!['running','paused'].includes(s.phase))return;
+    if(stepIndex<route.steps.length){
+      if(s.phase==='running')markFocusHelp(route.goalKey);
+      stepIndex++;
+    }else stepIndex=0;
+    updateCoach(getState());
+  });
+  $('roundCoachDifferent').addEventListener('click',()=>{
+    const s=getState();
+    if(!livePlan||livePlan.routes.length<2||!['running','paused'].includes(s.phase))return;
+    routeIndex=(routeIndex+1)%livePlan.routes.length;stepIndex=0;stopPairMotion();updateCoach(s);
+  });
+  function animatePair(pair,earlierFound){
+    const s=getState();
+    if(s.phase!=='running'||s.view!=='play')return;
+    const move=explainPairMotion(s.target,earlierFound,pair);
+    if(!move)return;
+    stopPairMotion();
+    if(move.kind==='balance'){
+      const row=el('div',{class:'coach-motion-equation'});
+      row.append(el('strong',{},move.from.join(' × ')),
+        el('b',{class:'coach-motion-arrow','aria-hidden':'true'},'→'),
+        el('strong',{},move.to.join(' × ')));
+      const transfers=el('div',{class:'coach-motion-steps'});
+      transfers.append(el('b',{},move.from[0]+' '+move.first+' → '+move.to[0]),
+        el('b',{},move.from[1]+' '+move.second+' → '+move.to[1]));
+      motionRoot.append(row,transfers);
+    }else{
+      const row=el('div',{class:'coach-motion-groups'});
+      for(let i=0;i<move.count;i++){
+        const cell=el('span',{class:'coach-motion-group'},String(move.to[1]));
+        cell.style.setProperty('--group-index',String(i));row.append(cell);
+      }
+      if(move.totalGroups>move.count)row.append(el('span',{class:'coach-motion-more'},'…'));
+      motionRoot.append(row);
+    }
+    motionRoot.append(el('div',{class:'coach-motion-caption'},move.caption));
+    motionRoot.setAttribute('aria-label',move.caption);
+    motionRoot.hidden=false;coach.dataset.motion='true';
+    // On very short phones the coach card is intentionally collapsed.
+    // Display the same factor relationship in the always-visible entry strip
+    // rather than attempting to expand a hidden panel over the keypad.
+    if(innerWidth<=700&&innerHeight<=690&&document.body.classList.contains('focus-mode')){
+      const label=document.getElementById('mobileEntryStatus');
+      if(label){
+        label.classList.remove('is-math-motion');void label.offsetWidth;
+        label.textContent=move.kind==='balance'
+          ?move.from.join(' × ')+' → '+move.to.join(' × ')+' ('+move.first+' / '+move.second+')'
+          :move.caption;
+        label.classList.add('is-math-motion');
+      }
+    }
+    const token=motionNonce;
+    motionTimer=setTimeout(()=>{if(token===motionNonce)stopPairMotion();},3900);
+  }
+
   function openVisual(kind){
     const s=getState();
     if(!['running','paused','finished'].includes(s.phase))return;
@@ -108,13 +178,27 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
     $('roundBarHint').textContent=s.phase==='finished'?'💡 Learn the pairs':'💡 Explain';
     reflection.hidden=s.phase!=='finished';
     if(!coach.hidden){
-      const suggested=boardSuggestions(s.target,s.found),root=Math.floor(Math.sqrt(s.target));
+      const plan=makeFocusPlan(s.target,s.found,s.lastIncorrect);
+      if(plan.id!==coachKey){
+        coachKey=plan.id;routeIndex=0;stepIndex=0;stopPairMotion();
+      }
+      livePlan=plan;
+      routeIndex=Math.min(routeIndex,Math.max(0,plan.routes.length-1));
+      const route=plan.routes[routeIndex],root=Math.floor(Math.sqrt(s.target));
       $('roundCoachCount').textContent=s.found.size+' of '+s.pairs.length+' pairs found';
-      const routes=suggested.choices.map(x=>x.teaser);
-      $('roundCoachText').textContent=s.mode==='timed'
-        ? 'A method is available when you need it; your timer pauses while you learn.'
-        : (s.found.size?'Reuse a pair you know. ':'Start with a quick divisibility test. ')+(routes.length?'Possible routes: '+routes.join(' · ')+'.':'Test divisors systematically, then prove you have found them all.');
-      $('roundCoachBoundary').textContent='Search boundary: '+root+'² = '+(root*root)+' ≤ '+s.target+' < '+((root+1)*(root+1))+' = '+(root+1)+'². Only test candidates up to '+root+'.';
+      coach.dataset.coachKind=route?.kind||'complete';
+      $('roundCoachText').textContent=route
+        ? (stepIndex?route.steps[stepIndex-1]:route.teaser)
+        : 'You have found every pair. Verify completeness by testing up to √'+s.target+'.';
+      $('roundCoachStep').hidden=!route;
+      $('roundCoachDifferent').hidden=plan.routes.length<2;
+      $('roundCoachStep').textContent=route
+        ? (stepIndex===route.steps.length?'Start clues again':stepIndex===route.steps.length-1?'Reveal the worked pair':stepIndex?'Next clue':'One clue')
+        :'One clue';
+      $('roundCoachHint').textContent='Interactive lesson';
+      $('roundCoachBoundary').textContent='Stop at √'+s.target+': test first factors from 1 through '+root+'. ';
+    }else{
+      livePlan=null;coachKey='';routeIndex=0;stepIndex=0;stopPairMotion();
     }
     if(!reflection.hidden){
       const root=Math.floor(Math.sqrt(s.target)),missing=s.pairs.filter(([a,b])=>!s.found.has(a+'-'+b));
@@ -186,5 +270,5 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
     if(s.phase==='finished')renderReview(s);
     environment();
   }
-  return {render,renderReview,beforeStart(){timer.cancel();reviewIdentity=null;scoreEditing=false;closeVisual();visual.reset();},viewChanged(){environment();},reset(){timer.cancel();reviewIdentity=null;scoreEditing=false;closeVisual();visual.reset();},holdReview(){timer.hold('review');}};
+  return {render,renderReview,animatePair,beforeStart(){timer.cancel();reviewIdentity=null;scoreEditing=false;stopPairMotion();closeVisual();visual.reset();},viewChanged(){environment();},reset(){timer.cancel();reviewIdentity=null;scoreEditing=false;stopPairMotion();closeVisual();visual.reset();},holdReview(){timer.hold('review');}};
 }

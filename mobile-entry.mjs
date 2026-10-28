@@ -1,3 +1,4 @@
+import {makeFocusPlan} from './focus-learning-model.mjs';
 // One persistent mobile dock: full keypad in play, the SAME action key in review.
 // Validation, scoring and auto-next remain owned by the existing application.
 export function createMobileEntry({getState,submit}){
@@ -6,6 +7,12 @@ export function createMobileEntry({getState,submit}){
  wrap.innerHTML='<div class="mobile-entry-label" id="mobileEntryStatus" role="status" aria-live="polite">ENTER A FACTOR PAIR</div><div class="mobile-factors"><button type="button" id="mobileFirst" aria-label="First factor" aria-pressed="true">\u2014</button><span aria-hidden="true">\u00d7</span><button type="button" id="mobileSecond" aria-label="Second factor" aria-pressed="false">\u2014</button></div><div id="mobileKeypad" class="mobile-keypad" role="group" aria-label="Factor keypad"></div>';
  // The same persistent mobile dock remains attached to Play in every phase.
  play.append(wrap);
+ // A small status strip appears only when normal scrolling has moved the
+ // number or countdown outside the viewport. It never intercepts touch.
+ const hud=document.createElement('aside');hud.id='focusRoundHud';hud.hidden=true;
+ hud.setAttribute('aria-label','Current factor challenge, time and progress');
+ hud.innerHTML='<span class="focus-hud-target"><strong id="focusHudTarget">?</strong><small>FIND THE PAIRS</small></span><span id="focusHudTime" class="focus-hud-clock"></span><span id="focusHudProgress" class="focus-hud-count"></span>';
+ play.append(hud);
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
  const media=window.matchMedia('(max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse)');
  let parts=['',''],active=0,lastRound=null,mobileSession=false;
@@ -27,7 +34,10 @@ export function createMobileEntry({getState,submit}){
  function placeDock(){
    if(!isMobile()||wrap.hidden)return;
    const vv=window.visualViewport,visibleHeight=vv?.height||innerHeight;
-   const bottom=innerWidth>innerHeight&&visibleHeight<=500?12:Math.max(64,Math.min(104,visibleHeight*.1));
+   const safeBottom=parseFloat(getComputedStyle(play).getPropertyValue('--mobile-safe-bottom'))||0;
+   const focusPhone=document.body.classList.contains('focus-mode')&&innerWidth<=700;
+   const bottom=innerWidth>innerHeight&&visibleHeight<=500?Math.max(12,safeBottom+8):
+     focusPhone?Math.max(14,safeBottom+12):Math.max(64,Math.min(104,visibleHeight*.1));
    play.style.setProperty('--dol-fixed-dock-bottom',bottom+'px');
    const finished=getState().phase==='finished';
    const height=finished?pad.querySelector('[data-key="action"]').getBoundingClientRect().height:wrap.getBoundingClientRect().height;
@@ -45,6 +55,29 @@ export function createMobileEntry({getState,submit}){
    board.style.setProperty('--focus-board-max-height',Math.max(64,space)+'px');
  }
  const scheduleBoardFit=()=>requestAnimationFrame(()=>requestAnimationFrame(fitFocusBoard));
+ function updateHudClock(){
+   if(!hud.hidden)hud.querySelector('#focusHudTime').textContent=getState().mode==='timed'?
+     document.getElementById('timerValue').textContent:'∞';
+ }
+ let hudQueued=false;
+ function scheduleHud(){
+   if(hudQueued)return;
+   hudQueued=true;requestAnimationFrame(()=>{hudQueued=false;updateHud();});
+ }
+ function updateHud(){
+   const state=getState();
+   const active=state.view==='play'&&['running','paused'].includes(state.phase);
+   const eligible=active&&document.body.classList.contains('focus-mode')&&innerWidth<=700&&isMobile();
+   if(!eligible){hud.hidden=true;return;}
+   const target=document.getElementById('numberValue');
+   const timer=document.querySelector('#playView .number-section>.timer-line');
+   const bottom=Math.min(target.getBoundingClientRect().bottom,timer?.getBoundingClientRect().bottom??Infinity);
+   hud.hidden=bottom>=56;
+   if(hud.hidden)return;
+   hud.querySelector('#focusHudTarget').textContent=String(state.target);
+   hud.querySelector('#focusHudProgress').textContent=state.found.size+' / '+state.pairs.length;
+   updateHudClock();
+ }
  function reserveSpace(){
    const height=isMobile()&&!wrap.hidden&&getState().phase!=='finished'?Math.ceil(wrap.getBoundingClientRect().height):0;
    const value=height+'px';
@@ -67,13 +100,19 @@ export function createMobileEntry({getState,submit}){
    if(!finished)wrap.classList.remove('factor-dock-burst-complete');
    // The action is anchored to the visual viewport, including safe-area shifts.
    wrap.style.removeProperty('display');
-   const status=wrap.querySelector('#mobileEntryStatus');status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:'ENTER A FACTOR PAIR';status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
+   const status=wrap.querySelector('#mobileEntryStatus');
+   const tiny=mobileSurface&&document.body.classList.contains('focus-mode')&&
+     innerWidth<=700&&innerHeight<=690&&state.view==='play'&&['running','paused'].includes(state.phase);
+   const clue=tiny?makeFocusPlan(state.target,state.found,state.lastIncorrect).routes[0]?.teaser:null;
+   status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:(clue||'ENTER A FACTOR PAIR');
+   status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
+   status.classList.toggle('has-clue',!!clue);
    first.textContent=parts[0]||'\u2014';second.textContent=parts[1]||'\u2014';
    first.setAttribute('aria-pressed',String(active===0));second.setAttribute('aria-pressed',String(active===1));
    const action=pad.querySelector('[data-key="action"]');
    if(action){action.textContent=finished?'Next \u21b5':active===0?'\u00d7':'\u21b5';action.setAttribute('aria-label',finished?'Next question':active===0?'Next factor':'Submit factor pair');}
    wrap.querySelectorAll('button').forEach(b=>{b.disabled=finished?(b.dataset.key!=='action'||state.view!=='play'):!enabled();});
-   reserveSpace();placeDock();scheduleBoardFit();
+   reserveSpace();placeDock();scheduleBoardFit();scheduleHud();
    const roundKey=state.round+':'+state.target;
    if(isMobile()&&enabled()&&roundKey!==lastRound){
      lastRound=roundKey;
@@ -140,14 +179,15 @@ export function createMobileEntry({getState,submit}){
  },true);
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(reserveSpace).observe(wrap);
  const settleDock=()=>{placeDock();scheduleBoardFit();requestAnimationFrame(()=>{placeDock();scheduleBoardFit();});};
- window.visualViewport?.addEventListener('scroll',settleDock,{passive:true});
+ window.visualViewport?.addEventListener('scroll',()=>{settleDock();scheduleHud();},{passive:true});
+ window.addEventListener('scroll',scheduleHud,{passive:true});
  const visibility=new MutationObserver(sync);
  visibility.observe(play,{attributes:true,attributeFilter:['hidden']});
  visibility.observe(document.getElementById('activePanel'),{attributes:true,attributeFilter:['hidden']});
  media.addEventListener('change',sync);
- window.addEventListener('resize',()=>{reserveSpace();settleDock();});
- window.visualViewport?.addEventListener('resize',()=>{reserveSpace();settleDock();});
+ window.addEventListener('resize',()=>{reserveSpace();settleDock();scheduleHud();});
+ window.visualViewport?.addEventListener('resize',()=>{reserveSpace();settleDock();scheduleHud();});
  document.addEventListener('dol-layoutchange',sync);
  sync();
- return {reset,sync,focus,isMobile};
+ return {reset,sync,focus,isMobile,updateHudClock,updateHud};
 }

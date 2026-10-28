@@ -41,7 +41,8 @@ const state={
   visualHelp:false,target:null,previous:null,pairs:[],found:new Set(),hintedPairs:new Set(),attempted:new Set(),
   chosenFactor:null,hintLevel:0,hintsUsed:0,helpOpen:false,mistakes:0,startedWithScore:0,startedAt:0,
   remainingMs:60000,deadline:0,ticker:null,feedback:'',feedbackType:'',strategy:'',result:null,
-  numberHistory:read(scoped('dol-number-history-v2'),{})
+  numberHistory:read(scoped('dol-number-history-v2'),{}),
+  lastIncorrect:null,focusHintTargets:new Set()
 };
 state.remainingMs=state.duration*1000;
 function persist(){
@@ -72,6 +73,7 @@ function tone(ok){
 function setPhase(phase){state.phase=phase;render();}
 function renderClock(){
   $('timerValue').textContent=state.mode==='timed'?formatTime(state.remainingMs):'∞';
+  mobileEntry?.updateHudClock?.();
   $('timeFill').style.width=(state.mode==='timed'?Math.max(0,state.remainingMs/(state.duration*1000))*100:100)+'%';
 }
 function slots(){
@@ -165,6 +167,7 @@ function start(){
   state.target=suggestion?.number||chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
   state.visualHelp=false;state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
   state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.helpOpen=state.mode==='guided';state.mistakes=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
+  state.lastIncorrect=null;state.focusHintTargets=new Set();
   state.startedWithScore=state.score;state.startedAt=Date.now();state.roundId=crypto.randomUUID();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
   $('pairInput').value='';
@@ -317,15 +320,19 @@ function answer(event){
   }
   state.feedback=check.message;state.feedbackType=check.status==='correct'?'success':'error';
   if(check.status!=='correct'){
-    if(check.status==='incorrect'){const values=input.value.match(/\d+/g);if(values?.length===2)insights?.answer(values.map(Number),'incorrect',false);}
+    if(check.status==='incorrect'){
+      const values=input.value.match(/\d+/g);
+      if(values?.length===2){insights?.answer(values.map(Number),'incorrect',false);state.lastIncorrect={a:Number(values[0]),b:Number(values[1])};}
+    }
     state.mistakes++;
     if(state.mistakes>=2&&state.mode==='practice')state.feedback+=' You can open a hint to work through this.';
     if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
     tone(false);render();if(!(document.body.dataset.dolLayout==='pairboard'&&matchMedia('(pointer:coarse)').matches)){input.select();input.focus({preventScroll:true});}return;
   }
-  const hints=Math.max(state.hintsUsed,state.visualHelp?1:0,strategySupport?.assistanceFor(check.pair)||0);
+  const hints=Math.max(state.hintsUsed,state.visualHelp?1:0,strategySupport?.assistanceFor(check.pair)||0,state.focusHintTargets.has(check.key)?1:0);
   insights?.answer(check.pair,'correct',hints>0);
-  state.mistakes=0;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
+  const previouslyFound=new Set(state.found);
+  state.mistakes=0;state.lastIncorrect=null;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
   state.score++;recordPair(check.pair,true,hints);strategySupport?.accepted(check.pair);
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
   state.feedbackType='success';
@@ -333,7 +340,7 @@ function answer(event){
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
   // A fully revealed visual board remains assisted for this round; private coach hints are pair-specific.
   persist();
-  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{render();animateDiscoveredPair(check.key);focusAnswer();}
+  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{render();animateDiscoveredPair(check.key);roundTools?.animatePair?.(check.pair,previouslyFound);focusAnswer();}
 }
 function finish(reason){
   if(state.phase!=='running'&&state.phase!=='paused')return;
@@ -452,13 +459,15 @@ function testSelectedFactor(){
   }
   const a=Math.min(k,n/k),b=Math.max(k,n/k),key=a+'-'+b;
   if(state.found.has(key)){state.feedback=a+' × '+b+' is already on your board.';state.feedbackType='error';render();return;}
+  const previouslyFound=new Set(state.found);
   insights?.answer([a,b],'correct',true);
   state.found.add(key);state.hintedPairs.add(key);state.score++;
   recordPair([a,b],true,state.hintsUsed);
+  state.lastIncorrect=null;
   state.feedback=a+' × '+b+' = '+n+'. You found this pair using the factor checker.';
   state.feedbackType='success';tone(true);
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;persist();
-  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(key);}else{render();animateDiscoveredPair(key);}
+  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(key);}else{render();animateDiscoveredPair(key);roundTools?.animatePair?.([a,b],previouslyFound);}
 }
 function resetRounds(){
   if(['running','paused'].includes(state.phase)&&!confirm('End the current round and restart the round count at 1? Learning history and score will be kept.'))return;
@@ -651,6 +660,7 @@ $('menuReveal').addEventListener('click',()=>{if(document.body.classList.contain
 document.querySelector('.topbar').addEventListener('focusin',reveal);
 document.querySelector('.topbar').addEventListener('focusout',e=>{if(!e.currentTarget.contains(e.relatedTarget)&&e.relatedTarget!==$('menuReveal'))hide();});
 roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
+  markFocusHelp:(goalKey)=>{insights?.help();if(goalKey)state.focusHintTargets.add(goalKey);},
   markAssisted:()=>{tick();if(state.phase==='running'){insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
   fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});},
   openHint:()=>strategySupport?.openHint(),exitFocus:()=>setFocus(false)
