@@ -45,10 +45,10 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
         await page.locator('#startButton').click();
         const n=Number(await page.locator('#numberValue').textContent());
         assert.ok(n>=256,'resume at expert challenge; got '+n);
-        assert.equal(await page.locator('#roundCoachPanel').isVisible(),true,'contextual maths tutor is shown during play');
+        assert.equal(await page.locator(phone?'#roundLearningBar':'#roundCoachPanel').isVisible(),true,'the appropriate compact-phone or tablet maths tutor is shown during play');
         await page.screenshot({path:'artifacts/mobile-tutor-'+engineName+'-'+viewport.width+'.png',fullPage:true});
         assert.match(await page.locator('#roundCoachBoundary').textContent(),/Search boundary: /);
-        await page.locator('#roundCoachHint').click();
+        await page.locator(phone?'#roundBarHint':'#roundCoachHint').click();
         assert.equal(await page.locator('#strategyHintDialog').isVisible(),true,'interactive steps open from the round');
         await page.locator('#coachTry').click();
         assert.equal(await page.locator('#strategyHintDialog').isVisible(),false);
@@ -60,9 +60,9 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
         assert.equal(Number(await page.locator('#scoreValue').textContent()),before+1);
         assert.match(await page.locator('#roundCoachCount').textContent(),/1 of /);
         assert.ok(await page.locator('.pair-discovery').count()>0,'correct pair receives an animation without waiting for full round');
-        await page.locator('#roundCoachRainbow').click();
+        await page.locator(phone?'#roundBarRainbow':'#roundCoachRainbow').click();
         assert.ok(await page.locator('#roundVisuals .factor-arc').count()>0,'rainbow arcs show found pairs');
-        await page.locator('#roundCoachArray').click();
+        await page.locator(phone?'#roundBarArray':'#roundCoachArray').click();
         assert.equal(await page.locator('#roundVisuals .array-svg').count(),1,'live array demonstration opens');
         assert.equal(Number(await page.locator('#scoreValue').textContent()),before+1,'learning visuals do not award game points');
         await page.locator('#finishButton').click();
