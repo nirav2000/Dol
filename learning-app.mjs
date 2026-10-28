@@ -190,7 +190,39 @@ function recordPair(pair,correct,hints=0){
   if(a<=12&&b<=12)learning.record({concept:'fact:'+a+'x'+b,correct,hints,mode:state.mode,context});
   if(a<=12)learning.record({concept:'div:'+a,correct,hints,mode:state.mode,context});
 }
+
+/* A board tile may be below the fold on a phone; give every accepted pair
+   a visible animation right on the target, including in Focus mode. */
+function showFactorTargetAnimation(key){
+  if(state.view!=='play')return;
+  const target=document.querySelector('#playView .number-tile');
+  if(!target)return;
+  target.querySelector('.factor-target-burst')?.remove();
+  const complete=state.phase==='finished'&&state.result?.reason==='complete';
+  const n=state.target,square=Number.isInteger(Math.sqrt(n));
+  const kind=complete?(n>1&&state.pairs.length===1?'prime':square?'square':n>2&&(n&(n-1))===0?'power':'composite'):'pair';
+  const labels={prime:'✦ PRIME NUMBER',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND'};
+  const burst=document.createElement('div');
+  burst.className='factor-target-burst'+(complete?' is-complete':'');
+  burst.dataset.kind=kind;burst.setAttribute('aria-hidden','true');
+  const label=document.createElement('b');label.className='factor-target-burst-label';
+  label.textContent=complete?labels[kind]:key.replace('-',' × ')+' ✓';
+  burst.append(label);target.append(burst);
+  // The fixed keypad is the one surface guaranteed to remain visible while
+  // the learner has scrolled to later pairs; celebrate there as well.
+  const dock=document.getElementById('mobileEntry');
+  if(dock&&!dock.hidden){
+    dock.classList.remove('factor-dock-burst','factor-dock-burst-complete');
+    void dock.offsetWidth;
+    dock.classList.add(complete?'factor-dock-burst-complete':'factor-dock-burst');
+    setTimeout(()=>dock.classList.remove('factor-dock-burst','factor-dock-burst-complete'),complete?Math.ceil(animationSeconds()*1000)+800:1900);
+  }
+  burst.addEventListener('animationend',event=>{if(event.target===burst)burst.remove();},{once:true});
+  // The static reduced-motion acknowledgement also clears automatically.
+  setTimeout(()=>burst.remove(),complete?Math.ceil(animationSeconds()*1000)+800:1900);
+}
 function animateDiscoveredPair(key){
+  showFactorTargetAnimation(key);
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const pairBoard=document.body.dataset.dolLayout==='pairboard';
   const tile=pairBoard

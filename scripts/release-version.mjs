@@ -6,7 +6,7 @@ let html=fs.readFileSync('index.html','utf8');
 html=html.replace(/(\?v=)\d+\.\d+\.\d+/g,'$1'+version);
 html=html.replace(/(data-dol-version[^>]*>)(?:Dol )?v\d+\.\d+\.\d+/g,(_,start)=>start+'Dol v'+version);
 entries.set('index.html',html);
-let worker=fs.readFileSync('service-worker.js','utf8').replace(/apps-pwa-dol-v\d+-\d+-\d+/,'apps-pwa-dol-v'+version.replaceAll('.','-'));
+let worker=fs.readFileSync('service-worker.js','utf8').replace(/apps-pwa-dol-v\d+-\d+-\d+/,'apps-pwa-dol-v'+version.replaceAll('.','-')).replace(/(\?v=)\d+\.\d+\.\d+/g,'$1'+version);
 entries.set('service-worker.js',worker);
 const labels=[...html.matchAll(/data-dol-version[^>]*>([^<]*)/g)].map(x=>x[1]);
 if(labels.length<2||labels.some(s=>s!=='Dol v'+version))throw Error('Header/footer version markers inconsistent');

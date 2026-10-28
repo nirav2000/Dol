@@ -48,10 +48,9 @@ try{
  console.log('MOBILE-REVIEW-NEXT-DIAGNOSTIC',JSON.stringify(visibility));
  await page.locator('#mobileKeypad [data-key="action"]').waitFor({state:'visible',timeout:2500});
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
- assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
- assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'reviewNextSlot','review action stays in the reading flow');
- assert.notEqual(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed');
- await page.locator('#mobileKeypad [data-key="action"]').scrollIntoViewIfNeeded();
+ assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next/);
+ assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'playView','review action stays in the persistent dock');
+ assert.equal(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed','Next remains on-screen without scrolling');
  const actionBox=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();
  assert.ok(actionBox && actionBox.y>=0 && actionBox.y+actionBox.height<=844,'Next remains accessible below the review');
  assert.equal(await page.locator('#startButton').isVisible(),false);

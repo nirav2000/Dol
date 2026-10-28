@@ -20,18 +20,22 @@ try{
    await page.locator('#mobileKeypad [data-key="clear"]').tap();await page.locator('#mobileKeypad [data-key="clear"]').tap();
    await page.locator('#finishButton').tap();
    assert.equal(await action.getAttribute('aria-label'),'Next question');
-   assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'reviewNextSlot','next action belongs to the review, not a floating overlay');
+   assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'playView','same persistent dock stays in Play');
    assert.equal(await page.locator('#mobileEntry button:visible').count(),1,'only the next button remains');
    assert.equal(await page.evaluate(()=>window.originalAction===document.querySelector('#mobileKeypad [data-key="action"]')),true,'persistent key is reused');
-   const geometry=await page.evaluate(()=>{
-     const key=document.querySelector('#mobileKeypad [data-key="action"]'),review=document.querySelector('#reviewEvidence'),r=key.getBoundingClientRect(),e=review.getBoundingClientRect();
-     return {position:getComputedStyle(document.querySelector('#mobileEntry')).position,above:review.compareDocumentPosition(key)&Node.DOCUMENT_POSITION_FOLLOWING,overlap:Math.max(0,Math.min(r.right,e.right)-Math.max(r.left,e.left))*Math.max(0,Math.min(r.bottom,e.bottom)-Math.max(r.top,e.top)),reserve:parseFloat(document.querySelector('#playView').style.getPropertyValue('--mobile-dock-height'))};
-   });
-   assert.ok(geometry.above,'review evidence precedes Next');
-   assert.notEqual(geometry.position,'fixed','Next scrolls naturally with review');
-   assert.equal(geometry.overlap,0,'Next does not cover review copy');
+   const geometry=await page.evaluate(()=>({
+     position:getComputedStyle(document.querySelector('#mobileEntry')).position,
+     reserve:parseFloat(document.querySelector('#playView').style.getPropertyValue('--mobile-dock-height'))
+   }));
+   assert.equal(geometry.position,'fixed','Next must be pinned, not buried below the review');
    assert.equal(geometry.reserve,0,'finished review reserves no ghost keypad');
-   await action.scrollIntoViewIfNeeded();
+   const after=await action.boundingBox();
+   assert.ok(after&&after.y>=0&&after.y+after.height<=viewport.height+1,'Next is visible without scrolling');
+   assert.ok(Math.abs(after.x-before.x)<=3&&Math.abs(after.y-before.y)<=4,
+     'Next replaces Enter at the same coordinates: '+JSON.stringify({before,after}));
+   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+   const scrolled=await action.boundingBox();
+   assert.ok(Math.abs(scrolled.y-after.y)<=2,'scrolling review does not move Next');
    if(viewport.width===390)await page.screenshot({path:'artifacts/mobile-dock-review.png',fullPage:true});
    const round=Number(await page.locator('#roundValue').textContent());
    await action.tap();
@@ -42,7 +46,7 @@ try{
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'no horizontal overflow');
    await page.locator('#finishButton').tap();
    await page.setViewportSize(viewport.width===844?{width:390,height:700}:{width:844,height:390});
-   assert.equal(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'static');
+   assert.equal(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed');
    await action.scrollIntoViewIfNeeded();
    await action.tap();
    await page.locator('#finishButton').tap();

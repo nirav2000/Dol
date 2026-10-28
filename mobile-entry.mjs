@@ -4,12 +4,7 @@ export function createMobileEntry({getState,submit}){
  const input=document.getElementById('pairInput'),play=document.getElementById('playView');
  const wrap=document.createElement('div');wrap.id='mobileEntry';wrap.className='mobile-entry';wrap.hidden=true;
  wrap.innerHTML='<div class="mobile-entry-label" id="mobileEntryStatus" role="status" aria-live="polite">ENTER A FACTOR PAIR</div><div class="mobile-factors"><button type="button" id="mobileFirst" aria-label="First factor" aria-pressed="true">\u2014</button><span aria-hidden="true">\u00d7</span><button type="button" id="mobileSecond" aria-label="Second factor" aria-pressed="false">\u2014</button></div><div id="mobileKeypad" class="mobile-keypad" role="group" aria-label="Factor keypad"></div>';
- const reviewNextSlot=document.createElement('div');
- reviewNextSlot.id='reviewNextSlot';
- reviewNextSlot.className='review-next-slot';
- reviewNextSlot.setAttribute('aria-label','Continue after reviewing the factor pairs');
- reviewNextSlot.hidden=true;
- play.querySelector('.play-grid').after(reviewNextSlot);
+ // The same persistent mobile dock remains attached to Play in every phase.
  play.append(wrap);
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
  const media=window.matchMedia('(max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse)');
@@ -30,10 +25,12 @@ export function createMobileEntry({getState,submit}){
  const enabled=()=>getState().phase==='running'&&getState().view==='play';
  const nextQuestion=()=>{if(getState().phase==='finished'&&getState().view==='play')document.getElementById('startButton').click();};
  function placeDock(){
-   if(!isMobile()||wrap.hidden||getState().phase==='finished')return;
+   if(!isMobile()||wrap.hidden)return;
    const vv=window.visualViewport,visibleHeight=vv?.height||innerHeight;
    const bottom=innerWidth>innerHeight&&visibleHeight<=500?12:Math.max(64,Math.min(104,visibleHeight*.1));
-   const top=Math.max(4,(vv?.offsetTop||0)+visibleHeight-bottom-wrap.getBoundingClientRect().height);
+   const finished=getState().phase==='finished';
+   const height=finished?pad.querySelector('[data-key="action"]').getBoundingClientRect().height:wrap.getBoundingClientRect().height;
+   const top=Math.max(4,(vv?.offsetTop||0)+visibleHeight-bottom-height);
    if(!Number.isFinite(parseFloat(wrap.style.top))||Math.abs(parseFloat(wrap.style.top)-top)>.5)wrap.style.setProperty('top',top+'px','important');
    wrap.style.setProperty('bottom','auto','important');
  }
@@ -52,22 +49,17 @@ export function createMobileEntry({getState,submit}){
    const launcher=document.getElementById('startButton');
    play.dataset.mobileInput=String(mobileSurface);
    if(launcher)launcher.hidden=mobileSurface?(finished||state.phase==='running'||state.phase==='paused'):(state.phase==='running'||state.phase==='paused');
-   const destination=finished?reviewNextSlot:play;
-   if(wrap.parentElement!==destination)destination.append(wrap);
-   reviewNextSlot.hidden=!finished||!isMobile()||state.view!=='play';
+   // Never move the Next key below the review: retain the thumb position.
    wrap.hidden=!isMobile()||state.view!=='play'||state.phase==='ready';
    wrap.classList.toggle('is-finished',finished);
-   // Review uses a dedicated, visible sibling of the play grid. This avoids
-   // putting Next Question inside any panel that might be hidden by a layout.
-   if(finished){
-     wrap.style.removeProperty('top');wrap.style.removeProperty('bottom');
-     wrap.style.setProperty('display',wrap.hidden?'none':'block','important');
-   }else wrap.style.removeProperty('display');
+   if(!finished)wrap.classList.remove('factor-dock-burst-complete');
+   // The action is anchored to the visual viewport, including safe-area shifts.
+   wrap.style.removeProperty('display');
    const status=wrap.querySelector('#mobileEntryStatus');status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:'ENTER A FACTOR PAIR';status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
    first.textContent=parts[0]||'\u2014';second.textContent=parts[1]||'\u2014';
    first.setAttribute('aria-pressed',String(active===0));second.setAttribute('aria-pressed',String(active===1));
    const action=pad.querySelector('[data-key="action"]');
-   if(action){action.textContent=finished?'Next question \u21b5':active===0?'\u00d7':'\u21b5';action.setAttribute('aria-label',finished?'Next question':active===0?'Next factor':'Submit factor pair');}
+   if(action){action.textContent=finished?'Next \u21b5':active===0?'\u00d7':'\u21b5';action.setAttribute('aria-label',finished?'Next question':active===0?'Next factor':'Submit factor pair');}
    wrap.querySelectorAll('button').forEach(b=>{b.disabled=finished?(b.dataset.key!=='action'||state.view!=='play'):!enabled();});
    reserveSpace();placeDock();
    const roundKey=state.round+':'+state.target;

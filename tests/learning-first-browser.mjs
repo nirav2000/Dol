@@ -86,9 +86,8 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     }
     if(phone){
       const next=page.locator('#mobileKeypad [data-key="action"]');
-      assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'reviewNextSlot');
-      assert.notEqual(await page.locator('#mobileEntry').evaluate(e=>getComputedStyle(e).position),'fixed','Next action does not cover mathematics');
-      await next.scrollIntoViewIfNeeded();
+      assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'playView');
+      assert.equal(await page.locator('#mobileEntry').evaluate(e=>getComputedStyle(e).position),'fixed','Next remains thumb-reachable');
       const rect=await next.boundingBox();
       assert.ok(rect.y>=0&&rect.y+rect.height<=viewport.height+1);
       await page.screenshot({path:'artifacts/learning-first-review-'+engineName+'.png',fullPage:true});

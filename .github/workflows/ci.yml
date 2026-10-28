@@ -82,6 +82,7 @@ jobs:
           run_case node tests/mobile-entry-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/learning-first-browser.mjs
           run_case node tests/mobile-dock-browser.mjs
+          run_case env APPS_CHECKOUT=Apps-shared node tests/focus-animations-browser.mjs
           run_case node tests/round-tools-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
           run_case node tests/improvement-browser.mjs
