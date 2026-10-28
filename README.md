@@ -1,3 +1,10 @@
+## v2.12.6 — round review Next button height and accessibility (28 October 2026)
+
+- Remove the legacy 100px height limit on the in-flow review keypad, which could leave Next Question extending below its container and clip the bottom of its button.
+- Hide the redundant review keypad label, factor fields and digit keys unconditionally, including browsers that report touch capability without pointer:coarse.
+- Retain a full-size, keyboard- and touch-accessible Next button with adequate scroll clearance and never overlay review content.
+- The 441 factor-target geometry regression passed in Chromium and WebKit at 320px, 390px and 430px, including Focus mode.
+
 ## v2.12.5 — iPhone factor target typography (28 October 2026)
 
 - Increase the target-number size proportionately on narrow and modern iPhones so a three-digit factor challenge remains prominent inside the full-width target tile.

@@ -309,3 +309,28 @@ body.focus-mode #playView .challenge-overview,body.focus-mode #playView .challen
  #playView[data-mobile-phase=finished][data-mobile-input=true] .number-section>.action-row{display:none!important}
  #playView[data-mobile-phase=finished][data-mobile-input=true] #startButton{display:none!important}
 }
+
+/* v2.12.6: Review action is truly a single in-flow button, including when
+   the browser reports touch support but not pointer:coarse.
+   Avoid capped parent height and invisible keypad rows extending beyond it. */
+#playView #reviewNextSlot #mobileEntry.is-finished{
+ max-height:none!important;height:auto!important;min-height:0!important;
+ padding:8px 0 12px!important;overflow:visible!important
+}
+#playView #reviewNextSlot #mobileEntry.is-finished .mobile-entry-label,
+#playView #reviewNextSlot #mobileEntry.is-finished .mobile-factors,
+#playView #reviewNextSlot #mobileEntry.is-finished .mobile-keypad button:not([data-key="action"]){
+ display:none!important
+}
+#playView #reviewNextSlot #mobileEntry.is-finished .mobile-keypad{
+ display:block!important;height:auto!important;min-height:0!important;
+ max-height:none!important;overflow:visible!important;grid-template-rows:none!important
+}
+#playView #reviewNextSlot #mobileEntry.is-finished .mobile-keypad button[data-key="action"]{
+ display:block!important;width:100%!important;min-height:56px!important;
+ height:auto!important;max-height:none!important
+}
+#playView #reviewNextSlot:not([hidden]){
+ height:auto!important;min-height:0!important;overflow:visible!important;
+ margin-bottom:calc(20px + env(safe-area-inset-bottom,0px))!important
+}
