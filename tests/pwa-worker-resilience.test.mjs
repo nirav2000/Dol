@@ -5,6 +5,8 @@ import vm from 'node:vm';
 
 test('PWA cache warm-up survives an HTTP 503 and limits request concurrency',async()=>{
   const source=fs.readFileSync(new URL('../service-worker.js',import.meta.url),'utf8');
+  const version=JSON.parse(fs.readFileSync(new URL('../version.json',import.meta.url),'utf8')).version;
+  const cacheSlug=version.replaceAll('.','-');
   const listeners=new Map(),stored=new Map();
   let concurrent=0,peak=0,attempts=0;
   const scope='https://nirav2000.github.io/Dol/';
@@ -26,7 +28,7 @@ test('PWA cache warm-up survives an HTTP 503 and limits request concurrency',asy
   };
   vm.runInNewContext(source,context,{filename:'service-worker.js'});
   const config=context.self.APPS_PWA_CONFIG;
-  assert.equal(config.cacheName,'apps-pwa-dol-v2-11-1');
+  assert.equal(config.cacheName,'apps-pwa-dol-v'+cacheSlug);
   assert.equal(config.precache.length,0,'shared worker cannot use all-or-nothing addAll');
   assert.equal(config.networkFirstPaths.length,0,'static assets must be cache-first; navigation is already network-first');
   assert.ok(listeners.has('install'));
@@ -37,8 +39,8 @@ test('PWA cache warm-up survives an HTTP 503 and limits request concurrency',asy
   assert.ok(attempts>=50,'attempt all important Dol assets');
   assert.ok(stored.size>=attempts-1,'unavailable module does not prevent caching other files');
   assert.equal(stored.has(scope+'board-aware-help.mjs'),false,'HTTP 503 is never added to the cache');
-  assert.ok(stored.has(scope+'learning-app.mjs?v=2.11.1'),'serve version-stamped JavaScript offline');
-  assert.ok(stored.has(scope+'mobile-learning.css?v=2.11.1'),'serve version-stamped CSS offline');
+  assert.ok(stored.has(scope+'learning-app.mjs?v='+version),'serve version-stamped JavaScript offline');
+  assert.ok(stored.has(scope+'mobile-learning.css?v='+version),'serve version-stamped CSS offline');
   assert.ok(peak<=4&&peak>=2,'avoid a burst of dozens of concurrent requests');
   assert.ok(stored.has(scope+'index.html'),'cache the app shell for offline launch');
   assert.ok(stored.has(scope+'learning-app.mjs'),'cache the app entry module');
