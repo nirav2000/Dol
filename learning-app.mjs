@@ -191,6 +191,68 @@ function recordPair(pair,correct,hints=0){
   if(a<=12)learning.record({concept:'div:'+a,correct,hints,mode:state.mode,context});
 }
 
+
+/* Each successful factor is acknowledged on the new, live tile after rendering.
+   This is separate from the end-of-round review: redrawing review tiles cannot
+   remove the persistent achievement on the target number. */
+function celebrateTile(tile,kind,index=0,badge=false){
+  if(!tile)return;
+  tile.querySelector(':scope > .number-celebration')?.remove();
+  const labels={prime:'✦ PRIME',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND',correct:'✓ CORRECT'};
+  const decoration=document.createElement('span');
+  decoration.className='number-celebration number-celebration--'+kind;
+  decoration.setAttribute('aria-hidden','true');
+  decoration.style.setProperty('--celebrate-delay',(index*.12)+'s');
+  if(badge){
+    const bubble=document.createElement('span');bubble.className='number-celebration-label';
+    bubble.textContent=labels[kind];decoration.append(bubble);
+  }
+  const sparks=document.createElement('span');sparks.className='number-celebration-sparks';
+  const colors=['#ffe27e','#70e5ff','#ff85aa','#a7faac','#c2a1ff','#ffb16c'];
+  [[-42,-24],[0,-36],[42,-24],[42,24],[0,36],[-42,24]].forEach(([x,y],i)=>{
+    const star=document.createElement('span');star.className='number-celebration-spark';
+    star.textContent=kind==='square'?'◆':kind==='power'?'⚡':'✦';
+    star.style.setProperty('--spark-x',x+'px');star.style.setProperty('--spark-y',y+'px');
+    star.style.setProperty('--spark-color',colors[i]);star.style.setProperty('--spark-delay',(.22+i*.06+index*.12)+'s');
+    sparks.append(star);
+  });
+  decoration.append(sparks);tile.append(decoration);tile.classList.add('number-celebrating');
+  let cleaned=false;
+  const cleanup=()=>{if(cleaned)return;cleaned=true;decoration.remove();tile.classList.remove('number-celebrating');};
+  decoration.addEventListener('animationend',e=>{if(e.target===decoration)cleanup();},{once:true});
+  setTimeout(cleanup,Math.ceil(animationSeconds()*1000)+Math.ceil(index*120)+500);
+}
+/* Restore the original Oct 13 Prime Rainbow Ribbon and a distinct geometric
+   square celebration. These run on the persistent target, not only review DOM. */
+function showSpecialAchievement(host,kind){
+  host.querySelector(':scope > .prime-ribbon, :scope > .square-bloom')?.remove();
+  const visual=document.createElement('span');visual.setAttribute('aria-hidden','true');
+  if(kind==='prime'){
+    visual.className='prime-ribbon';
+    const bubble=document.createElement('b');bubble.className='prime-bubble';bubble.textContent='✦ PRIME';
+    const stars=document.createElement('span');stars.className='prime-stars';
+    const offsets=[[-78,-28],[-54,35],[-15,-55],[24,46],[70,-39],[82,16],[-90,8],[42,-61]];
+    const colors=['#ff79af','#ffd260','#7af2b6','#60cbff','#ad8cff'];
+    offsets.forEach(([x,y],i)=>{
+      const star=document.createElement('span');star.className='prime-star';star.textContent=i%3?'✦':'✧';
+      star.style.setProperty('--star-x',x+'px');star.style.setProperty('--star-y',y+'px');
+      star.style.setProperty('--star-color',colors[i%colors.length]);
+      star.style.setProperty('--star-delay',(.14+i*.09)+'s');stars.append(star);
+    });
+    visual.append(bubble,stars);
+  }else if(kind==='square'){
+    visual.className='square-bloom';
+    const root=Math.sqrt(state.target);
+    const badge=document.createElement('b');badge.className='square-bloom-label';
+    badge.textContent=root+' × '+root+' = '+state.target;
+    const cells=document.createElement('span');cells.className='square-bloom-cells';
+    for(let i=0;i<4;i++){const cell=document.createElement('i');cell.style.setProperty('--square-step',String(i));cells.append(cell);}
+    visual.append(badge,cells);
+  }else return;
+  host.append(visual);
+  setTimeout(()=>visual.remove(),Math.ceil(animationSeconds()*1000)+450);
+}
+
 /* A board tile may be below the fold on a phone; give every accepted pair
    a visible animation right on the target, including in Focus mode. */
 function showFactorTargetAnimation(key){
@@ -200,14 +262,20 @@ function showFactorTargetAnimation(key){
   target.querySelector('.factor-target-burst')?.remove();
   const complete=state.phase==='finished'&&state.result?.reason==='complete';
   const n=state.target,square=Number.isInteger(Math.sqrt(n));
-  const kind=complete?(n>1&&state.pairs.length===1?'prime':square?'square':n>2&&(n&(n-1))===0?'power':'composite'):'pair';
+  const [a,b]=key.split('-').map(Number),squarePair=a===b;
+  const kind=complete?(n>1&&state.pairs.length===1?'prime':square?'square':n>2&&(n&(n-1))===0?'power':'composite'):squarePair?'square':'pair';
   const labels={prime:'✦ PRIME NUMBER',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND'};
   const burst=document.createElement('div');
   burst.className='factor-target-burst'+(complete?' is-complete':'');
   burst.dataset.kind=kind;burst.setAttribute('aria-hidden','true');
   const label=document.createElement('b');label.className='factor-target-burst-label';
-  label.textContent=complete?labels[kind]:key.replace('-',' × ')+' ✓';
+  label.textContent=complete?labels[kind]:squarePair?'◆ '+a+'² = '+n:key.replace('-',' × ')+' ✓';
   burst.append(label);target.append(burst);
+  if(kind==='prime'||kind==='square')showSpecialAchievement(target,kind);
+  if(kind==='prime'&&complete){
+    const reviewTile=document.querySelector('#layoutPairGrid .review-pair.credited, #answerReview .review-pair.credited');
+    if(reviewTile)showSpecialAchievement(reviewTile,'prime');
+  }
   // The fixed keypad is the one surface guaranteed to remain visible while
   // the learner has scrolled to later pairs; celebrate there as well.
   const dock=document.getElementById('mobileEntry');
@@ -233,6 +301,10 @@ function animateDiscoveredPair(key){
   tile.classList.remove('pair-discovery');
   void tile.offsetWidth;
   tile.classList.add('pair-discovery');
+  if(state.phase!=='finished'){
+    const [a,b]=key.split('-').map(Number);
+    celebrateTile(tile,a===b?'square':'correct',0,a===b);
+  }
   tile.addEventListener('animationend',event=>{if(event.target===tile)tile.classList.remove('pair-discovery');},{once:true});
 }
 function answer(event){
@@ -356,35 +428,12 @@ function celebrateNumberResult(){
   const n=state.target,prime=n>=2&&state.pairs.length===1;
   const powerTwo=n>2&&(n&(n-1))===0;
   const tiles=[...document.querySelectorAll('#layoutPairGrid .review-pair.credited, #answerReview .review-pair.credited')].filter(tile=>!tile.closest('[hidden]'));
-  if(!tiles.length)return;
-  const colors=['#ffe27e','#70e5ff','#ff85aa','#a7faac','#c2a1ff','#ffb16c'];
   for(const [index,tile] of tiles.entries()){
     const pair=state.pairs.find(([a,b])=>tile.dataset.reviewPair===a+'-'+b);
     if(!pair)continue;
     const square=pair[0]===pair[1];
     const kind=prime?'prime':square?'square':powerTwo?'power':'composite';
-    const labels={prime:'✦ PRIME',square:'◆ PERFECT SQUARE',power:'⚡ POWER OF TWO',composite:'✦ ALL PAIRS FOUND'};
-    tile.querySelector('.number-celebration')?.remove();
-    const decoration=document.createElement('span');
-    decoration.className='number-celebration number-celebration--'+kind;
-    decoration.setAttribute('aria-hidden','true');
-    decoration.style.setProperty('--celebrate-delay',(index*.12)+'s');
-    if(square||prime||index===0){
-      const bubble=document.createElement('span');bubble.className='number-celebration-label';
-      bubble.textContent=labels[kind];decoration.append(bubble);
-    }
-    const sparks=document.createElement('span');sparks.className='number-celebration-sparks';
-    [[-60,-32],[0,-48],[60,-32],[62,32],[0,48],[-62,32]].forEach(([x,y],i)=>{
-      const star=document.createElement('span');star.className='number-celebration-spark';
-      star.textContent=square?'◆':kind==='power'?'⚡':'✦';
-      star.style.setProperty('--spark-x',x+'px');star.style.setProperty('--spark-y',y+'px');
-      star.style.setProperty('--spark-color',colors[i]);
-      star.style.setProperty('--spark-delay',(.22+i*.06+index*.12)+'s');sparks.append(star);
-    });
-    decoration.append(sparks);tile.append(decoration);tile.classList.add('number-celebrating');
-    const cleanup=()=>{decoration.remove();tile.classList.remove('number-celebrating');};
-    decoration.addEventListener('animationend',e=>{if(e.target===decoration)cleanup();},{once:true});
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(cleanup);
+    celebrateTile(tile,kind,index,square||prime||index===0);
   }
 }
 

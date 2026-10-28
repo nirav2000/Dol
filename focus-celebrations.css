@@ -1,0 +1,137 @@
+/* Dol focus viewport and restored mathematical celebrations, v2.12.12.
+   Animations live on the persistent target AND on each newly credited pair.
+   No fade or transform is applied to the number itself. */
+#playView .number-tile, #playView .review-pair, #playView .layout-pair-chip, #playView .slot.solved{position:relative}
+#playView .number-celebration--correct{--celebrate-color:#91f3c1}
+#playView .layout-pair-chip.number-celebrating,
+#playView .slot.solved.number-celebrating{isolation:isolate;overflow:visible;z-index:2}
+#playView .number-tile .prime-ribbon,
+#playView .review-pair .prime-ribbon{position:absolute;inset:0;pointer-events:none;z-index:9;display:block;border-radius:inherit}
+#playView .prime-ribbon::before{
+ content:'';position:absolute;inset:-4px;border-radius:inherit;padding:4px;
+ background:conic-gradient(#ff79af,#ffd260,#7af2b6,#60cbff,#ad8cff,#ff79af);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+ box-shadow:0 0 20px #ff79af66;animation:dolPrimeBorder var(--number-celebration-duration,5s) ease-in-out both
+}
+#playView .prime-ribbon .prime-bubble{
+ position:absolute;left:50%;top:4px;transform:translateX(-50%);
+ color:#242124;background:#fff;border-radius:22px;padding:6px 14px;font-size:12px;font-weight:900;
+ white-space:nowrap;z-index:9;animation:dolPrimeBubble var(--number-celebration-duration,5s) ease-in-out both
+}
+#playView .prime-ribbon .prime-stars{position:absolute;inset:0;pointer-events:none;z-index:8}
+#playView .prime-ribbon .prime-star{position:absolute;top:50%;left:50%;font-size:18px;line-height:1;
+ color:var(--star-color);animation:dolPrimeStar calc(var(--number-celebration-duration,5s) * .8) cubic-bezier(.16,.62,.27,1) var(--star-delay) both}
+#playView .square-bloom{
+ position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:space-between;
+ pointer-events:none;z-index:9;padding:7px 12px;overflow:hidden;border-radius:inherit;
+ animation:dolSquareBloom var(--number-celebration-duration,5s) ease-out both
+}
+#playView .square-bloom-label{
+ display:block;background:#a7e5ff;color:#102534;border:1px solid white;box-shadow:0 0 20px #8cd8ffaa;
+ font-size:clamp(10px,2.8vw,14px);font-weight:900;border-radius:16px;white-space:nowrap;padding:4px 9px
+}
+#playView .square-bloom-cells{display:grid;grid-template-columns:repeat(2,20px);grid-template-rows:repeat(2,20px);gap:3px}
+#playView .square-bloom-cells i{
+ display:block;border:2px solid #e8f7ff;background:#7ccdfdcc;border-radius:3px;box-shadow:0 0 12px #8cd8ff;
+ animation:dolSquareCell var(--number-celebration-duration,5s) ease-out both;
+ animation-delay:calc(var(--square-step) * .12s)
+}
+@keyframes dolSquareBloom{0%{opacity:0}12%,84%{opacity:1}100%{opacity:0}}
+@keyframes dolSquareCell{0%{opacity:0;transform:scale(.1) rotate(-45deg)}20%,70%{opacity:1;transform:scale(1) rotate(0deg)}100%{opacity:0;transform:scale(1.25) rotate(45deg)}}
+@media(prefers-reduced-motion:reduce){
+ #playView .prime-ribbon::before,#playView .prime-ribbon .prime-bubble,
+ #playView .prime-ribbon .prime-star,#playView .square-bloom,#playView .square-bloom-cells i{animation:none!important}
+ #playView .prime-ribbon .prime-star{display:none}
+}
+/* Layout selector sits outside the achievement surface. Its previous position
+   inside the target caused both clipping and collision with celebration badges. */
+#playView .number-section>.layout-switcher{
+ position:static!important;inset:auto!important;transform:none!important;z-index:4;
+ display:flex!important;align-items:center;justify-content:center;align-self:center;
+ width:max-content;max-width:100%;margin:2px auto!important;padding:1px 8px!important;
+ border-radius:30px;background:#15211c;border:1px solid #527363
+}
+#playView .number-section>.layout-switcher .layout-switch-label{
+ position:static!important;inset:auto!important;display:inline!important;
+ font-size:10px;white-space:nowrap;color:#d2eadc
+}
+#playView .number-section>.layout-switcher button{min-width:30px;min-height:27px;padding:0 5px}
+/* Focus-specific phone geometry: visible countdown, stable target and a factor
+   board that scrolls INSIDE the space above the persistent keypad. */
+@media(max-width:700px){
+ body.focus-mode .menu-reveal{left:12px!important;right:auto!important}
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .page-head{
+   position:sticky;top:env(safe-area-inset-top,0px);z-index:12;
+   background:#050505;min-height:42px;margin:0 0 4px!important;padding:3px 0!important
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section{
+   display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0;
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.number-tile{
+   order:0!important;position:relative!important;z-index:6;
+   height:clamp(80px,11dvh,103px)!important;min-height:80px!important;
+   overflow:visible!important;padding:4px!important
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.number-tile #numberValue{
+   font-size:clamp(54px,17vw,79px)!important;line-height:1!important
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.layout-switcher{order:1!important}
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.timer-line{
+   order:2!important;display:flex!important;align-items:center;
+   min-height:28px;margin:0!important;gap:8px;z-index:4
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .timer-line>strong{font-size:19px;min-width:53px}
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.action-row{
+   order:3!important;margin:0!important;min-height:35px
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.action-row>button:not([hidden]){
+   min-height:36px!important;padding:5px 8px!important
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>#roundLearningBar:not([hidden]){
+   order:4!important;display:flex!important;flex-wrap:nowrap!important;
+   width:100%!important;min-height:35px!important;padding:2px!important;
+   margin:0!important;gap:4px!important;border-radius:9px
+ }
+ body.focus-mode #playView[data-mobile-input=true] #roundLearningBar strong{display:none!important}
+ body.focus-mode #playView[data-mobile-input=true] #roundLearningBar button{
+   min-height:32px!important;padding:3px 4px!important;
+   font-size:11px!important;white-space:nowrap!important
+ }
+ body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.layout-pair-board{
+   order:5!important;margin:0!important;min-height:64px!important;
+   max-height:var(--focus-board-max-height,220px)!important;overflow-y:auto!important;
+   overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin
+ }
+ body.focus-mode #playView[data-mobile-input=true] #layoutPairBoard .layout-board-head{
+   position:sticky;top:0;background:#131313;z-index:4;padding:4px 1px
+ }
+ body.focus-mode #playView[data-mobile-input=true] #layoutPairGrid{padding-bottom:4px}
+ body.focus-mode #playView[data-mobile-input=true] #layoutPairGrid .layout-pair-chip.empty .pair-number{
+   background:#3e4741!important;color:#d7e6dd!important;border-color:#81988a!important
+ }
+ /* The keypad is intentionally a little lower so it does not waste a large
+    blank strip at the foot of standalone iPhones. */
+ #playView[data-mobile-input=true]{
+   --mobile-dock-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important
+ }
+ /* Review Next is a deliberate opaque footer, not a loose button over text.
+    Keep the original Enter-key position for easy thumb access. */
+ #playView[data-mobile-input=true]>.mobile-entry.is-finished:not([hidden]){isolation:isolate}
+ #playView[data-mobile-input=true]>.mobile-entry.is-finished::before{
+   content:'';position:fixed;left:0;right:0;
+   bottom:calc(var(--mobile-dock-bottom) - 12px);
+   height:calc(var(--mobile-key-height) + 24px);
+   background:#101711;border-top:1px solid #648773;box-shadow:0 -12px 25px #000b;
+   z-index:-1;pointer-events:none
+ }
+ #playView[data-mobile-input=true]>.mobile-entry.is-finished::after{
+   content:attr(data-review-summary);position:fixed;
+   bottom:calc(var(--mobile-dock-bottom) + 16px);left:14px;width:55vw;
+   color:#bfe6cf;font-size:13px;font-weight:800;z-index:0;pointer-events:none
+ }
+ #playView[data-mobile-input=true]>.mobile-entry.is-finished .mobile-keypad{position:relative;z-index:1}
+ #playView[data-mobile-phase=finished][data-mobile-input=true] #finishedPanel{
+   padding-bottom:calc(var(--mobile-dock-bottom) + var(--mobile-key-height) + 34px)!important;
+ }
+}

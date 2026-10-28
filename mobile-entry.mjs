@@ -34,6 +34,16 @@ export function createMobileEntry({getState,submit}){
    if(!Number.isFinite(parseFloat(wrap.style.top))||Math.abs(parseFloat(wrap.style.top)-top)>.5)wrap.style.setProperty('top',top+'px','important');
    wrap.style.setProperty('bottom','auto','important');
  }
+ function fitFocusBoard(){
+   const board=document.getElementById('layoutPairBoard');
+   if(!board)return;
+   if(!document.body.classList.contains('focus-mode')||!isMobile()||board.hidden||!['running','paused'].includes(getState().phase)){
+     board.style.removeProperty('--focus-board-max-height');return;
+   }
+   const space=Math.floor(wrap.getBoundingClientRect().top-board.getBoundingClientRect().top-12);
+   board.style.setProperty('--focus-board-max-height',Math.max(64,space)+'px');
+ }
+ const scheduleBoardFit=()=>requestAnimationFrame(()=>requestAnimationFrame(fitFocusBoard));
  function reserveSpace(){
    const height=isMobile()&&!wrap.hidden&&getState().phase!=='finished'?Math.ceil(wrap.getBoundingClientRect().height):0;
    const value=height+'px';
@@ -52,6 +62,7 @@ export function createMobileEntry({getState,submit}){
    // Never move the Next key below the review: retain the thumb position.
    wrap.hidden=!isMobile()||state.view!=='play'||state.phase==='ready';
    wrap.classList.toggle('is-finished',finished);
+   wrap.dataset.reviewSummary=finished?(state.result?.correct||0)+' / '+(state.result?.total||0)+' pairs found':'';
    if(!finished)wrap.classList.remove('factor-dock-burst-complete');
    // The action is anchored to the visual viewport, including safe-area shifts.
    wrap.style.removeProperty('display');
@@ -61,7 +72,7 @@ export function createMobileEntry({getState,submit}){
    const action=pad.querySelector('[data-key="action"]');
    if(action){action.textContent=finished?'Next \u21b5':active===0?'\u00d7':'\u21b5';action.setAttribute('aria-label',finished?'Next question':active===0?'Next factor':'Submit factor pair');}
    wrap.querySelectorAll('button').forEach(b=>{b.disabled=finished?(b.dataset.key!=='action'||state.view!=='play'):!enabled();});
-   reserveSpace();placeDock();
+   reserveSpace();placeDock();scheduleBoardFit();
    const roundKey=state.round+':'+state.target;
    if(isMobile()&&enabled()&&roundKey!==lastRound){
      lastRound=roundKey;
@@ -127,7 +138,7 @@ export function createMobileEntry({getState,submit}){
    else if(e.key==='x'||e.key==='X'||e.key==='*'){e.preventDefault();e.stopImmediatePropagation();if(active===0)press('action');}
  },true);
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(reserveSpace).observe(wrap);
- const settleDock=()=>{placeDock();requestAnimationFrame(()=>requestAnimationFrame(placeDock));};
+ const settleDock=()=>{placeDock();scheduleBoardFit();requestAnimationFrame(()=>{placeDock();scheduleBoardFit();});};
  window.visualViewport?.addEventListener('scroll',settleDock,{passive:true});
  const visibility=new MutationObserver(sync);
  visibility.observe(play,{attributes:true,attributeFilter:['hidden']});

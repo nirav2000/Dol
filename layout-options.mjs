@@ -26,7 +26,7 @@ export function createLayoutOptions({getState}){
  const prev=document.createElement('button');prev.type='button';prev.textContent='‹';prev.setAttribute('aria-label','Use Classic layout');
  const name=document.createElement('span');name.className='layout-switch-label';
  const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','Use Pair Board layout');
- switcher.append(prev,name,next);number.append(switcher);
+ switcher.append(prev,name,next);number.after(switcher);
  const persist=()=>{try{localStorage.setItem(key,JSON.stringify({layout,palette}));}catch{}};
  function apply(announce){
    body.dataset.dolLayout=layout;body.dataset.dolPalette=palette;
