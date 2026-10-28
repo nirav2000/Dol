@@ -92,7 +92,8 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
       await page.screenshot({path:'artifacts/learning-first-review-'+engineName+'.png',fullPage:true});
       await next.click();
     }else await page.locator('#startButton').click();
-    assert.equal(await page.locator('#activePanel').isVisible(),true);
+    assert.equal(await page.locator('#playView').getAttribute('data-mobile-phase'),'running','next round is active even when Classic panel is hidden in Pair Board');
+    assert.equal(await page.locator('#layoutPairBoard').isVisible(),true,'Pair Board remains usable on next round');
     assert.equal(await page.locator('#limitSelect').inputValue(),'192','custom settings persist');
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),'no horizontal page overflow');
     assert.deepEqual(errors,[],'no JavaScript exceptions');

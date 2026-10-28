@@ -71,7 +71,17 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     await page.locator('#mobileKeypad [data-key="action"]').scrollIntoViewIfNeeded();
     assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true,'next question accessible after review');
     await page.locator('#mobileKeypad [data-key="action"]').tap();
-    assert.equal(await page.locator('#activePanel').isVisible(),true,'next round starts');
+    const nextState=await page.evaluate(()=>({
+      phase:document.querySelector('#playView').dataset.mobilePhase,
+      round:Number(document.querySelector('#roundValue').textContent),
+      target:document.querySelector('#numberValue').textContent,
+      keypad:!document.querySelector('#mobileEntry').hidden,
+      board:!document.querySelector('#layoutPairBoard').hidden
+    }));
+    assert.equal(nextState.phase,'running','next round starts: '+JSON.stringify(nextState));
+    assert.equal(nextState.round,2,'round counter advances');
+    assert.equal(nextState.keypad,true,'new question retains the phone entry pad');
+    assert.equal(nextState.board,true,'Pair Board, not the hidden Classic answer panel, is the visible game');
     assert.deepEqual(errors,[],'no runtime errors');
     console.log('PASS target layout 441',engineName,viewport.width,scenario.focus?'focus':'normal',JSON.stringify({targetWidth:m.target.width,numberWidth:m.number.width,boardWidth:m.board.width}));
    }catch(e){await page.screenshot({path:'artifacts/target-441-failure-'+engineName+'-'+scenario.width+'-'+(scenario.focus?'focus':'normal')+'.png',fullPage:true}).catch(()=>{});throw e;}
