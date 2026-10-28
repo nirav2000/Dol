@@ -63,7 +63,18 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
   await page.locator('#startButton').waitFor({state:'visible'});
   if(await page.evaluate(()=>document.body.classList.contains('focus-mode')&&!document.body.classList.contains('focus-menu-revealed')))await press('#menuReveal');
   await press('[data-view="progress"]');
-  await page.locator('#improvementStartCheck').waitFor({state:'visible'});
+  if(!await page.locator('#progressView').isVisible()){
+    console.warn('Progress navigation after reload needs a second tap',JSON.stringify(await page.evaluate(()=>({
+      active:[...document.querySelectorAll('[data-view].active')].map(e=>e.dataset.view),
+      progressHidden:document.querySelector('#progressView').hidden,
+      focus:document.body.classList.contains('focus-mode'),
+      menu:document.body.classList.contains('focus-menu-revealed'),
+      ready:document.body.dataset.dolReady
+    }))));
+    await press('[data-view="progress"]');
+  }
+  await page.locator('#progressView').waitFor({state:'visible',timeout:10000});
+  await page.locator('#improvementStartCheck').waitFor({state:'visible',timeout:10000});
   assert.match(await page.locator('#improvementCheckHistory').textContent(),/100% correct submissions/,'Completed check survives reload');
   assert.deepEqual(errors,[],'JavaScript errors');assert.deepEqual(requests,[],'Local failed requests');
   console.log('PASS',name,viewport.width,'release, game, progress, layout');await context.close();

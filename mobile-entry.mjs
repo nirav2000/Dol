@@ -180,7 +180,7 @@ export function createMobileEntry({getState,submit}){
  if(typeof ResizeObserver!=='undefined')new ResizeObserver(reserveSpace).observe(wrap);
  const settleDock=()=>{placeDock();scheduleBoardFit();requestAnimationFrame(()=>{placeDock();scheduleBoardFit();});};
  window.visualViewport?.addEventListener('scroll',()=>{settleDock();scheduleHud();},{passive:true});
- window.addEventListener('scroll',scheduleHud,{passive:true});
+ window.addEventListener('scroll',()=>{updateHud();scheduleHud();},{passive:true});
  const visibility=new MutationObserver(sync);
  visibility.observe(play,{attributes:true,attributeFilter:['hidden']});
  visibility.observe(document.getElementById('activePanel'),{attributes:true,attributeFilter:['hidden']});

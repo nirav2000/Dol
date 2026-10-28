@@ -62,7 +62,10 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     assert.ok(m.board.top>=m.buttons.bottom-2,'factor board must sit below controls: '+JSON.stringify(m));
     assert.ok(m.board.width>=viewport.width*.76,'board retains usable width: '+JSON.stringify(m));
     assert.ok(m.toolbar.height>=40&&m.toolbar.display!=='none','short teaching toolbar remains accessible');
-    assert.equal(m.coach.display,'none','large coaching panel is collapsed during phone play');
+    if(scenario.focus&&viewport.height>690){
+      assert.notEqual(m.coach.display,'none','Focus now teaches via a compact, live context card');
+      assert.ok(m.coach.height>=54&&m.coach.height<220,'context card must remain compact: '+JSON.stringify(m));
+    }else assert.equal(m.coach.display,'none','normal phone play keeps the old coach collapsed');
     assert.ok(m.documentWidth<=viewport.width+2,'no horizontal overflow');
     assert.ok(m.keypad.top>=-2&&m.keypad.bottom<=viewport.height+2,'keyboard remains inside the phone');
     if(viewport.height>=800)assert.ok(m.target.bottom<=m.keypad.top+2,'target cannot be covered by fixed keypad: '+JSON.stringify(m));

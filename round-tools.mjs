@@ -196,7 +196,7 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
         ? (stepIndex===route.steps.length?'Start clues again':stepIndex===route.steps.length-1?'Reveal the worked pair':stepIndex?'Next clue':'One clue')
         :'One clue';
       $('roundCoachHint').textContent='Interactive lesson';
-      $('roundCoachBoundary').textContent='Stop at √'+s.target+': test first factors from 1 through '+root+'. ';
+      $('roundCoachBoundary').textContent='Search boundary: √'+s.target+' is between '+root+' and '+(root+1)+'. Test first factors only through '+root+'.';
     }else{
       livePlan=null;coachKey='';routeIndex=0;stepIndex=0;stopPairMotion();
     }

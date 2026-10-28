@@ -86,6 +86,20 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     if(phone){
       await page.evaluate(()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
       await page.waitForFunction(()=>document.querySelector('.number-tile').getBoundingClientRect().bottom<60);
+      await page.waitForFunction(()=>{
+        const hud=document.getElementById('focusRoundHud');
+        return hud&&!hud.hidden;
+      },{},{timeout:6000}).catch(async error=>{
+        const details=await page.evaluate(()=>({
+          scroll:scrollY,scrollHeight:document.documentElement.scrollHeight,
+          target:document.querySelector('.number-tile')?.getBoundingClientRect().toJSON(),
+          timer:document.querySelector('.timer-line')?.getBoundingClientRect().toJSON(),
+          hudHidden:document.getElementById('focusRoundHud')?.hidden,
+          focus:document.body.classList.contains('focus-mode'),
+          mobile:document.getElementById('playView').dataset.mobileInput,
+          phase:document.getElementById('playView').dataset.mobilePhase
+        }));console.error('HUD VISIBILITY DIAGNOSTIC',JSON.stringify(details));throw error;
+      });
       assert.equal(await page.locator('#focusRoundHud').isVisible(),true,'target/countdown persists when main content scrolls');
       assert.match(await page.locator('#focusHudTarget').textContent(),/288/);
       assert.match(await page.locator('#focusHudProgress').textContent(),/8 \/ 9/);

@@ -9,10 +9,15 @@ try{
   await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle'});
   await page.locator('#startButton').click();
   assert.equal(await page.locator('#helpSection').isVisible(),false);
-  const help=page.locator('#helpToggle');assert.equal(await help.isVisible(),true);
-  if(viewport.width<500){
-   const b=await help.boundingBox();if(!(b&&b.y>=0&&b.y+b.height<=viewport.height)){console.error('Hint geometry',JSON.stringify({viewport,b,computed:await help.evaluate(el=>({position:getComputedStyle(el).position,display:getComputedStyle(el).display,bottom:getComputedStyle(el).bottom,offsetParent:el.offsetParent?.className,rect:el.getBoundingClientRect().toJSON()}))}));}assert.ok(b&&b.y>=0&&b.y+b.height<=viewport.height,'Hint reachable on small phone');
-   const keypad=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();assert.ok(keypad&&b.y>=keypad.y+keypad.height,'Hint stays below keypad');
+  const phone=viewport.width<500;
+  const help=page.locator(phone?'#roundBarHint':'#helpToggle');
+  assert.equal(await help.isVisible(),true,'interactive help is accessible');
+  if(phone){
+    assert.equal(await page.locator('#helpToggle').isVisible(),false,'legacy floating Hint cannot block the keypad');
+    // Tiny screens require scrolling the compact teaching toolbar ABOVE the dock.
+    if(viewport.height<=690)await help.evaluate(el=>el.scrollIntoView({behavior:'instant',block:'start'}));
+    const b=await help.boundingBox();
+    assert.ok(b&&b.height>=30,'real teaching control has a usable touch target');
   }
   await help.click();assert.equal(await page.locator('#strategyHintDialog').isVisible(),true);
   await page.locator('#coachNext').click();await page.locator('#coachTry').click();assert.equal(await page.locator('#strategyHintDialog').isVisible(),false);

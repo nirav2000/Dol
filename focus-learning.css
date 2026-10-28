@@ -171,3 +171,14 @@ body.focus-mode #playView #roundCoachMotion .coach-motion-steps{font-size:10px}
   display:flex!important
  }
 }
+
+/* The legacy floating Hint occupied the same bottom-left area as the number
+   keypad on small phones. Focus now has two visible, intentional tutoring
+   entrances: Explain in its toolbar and Interactive lesson in the compact
+   coach. The redundant floating button must NEVER intercept touch. */
+@media(max-width:700px){
+ body.focus-mode #playView[data-mobile-input=true] #helpToggle,
+ body.focus-mode #playView[data-mobile-input=true] #helpToggle:not([hidden]){
+   display:none!important;visibility:hidden!important;pointer-events:none!important
+ }
+}
