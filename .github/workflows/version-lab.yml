@@ -22,9 +22,9 @@ jobs:
   version-lab:
     uses: nirav2000/Apps/.github/workflows/version-lab-release.yml@main
     with:
-      title: ${{ inputs.title || 'Factor Frenzy strategy coaching v2.5.0' }}
-      summary: ${{ inputs.summary || 'Optional step-by-step factor strategy hints, explicit quotient calculations, separate five-move technique workouts and pair-specific learning evidence.' }}
-      areas: ${{ inputs.areas || 'Strategy hints::feature::Optional pair-specific step-by-step help|Technique practice::feature::Five-move decision workouts|Evidence::feature::Separate technique and factor mastery' }}
-      product_version: ${{ inputs.product_version || '2.5.0' }}
+      title: ${{ inputs.title || 'Factor Frenzy checkpoint' }}
+      summary: ${{ inputs.summary || 'Recorded Git checkpoint for the current Factor Frenzy release.' }}
+      areas: ${{ inputs.areas || '' }}
+      product_version: ${{ inputs.product_version || '' }}
     permissions:
       contents: write
