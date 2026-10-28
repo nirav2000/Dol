@@ -24,6 +24,10 @@ Run tests: node --test tests/*.test.mjs.
 
 No multiplayer, authentication, cloud sync, validated learning diagnostics, or production offline support yet. Hints count against unassisted performance; learning estimates are heuristic. A complete browser smoke and accessibility audit should accompany release.
 
+## v2.11.1 — reliable iPhone PWA start (28 October 2026)
+
+A published WebKit regression run observed intermittent GitHub Pages HTTP 503 responses for a module dependency. Dol's boot script now automatically retries one incomplete app startup (never a ready game), then offers a visible, accessible manual Retry control if the second attempt fails. This preserves local progress and prevents a stranded standalone PWA. Automated Chromium/WebKit tests simulate a first-load 503 and verify recovery.
+
 ## v2.11.0 — learning-first mobile restoration (28 October 2026)
 
 Immersive Focus mode was enabled by default in v2.2.0 and hid the original factor rainbow and array tools, even after richer teaching arrived in v2.6.x–v2.10.x. The phone stylesheet further hid visuals in v2.7.16. Focus is now explicitly opt-in; existing data, scores and cloud sync are preserved.

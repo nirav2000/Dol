@@ -76,6 +76,7 @@ jobs:
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
+          APPS_CHECKOUT=Apps-shared node tests/startup-recovery-browser.mjs
           node tests/mobile-dock-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
           if grep -q 'diagnostic-recipe:tablet-factor-visibility-v1' ui/pairboard-tablet.css; then APPS_CHECKOUT=Apps-shared node tests/diagnostic-25-browser.mjs; fi
