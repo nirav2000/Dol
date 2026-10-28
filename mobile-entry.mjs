@@ -4,6 +4,12 @@ export function createMobileEntry({getState,submit}){
  const input=document.getElementById('pairInput'),play=document.getElementById('playView');
  const wrap=document.createElement('div');wrap.id='mobileEntry';wrap.className='mobile-entry';wrap.hidden=true;
  wrap.innerHTML='<div class="mobile-entry-label" id="mobileEntryStatus" role="status" aria-live="polite">ENTER A FACTOR PAIR</div><div class="mobile-factors"><button type="button" id="mobileFirst" aria-label="First factor" aria-pressed="true">\u2014</button><span aria-hidden="true">\u00d7</span><button type="button" id="mobileSecond" aria-label="Second factor" aria-pressed="false">\u2014</button></div><div id="mobileKeypad" class="mobile-keypad" role="group" aria-label="Factor keypad"></div>';
+ const reviewNextSlot=document.createElement('div');
+ reviewNextSlot.id='reviewNextSlot';
+ reviewNextSlot.className='review-next-slot';
+ reviewNextSlot.setAttribute('aria-label','Continue after reviewing the factor pairs');
+ reviewNextSlot.hidden=true;
+ play.querySelector('.play-grid').after(reviewNextSlot);
  play.append(wrap);
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
  const media=window.matchMedia('(max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse)');
@@ -28,13 +34,13 @@ export function createMobileEntry({getState,submit}){
  function sync(){
    const state=getState(),finished=state.phase==='finished';
    play.dataset.mobilePhase=state.phase;
-   const destination=finished?document.getElementById('finishedPanel'):play;
+   const destination=finished?reviewNextSlot:play;
    if(wrap.parentElement!==destination)destination.append(wrap);
+   reviewNextSlot.hidden=!finished||!isMobile()||state.view!=='play';
    wrap.hidden=!isMobile()||state.view!=='play'||state.phase==='ready';
    wrap.classList.toggle('is-finished',finished);
-   // The keypad normally lives directly under #playView. In review it moves
-   // inside #finishedPanel, where the old direct-child CSS no longer applies.
-   // Set its visibility explicitly so the same accessible Next button remains usable.
+   // Review uses a dedicated, visible sibling of the play grid. This avoids
+   // putting Next Question inside any panel that might be hidden by a layout.
    if(finished){
      wrap.style.removeProperty('top');wrap.style.removeProperty('bottom');
      wrap.style.setProperty('display',wrap.hidden?'none':'block','important');

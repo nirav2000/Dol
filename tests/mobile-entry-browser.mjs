@@ -39,7 +39,7 @@ try{
  await page.locator('#mobileKeypad [data-key="action"]').waitFor({state:'visible'});
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
  assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
- assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'finishedPanel','review action stays in the reading flow');
+ assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'reviewNextSlot','review action stays in the reading flow');
  assert.notEqual(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed');
  await page.locator('#mobileKeypad [data-key="action"]').scrollIntoViewIfNeeded();
  const actionBox=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();

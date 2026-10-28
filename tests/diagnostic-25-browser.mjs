@@ -35,7 +35,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    const before=await action.boundingBox();await page.locator('#finishButton').click();
    await page.waitForSelector('#finishedPanel',{state:'visible'});
    const after=await action.boundingBox();
-   if(phone){assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'finishedPanel');assert.ok(after.height>=50);}else for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
+   if(phone){assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'reviewNextSlot');assert.ok(after.height>=50);}else for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
    const selectors=['.number-tile',layout==='pairboard'?'#layoutPairGrid [data-review-pair]':'#answerReview [data-review-pair]'];
    const measurement=await page.evaluate(selectors=>{
     const v=visualViewport||{offsetTop:0,offsetLeft:0,width:innerWidth,height:innerHeight};

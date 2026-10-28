@@ -1,3 +1,7 @@
+## v2.12.2 — stable review continuation (28 October 2026)
+
+Move the same mobile Next Question action into a dedicated review-footer slot after the main play grid, avoiding ancestors hidden by legacy Classic or Pair Board phase styling. Keep it non-overlay, thumb-accessible and available in Focus Mode. Cover the correct DOM placement in browser tests and animate the final discovered pair in review.
+
 ## v2.12.1 — iPhone review and target layout refinement (28 October 2026)
 
 - Ensure Next Question stays visible in the inline round-review section after moving the persistent keypad from its original dock, without obscuring maths or scores.

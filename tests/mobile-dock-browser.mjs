@@ -20,7 +20,7 @@ try{
    await page.locator('#mobileKeypad [data-key="clear"]').tap();await page.locator('#mobileKeypad [data-key="clear"]').tap();
    await page.locator('#finishButton').tap();
    assert.equal(await action.getAttribute('aria-label'),'Next question');
-   assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'finishedPanel','next action belongs to the review, not a floating overlay');
+   assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'reviewNextSlot','next action belongs to the review, not a floating overlay');
    assert.equal(await page.locator('#mobileEntry button:visible').count(),1,'only the next button remains');
    assert.equal(await page.evaluate(()=>window.originalAction===document.querySelector('#mobileKeypad [data-key="action"]')),true,'persistent key is reused');
    const geometry=await page.evaluate(()=>{

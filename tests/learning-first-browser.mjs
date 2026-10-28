@@ -84,7 +84,7 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     }
     if(phone){
       const next=page.locator('#mobileKeypad [data-key="action"]');
-      assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'finishedPanel');
+      assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'reviewNextSlot');
       assert.notEqual(await page.locator('#mobileEntry').evaluate(e=>getComputedStyle(e).position),'fixed','Next action does not cover mathematics');
       await next.scrollIntoViewIfNeeded();
       const rect=await next.boundingBox();
