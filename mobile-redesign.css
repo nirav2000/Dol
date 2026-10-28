@@ -29,7 +29,7 @@ body:not(.focus-mode) #roundLearningBar{display:none!important}
 body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip,
 body[data-dol-layout=pairboard] #layoutPairGrid .review-pair{
   box-sizing:border-box;position:relative;min-width:0;display:flex;gap:5px;align-items:center;justify-content:center;
-  background:#161b1a;border:2px dashed #59635e;border-radius:13px;padding:8px 5px;min-height:76px;color:#f7f9f7
+  background:#161b1a;border:2px dashed #59635e;border-radius:13px;padding:8px 5px!important;min-height:76px!important;color:#f7f9f7
 }
 body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip.credited,
 body[data-dol-layout=pairboard] #layoutPairGrid .review-pair.credited{

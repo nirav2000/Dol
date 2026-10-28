@@ -1,3 +1,9 @@
+## v2.12.7 — stable factor tiles on tablets (28 October 2026)
+
+- Unify active Pair Board and completed-round tiles to the same minimum height and padding on tablets and desktop as well as phones.
+- Prevent the old high-specificity tablet styling from shrinking the review cards.
+- Regression tests now compare actual layout size rather than intentional animation transforms, across Chromium and WebKit.
+
 ## v2.12.6 — round review Next button height and accessibility (28 October 2026)
 
 - Remove the legacy 100px height limit on the in-flow review keypad, which could leave Next Question extending below its container and clip the bottom of its button.

@@ -1,5 +1,5 @@
 {
-  "version": "2.12.6",
+  "version": "2.12.7",
   "name": "Factor Frenzy",
-  "description": "iPhone factor-board redesign with large targets, compact teaching tools, and unobstructed in-flow round review."
+  "description": "Full-width phone factor board, matching active/review tiles, interactive tutor and responsive PWA controls."
 }
