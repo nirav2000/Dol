@@ -42,7 +42,7 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     const slots=page.locator('#layoutPairGrid .layout-pair-chip');
     assert.ok(await slots.count()>=4,'factor-pair placeholders remain visible');
     assert.equal(await page.locator('#layoutPairGrid .layout-pair-chip.empty .pair-number').count(),await slots.count()*2,'placeholders have the same number-tile structure');
-    const before=await slots.first().boundingBox();
+    const before=await slots.first().evaluate(el=>({height:el.offsetHeight,width:el.offsetWidth}));
     assert.ok(before.height>=68,'placeholder is large and legible');
     await page.evaluate(()=>{
       document.querySelector('#pairInput').value='1x'+document.querySelector('#numberValue').textContent.trim();
@@ -50,8 +50,10 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     });
     assert.ok(await page.locator('#layoutPairGrid .layout-pair-chip.credited').count()>0,'solved pairs use the same board');
     assert.ok(await page.locator('#layoutPairGrid .pair-discovery').count()>0,'each correct pair animates');
-    const solved=await page.locator('#layoutPairGrid .layout-pair-chip.credited').first().boundingBox();
-    assert.ok(Math.abs(before.height-solved.height)<4,'tiles do not change size after discovery');
+    // Use layout geometry: the intended discovery animation briefly scales the
+    // painted element, but it must never reflow or resize the board slots.
+    const solved=await page.locator('#layoutPairGrid .layout-pair-chip.credited').first().evaluate(el=>({height:el.offsetHeight,width:el.offsetWidth}));
+    assert.ok(Math.abs(before.height-solved.height)<2&&Math.abs(before.width-solved.width)<2,'tiles do not reflow or change layout size after discovery: '+JSON.stringify({before,solved}));
     if(phone){
       await page.screenshot({path:'artifacts/learning-first-play-'+engineName+'.png',fullPage:true});
     }
