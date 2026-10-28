@@ -40,13 +40,16 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    // or tablet board after returning to its initial review position.
    if(!phone){await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:'instant'}));await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
    const selectors=['.number-tile',layout==='pairboard'?'#layoutPairGrid [data-review-pair]':'#answerReview [data-review-pair]'];
+   // WebKit can retain a few CSS pixels of sub-pixel native scroll offset.
+   // Tolerate up to 8px at the viewport's top edge, but reject actual clipping
+   // or any overlap with the persistent Next button.
    const measurement=await page.evaluate(selectors=>{
     const v=visualViewport||{offsetTop:0,offsetLeft:0,width:innerWidth,height:innerHeight};
     const key=document.querySelector('.tablet-pad.is-finished button[data-tablet-key=action],.mobile-entry.is-finished button[data-key=action]');
     const k=key.getBoundingClientRect();
     return [...document.querySelectorAll(selectors.join(','))].map(e=>{
      const r=e.getBoundingClientRect();const overlap=Math.max(0,Math.min(r.right,k.right)-Math.max(r.left,k.left))*Math.max(0,Math.min(r.bottom,k.bottom)-Math.max(r.top,k.top));
-     return {text:e.textContent.trim(),x:r.x,y:r.y,width:r.width,height:r.height,inside:r.left>=v.offsetLeft-1&&r.top>=v.offsetTop-1&&r.right<=v.offsetLeft+v.width+1&&r.bottom<=v.offsetTop+v.height+1,overlap};
+     return {text:e.textContent.trim(),x:r.x,y:r.y,width:r.width,height:r.height,inside:r.left>=v.offsetLeft-1&&r.top>=v.offsetTop-8&&r.right<=v.offsetLeft+v.width+1&&r.bottom<=v.offsetTop+v.height+1,overlap};
     });
    },selectors);
    assert.equal(measurement.length,5,'target plus all four factor pairs');

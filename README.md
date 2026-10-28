@@ -1,3 +1,10 @@
+## v2.12.9 — desktop-resize and WebKit review robustness (28 October 2026)
+
+- Scope the compact round-complete Start-button suppression to actual mobile-input mode, so users resizing a desktop browser to phone width keep a working Start/Next control.
+- Keep review factor numerals at a readable 21px minimum in narrow layouts and test the visible review board rather than hidden previous-round slots.
+- Accommodate up to 8px of WebKit's native touch-scroll top offset in desktop/tablet review viewport assertions while continuing to reject real clipping and any overlap with the Next action.
+- All existing mobile target, Factor Board, keypad, tutoring, learning-history and square-lesson regressions remain in the gated full-browser suite.
+
 ## v2.12.8 — reliable mobile keypad across pointer profiles (28 October 2026)
 
 - Apply compact phone keypad styling based on viewport, regardless of whether a touch-capable browser reports a coarse pointer; the JavaScript still controls whether the keypad is actually shown.
