@@ -182,3 +182,26 @@ body.focus-mode #playView #roundCoachMotion .coach-motion-steps{font-size:10px}
    display:none!important;visibility:hidden!important;pointer-events:none!important
  }
 }
+
+/* On very small phones, the persistent keypad's clue header is the actual
+   touch-accessible tutor control. Do not leave an unreachable duplicate card
+   above the keypad. Use width as a reliable fallback for mobile emulation. */
+@media(max-width:380px){
+ body.focus-mode #playView .number-section>#roundCoachPanel:not([hidden]),
+ body.focus-mode #playView[data-mobile-input=true] .number-section>#roundCoachPanel:not([hidden]){
+   display:none!important;visibility:hidden!important;pointer-events:none!important
+ }
+}
+@media(max-width:700px) and (max-height:690px){
+ body.focus-mode #playView[data-mobile-input=true] #mobileEntryStatus[data-tappable=true]{
+   display:flex!important;align-items:center;justify-content:center;
+   min-height:40px!important;max-height:40px!important;box-sizing:border-box;
+   line-height:14px!important;font-size:10px!important;letter-spacing:0!important;
+   background:#173327;color:#d6f8de;border:1px solid #8abb9f;border-radius:8px;
+   cursor:pointer;touch-action:manipulation;padding:3px 7px!important;
+   -webkit-line-clamp:unset!important;white-space:normal;overflow:hidden
+ }
+ body.focus-mode #playView[data-mobile-input=true] #mobileEntryStatus[data-tappable=true]:focus-visible{
+  outline:3px solid #d6f8de;outline-offset:2px
+ }
+}

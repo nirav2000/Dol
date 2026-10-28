@@ -112,7 +112,9 @@ export async function exerciseTeachingApp(page,label){
  const navigate=async view=>{const menu=page.locator('#menuReveal');if(await menu.isVisible()&&await menu.getAttribute('aria-expanded')!=='true')await click('#menuReveal');await click(`[data-view="${view}"]`);};
  await page.locator('#startButton').waitFor();await click('#startButton');
  const target=Number(await page.locator('#numberValue').innerText()),score=await page.locator('#scoreValue').innerText();
- await click('#helpToggle');await page.locator('#coachHeading').waitFor();
+ const viewport=page.viewportSize(),small=viewport.width<=700&&viewport.height<=690;
+ const trigger=small?'#mobileEntryStatus':viewport.width<=700?'#roundBarHint':'#helpToggle';
+ await click(trigger);await page.locator('#coachHeading').waitFor();
  assert.match(await page.locator('#coachHeading').innerText(),/work it out/);
  await click('#coachNext');
  const expected=await page.evaluate(async number=>(await import('./teaching-model.mjs')).teachingLesson(number,new Set()).steps[1].answer,target);

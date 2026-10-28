@@ -10,12 +10,12 @@ try{
   await page.locator('#startButton').click();
   assert.equal(await page.locator('#helpSection').isVisible(),false);
   const phone=viewport.width<500;
-  const help=page.locator(phone?'#roundBarHint':'#helpToggle');
+  const small=phone&&viewport.height<=690;
+  const help=page.locator(small?'#mobileEntryStatus':phone?'#roundBarHint':'#helpToggle');
   assert.equal(await help.isVisible(),true,'interactive help is accessible');
   if(phone){
     assert.equal(await page.locator('#helpToggle').isVisible(),false,'legacy floating Hint cannot block the keypad');
-    // Tiny screens require scrolling the compact teaching toolbar ABOVE the dock.
-    if(viewport.height<=690)await help.evaluate(el=>el.scrollIntoView({behavior:'instant',block:'start'}));
+    if(small)assert.equal(await help.getAttribute('role'),'button','tiny phone keypad clue is directly tappable');
     const b=await help.boundingBox();
     assert.ok(b&&b.height>=30,'real teaching control has a usable touch target');
   }

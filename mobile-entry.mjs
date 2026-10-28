@@ -76,6 +76,7 @@ export function createMobileEntry({getState,submit}){
    if(hud.hidden)return;
    hud.querySelector('#focusHudTarget').textContent=String(state.target);
    hud.querySelector('#focusHudProgress').textContent=state.found.size+' / '+state.pairs.length;
+   hud.querySelector('.focus-hud-target small').textContent='ROUND '+state.round+' · SCORE '+state.score;
    updateHudClock();
  }
  function reserveSpace(){
@@ -107,6 +108,10 @@ export function createMobileEntry({getState,submit}){
    status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:(clue||'ENTER A FACTOR PAIR');
    status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
    status.classList.toggle('has-clue',!!clue);
+   status.setAttribute('role',tiny?'button':'status');
+   status.tabIndex=tiny?0:-1;
+   status.setAttribute('aria-label',tiny?'Tap to open an interactive maths lesson':'Factor entry status');
+   status.dataset.tappable=String(tiny);
    first.textContent=parts[0]||'\u2014';second.textContent=parts[1]||'\u2014';
    first.setAttribute('aria-pressed',String(active===0));second.setAttribute('aria-pressed',String(active===1));
    const action=pad.querySelector('[data-key="action"]');
@@ -154,6 +159,18 @@ export function createMobileEntry({getState,submit}){
    b.addEventListener('click',e=>{if(suppressClick){suppressClick=false;clearTimeout(suppressTimer);e.preventDefault();return;}press(key);});
    pad.append(b);
  }
+ const status=wrap.querySelector('#mobileEntryStatus');
+ const openSmallLesson=()=>{
+   if(status.dataset.tappable!=='true'||getState().phase!=='running'||
+      getState().view!=='play')return;
+   document.getElementById('roundBarHint')?.click();
+ };
+ status.addEventListener('click',openSmallLesson);
+ status.addEventListener('keydown',e=>{
+   if((e.key==='Enter'||e.key===' ')&&status.dataset.tappable==='true'){
+     e.preventDefault();e.stopPropagation();openSmallLesson();
+   }
+ });
  first.addEventListener('click',()=>activate(0));second.addEventListener('click',()=>activate(1));
  const focus=()=>{if(isMobile()&&enabled())(active===0?first:second).focus({preventScroll:true});};
  input.addEventListener('focus',()=>{
@@ -163,7 +180,8 @@ export function createMobileEntry({getState,submit}){
    input.blur();focus();sync();
  });
  document.addEventListener('keydown',e=>{
-   if(e.composedPath().some(n=>n?.dataset?.diagnosticsIgnore)||!isMobile()||e.defaultPrevented||e.repeat||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||e.isComposing||getState().view!=='play')return;
+   if(e.target?.id==='mobileEntryStatus'&&e.target.dataset.tappable==='true')return;
+    if(e.composedPath().some(n=>n?.dataset?.diagnosticsIgnore)||!isMobile()||e.defaultPrevented||e.repeat||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||e.isComposing||getState().view!=='play')return;
    const focused=document.activeElement;
    if(focused?.closest?.('.topbar,#helpSection,#roundVisuals,dialog')||focused?.isContentEditable)return;
    if(focused?.matches?.('input,textarea,select')&&focused!==input)return;

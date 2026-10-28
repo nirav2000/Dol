@@ -60,6 +60,11 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
       await page.locator('#roundCoachDifferent').click().catch(()=>{});
     }else{
       assert.equal(await coach.isVisible(),false,'small phone uses the keypad micro-teacher');
+      assert.equal(await page.locator('#mobileEntryStatus').getAttribute('role'),'button','micro-teacher can be tapped');
+      await page.locator('#mobileEntryStatus').tap();
+      assert.equal(await page.locator('#strategyHintDialog').isVisible(),true,'micro-teacher opens the real interactive lesson');
+      await page.locator('#coachTry').tap();
+      assert.equal(await page.locator('#strategyHintDialog').isVisible(),false);
       assert.match(await page.locator('#roundCoachText').textContent(),/digit-sum/);
       assert.match(await page.locator('#mobileEntryStatus').textContent(),/digit-sum|→|groups of/,
         'short phone shows the suggested thinking or the just-earned maths animation');
@@ -103,6 +108,7 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
       assert.equal(await page.locator('#focusRoundHud').isVisible(),true,'target/countdown persists when main content scrolls');
       assert.match(await page.locator('#focusHudTarget').textContent(),/288/);
       assert.match(await page.locator('#focusHudProgress').textContent(),/8 \/ 9/);
+      assert.match(await page.locator('#focusRoundHud').textContent(),/ROUND 1 · SCORE/);
       await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
     }
     await send(12,24);
