@@ -70,16 +70,18 @@ jobs:
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
           sleep 2
           node tests/browser-smoke.mjs
+          # Run the user's phone/interface regressions first so a layout failure
+          # doesn't waste minutes on unrelated curriculum journeys.
+          node tests/mobile-entry-browser.mjs
+          APPS_CHECKOUT=Apps-shared node tests/learning-first-browser.mjs
+          node tests/mobile-dock-browser.mjs
+          node tests/round-tools-browser.mjs
+          APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
           node tests/improvement-browser.mjs
           node tests/strategy-browser.mjs
           node tests/teaching-browser.mjs
           node tests/square-studio-browser.mjs
-          node tests/round-tools-browser.mjs
-          node tests/mobile-entry-browser.mjs
-          APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
-          APPS_CHECKOUT=Apps-shared node tests/learning-first-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/startup-recovery-browser.mjs
-          node tests/mobile-dock-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
           if grep -q 'diagnostic-recipe:tablet-factor-visibility-v1' ui/pairboard-tablet.css; then APPS_CHECKOUT=Apps-shared node tests/diagnostic-25-browser.mjs; fi
       - name: Save browser screenshots
