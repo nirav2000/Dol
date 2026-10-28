@@ -47,7 +47,10 @@ try{
    await page.locator('#finishButton').tap();
    await page.setViewportSize(viewport.width===844?{width:390,height:700}:{width:844,height:390});
    assert.equal(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed');
-   await action.scrollIntoViewIfNeeded();
+   const turned=await action.boundingBox();
+   const turnedHeight=viewport.width===844?700:390;
+   assert.ok(turned&&turned.y>=0&&turned.y+turned.height<=turnedHeight+1,'Next stays on-screen after rotation');
+   assert.equal(await action.isEnabled(),true,'Next remains tappable after orientation change');
    await action.tap();
    await page.locator('#finishButton').tap();
    await page.keyboard.press('Enter');

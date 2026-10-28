@@ -35,7 +35,12 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    const before=await action.boundingBox();await page.locator('#finishButton').click();
    await page.waitForSelector('#finishedPanel',{state:'visible'});
    const after=await action.boundingBox();
-   if(phone){assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'reviewNextSlot');assert.ok(after.height>=50);}else for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
+   if(phone){
+     assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'playView');
+     assert.equal(await page.locator('#mobileEntry').evaluate(e=>getComputedStyle(e).position),'fixed');
+     assert.ok(after.height>=50&&after.y>=0&&after.y+after.height<=viewport.height+1,'Next is visible without scroll');
+     assert.ok(Math.abs(before.x-after.x)<3&&Math.abs(before.y-after.y)<4,'review keeps the same thumb position');
+   }else for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
    // A native touch click can scroll to Finish. Re-check the complete desktop
    // or tablet board after returning to its initial review position.
    if(!phone){await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:'instant'}));await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}

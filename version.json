@@ -1,5 +1,5 @@
 {
-  "version": "2.12.10",
+  "version": "2.12.11",
   "name": "Factor Frenzy",
-  "description": "Focus-mode factor animations and fixed thumb-position Next action for mobile review."
+  "description": "Focus animations and fixed Next action survive portrait, landscape and device-profile changes."
 }
