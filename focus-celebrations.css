@@ -62,7 +62,7 @@
 @media(max-width:700px){
  body.focus-mode .menu-reveal{left:12px!important;right:auto!important}
  body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .page-head{
-   position:sticky;top:env(safe-area-inset-top,0px);z-index:12;
+   position:relative;top:auto;z-index:3;
    background:#050505;min-height:42px;margin:0 0 4px!important;padding:3px 0!important
  }
  body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section{
@@ -90,12 +90,12 @@
  }
  body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>#roundLearningBar:not([hidden]){
    order:4!important;display:flex!important;flex-wrap:nowrap!important;
-   width:100%!important;min-height:35px!important;padding:2px!important;
+   width:100%!important;min-height:43px!important;padding:4px!important;
    margin:0!important;gap:4px!important;border-radius:9px
  }
  body.focus-mode #playView[data-mobile-input=true] #roundLearningBar strong{display:none!important}
  body.focus-mode #playView[data-mobile-input=true] #roundLearningBar button{
-   min-height:32px!important;padding:3px 4px!important;
+   min-height:36px!important;padding:3px 4px!important;
    font-size:11px!important;white-space:nowrap!important
  }
  body.focus-mode #playView[data-mobile-input=true]:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.layout-pair-board{

@@ -1,5 +1,5 @@
 {
-  "version": "2.12.13",
+  "version": "2.12.14",
   "name": "Factor Frenzy",
-  "description": "Full prime, square and correct-pair celebrations with Focus viewport and dedicated browser regressions."
+  "description": "Restore visible prime, square and correct-answer effects; fix Focus tap targets and regression checks."
 }

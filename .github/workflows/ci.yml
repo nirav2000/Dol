@@ -52,6 +52,7 @@ jobs:
           node --check improvement/index.mjs
           node --check improvement/ui.mjs
           node --check learning-app.mjs
+          node --check tests/celebration-regressions-browser.mjs
           node --check tablet-keypad.mjs
       - name: Unit tests
         run: node --test tests/*.test.mjs

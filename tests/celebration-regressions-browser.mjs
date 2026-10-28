@@ -114,7 +114,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
           bottom:parseFloat(getComputedStyle(el,'::before').bottom)
         }));
         assert.notEqual(footer.color,'rgba(0, 0, 0, 0)','review Next must have an opaque footer');
-        assert.match(footer.label,/6 \\/ 9/,'footer keeps round summary visible');
+        assert.ok(footer.label.includes('6 / 9'),'footer keeps round summary visible');
         const next=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();
         assert.ok(next&&next.y>=0&&next.y+next.height<=844,'Next stays visible, away from review text');
       }
