@@ -35,7 +35,10 @@ test('PWA cache warm-up survives an HTTP 503 and limits request concurrency',asy
   assert.ok(task&&typeof task.then==='function');
   await task;
   assert.ok(attempts>=50,'attempt all important Dol assets');
-  assert.equal(stored.size,attempts-1,'unavailable module does not prevent caching other files');
+  assert.ok(stored.size>=attempts-1,'unavailable module does not prevent caching other files');
+  assert.equal(stored.has(scope+'board-aware-help.mjs'),false,'HTTP 503 is never added to the cache');
+  assert.ok(stored.has(scope+'learning-app.mjs?v=2.11.1'),'serve version-stamped JavaScript offline');
+  assert.ok(stored.has(scope+'mobile-learning.css?v=2.11.1'),'serve version-stamped CSS offline');
   assert.ok(peak<=4&&peak>=2,'avoid a burst of dozens of concurrent requests');
   assert.ok(stored.has(scope+'index.html'),'cache the app shell for offline launch');
   assert.ok(stored.has(scope+'learning-app.mjs'),'cache the app entry module');

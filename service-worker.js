@@ -16,7 +16,12 @@ self.addEventListener('install',event=>{
       await Promise.allSettled(ASSETS.slice(i,i+4).map(async path=>{
         const url=new URL(path,self.registration.scope).href;
         const response=await fetch(url,{cache:'reload'});
-        if(response.ok)await cache.put(url,response.clone());
+        if(response.ok){
+          await cache.put(url,response.clone());
+          // The HTML references ?v=2.11.1 assets; cache that exact request URL too.
+          // This aliases the same bytes without making a second network request.
+          if(/\.(?:css|js|mjs)$/.test(new URL(url).pathname))await cache.put(url+'?v=2.11.1',response.clone());
+        }
       }));
     }
   })());
