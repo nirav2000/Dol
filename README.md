@@ -1,3 +1,9 @@
+## v2.12.1 — iPhone review and target layout refinement (28 October 2026)
+
+- Ensure Next Question stays visible in the inline round-review section after moving the persistent keypad from its original dock, without obscuring maths or scores.
+- Position the Pair Board switcher beneath the target numeral on phones rather than overlapping the number.
+- Bump the PWA cache so installed iPhone apps receive the layout corrections.
+
 ## v2.12.0 — learning-first responsive interface (28 October 2026)
 
 - A compact challenge summary replaces the crowded phone launcher; "Change challenge" reveals the full guided/practice/timed options and settings.
