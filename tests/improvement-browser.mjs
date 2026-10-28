@@ -15,6 +15,9 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
   page.on('pageerror',e=>errors.push(e.stack||e.message));
   page.on('requestfailed',r=>{if(new URL(r.url()).origin===new URL(base).origin)requests.push(r.url()+': '+r.failure()?.errorText)});
   await page.goto(base,{waitUntil:'domcontentloaded'});
+  // HTML can render before the module handlers are attached, especially after
+  // a fast WebKit reload. Wait for the actual application-ready signal.
+  await page.waitForFunction(()=>document.body?.dataset.dolReady==='true',{},{timeout:55000});
   await page.locator('#startButton').waitFor({state:'visible',timeout:30000});
   assert.equal((await page.locator('.version').textContent()).trim(),'Dol v'+expected);
   assert.equal((await page.locator('footer [data-dol-version]').textContent()).trim(),'Dol v'+expected);
@@ -56,6 +59,7 @@ for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3));
   await page.screenshot({path:'artifacts/progress-'+name.toLowerCase()+'-'+viewport.width+'.png',fullPage:true});
   await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.body?.dataset.dolReady==='true',{},{timeout:55000});
   await page.locator('#startButton').waitFor({state:'visible'});
   if(await page.evaluate(()=>document.body.classList.contains('focus-mode')&&!document.body.classList.contains('focus-menu-revealed')))await press('#menuReveal');
   await press('[data-view="progress"]');
