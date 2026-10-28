@@ -61,6 +61,7 @@ assert.match(await page.locator('#conceptDetail').textContent(),/recorded events
 await page.screenshot({path:'browser-desktop.png',fullPage:true});
 await page.setViewportSize({width:390,height:844});
 await page.locator('[data-view="play"]').click();
+await page.locator('#changeChallenge').click();
 await page.locator('[data-mode="practice"]').click();
 await page.locator('#startButton').click();
 assert.equal(await page.locator('#helpSection').isVisible(),false);
