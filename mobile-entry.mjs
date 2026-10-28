@@ -13,8 +13,20 @@ export function createMobileEntry({getState,submit}){
  play.append(wrap);
  const first=wrap.querySelector('#mobileFirst'),second=wrap.querySelector('#mobileSecond'),pad=wrap.querySelector('#mobileKeypad');
  const media=window.matchMedia('(max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse)');
- let parts=['',''],active=0,lastRound=null;
- const isMobile=()=>document.body.dataset.dolProfile==='phone'||media.matches&&document.body.dataset.dolProfile!=='tablet';
+ let parts=['',''],active=0,lastRound=null,mobileSession=false;
+ // Keep the input surface stable for the duration of a round. Device-profile
+ // detection can change from phone to desktop as browsers initialise or attach
+ // a pointer; that must never remove the review's Next Question action.
+ const isMobile=()=>{
+   const profile=document.body.dataset.dolProfile;
+   const compact=innerWidth<=700||(innerWidth<=1000&&innerHeight<=500);
+   const touch=navigator.maxTouchPoints>0||matchMedia('(any-pointer:coarse)').matches;
+   const explicit=profile==='phone'||(profile!=='tablet'&&media.matches);
+   const mobile=explicit||(compact&&touch)||(compact&&mobileSession);
+   if(mobile&&['running','paused'].includes(getState().phase))mobileSession=true;
+   if(!compact&&profile==='desktop')mobileSession=false;
+   return mobile;
+ };
  const enabled=()=>getState().phase==='running'&&getState().view==='play';
  const nextQuestion=()=>{if(getState().phase==='finished'&&getState().view==='play')document.getElementById('startButton').click();};
  function placeDock(){
