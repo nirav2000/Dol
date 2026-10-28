@@ -29,7 +29,7 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     assert.equal(await page.locator('#adaptiveToggle').isChecked(),true);
     assert.equal(await page.locator('#stageSelect').isEnabled(),true,'automatic mode does not lock the difficulty selector');
     assert.equal(await page.locator('#limitSelect').isEnabled(),true,'number limit is selectable');
-    assert.ok(await page.locator('#limitSelect option[value="144"]').count()>0,'times-table limit exists');
+    assert.ok(await page.locator('#limitSelect option').evaluateAll(options=>options.some(option=>option.value==='144')),'times-table limit exists');
     await page.locator('#stageSelect').selectOption('systematic');
     assert.equal(await page.locator('#adaptiveToggle').isChecked(),false,'changing difficulty switches to custom');
     await page.locator('#limitSelect').selectOption('192');
