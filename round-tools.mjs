@@ -1,12 +1,13 @@
 import {pairKey,reviewScore,createAutoAdvance} from './round-model.mjs';
 import {createVisualTools} from './visual-tools.mjs';
+import {boardSuggestions} from './board-aware-help.mjs';
 const $=id=>document.getElementById(id);
 const STORAGE='dol-round-tools-v1';
 const el=(tag,attrs={},text)=>{const n=document.createElement(tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;};
 function numberTile(value){return el('span',{class:'pair-number'},value);}
 function pairContent(button,a,b){button.append(numberTile(a),el('span',{class:'pair-times','aria-hidden':'true'},'×'),numberTile(b));}
 /** Thin UI adapter. Manual review marks intentionally never rewrite learning evidence. */
-export function createRoundTools({getState,persist,startNext,refresh,markAssisted,fillPair}){
+export function createRoundTools({getState,persist,startNext,refresh,markAssisted,fillPair,openHint=()=>{},exitFocus=()=>{}}){
   let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE))||{};}catch{}
   const preferences={autoNext:saved.autoNext===true,delay:[3,5,8,12].includes(saved.delay)?saved.delay:8};
   const save=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(preferences));}catch{}};
@@ -57,6 +58,42 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   const visualRoot=el('section',{id:'roundVisuals',hidden:''});
   document.querySelector('.play-grid').after(visualRoot);
   const visual=createVisualTools(visualRoot,{onAssist:markAssisted,onInteract:()=>timer.hold('review'),onUsePair:fillPair});
+  // Guided factor reasoning follows the live board. It never reveals or scores a missing pair.
+  const coach=el('section',{id:'roundCoachPanel',class:'round-coach',hidden:''});
+  coach.innerHTML='<div class="round-coach-heading"><span class="eyebrow">YOUR NEXT DISCOVERY</span><strong id="roundCoachCount"></strong></div><p id="roundCoachText" role="status" aria-live="polite"></p><p id="roundCoachBoundary" class="small muted"></p><div class="round-coach-actions"><button type="button" class="secondary" id="roundCoachHint">Work it out with me</button><button type="button" class="secondary" id="roundCoachRainbow">Factor rainbow</button><button type="button" class="secondary" id="roundCoachArray">Build an array</button></div>';
+  document.querySelector('.number-section .action-row').after(coach);
+  $('roundCoachHint').addEventListener('click',()=>{if(['running','paused'].includes(getState().phase))openHint();});
+  function openVisual(kind){
+    const s=getState();
+    if(!['running','paused','finished'].includes(s.phase))return;
+    if(document.body.classList.contains('focus-mode'))exitFocus();
+    visual.show(kind);
+    visualRoot.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  }
+  $('roundCoachRainbow').addEventListener('click',()=>openVisual('rainbow'));
+  $('roundCoachArray').addEventListener('click',()=>openVisual('arrays'));
+  const reflection=el('section',{id:'roundMathReflection',class:'round-math-reflection',hidden:''});
+  reflection.innerHTML='<h3>What did this number teach?</h3><p id="roundMathInsight"></p><div class="round-math-actions"><button id="roundMathPatterns" type="button" class="primary">How each factor pair works</button><button id="roundMathExplore" type="button" class="secondary">Explore the factor rainbow →</button></div>';
+  $('finishedPanel').append(reflection);
+  $('roundMathExplore').addEventListener('click',()=>openVisual('rainbow'));
+  $('roundMathPatterns').addEventListener('click',()=>{const toggle=$('patternToggle');if(!toggle)return;if(toggle.getAttribute('aria-expanded')!=='true')toggle.click();toggle.scrollIntoView({behavior:'smooth',block:'start'});});
+  function updateCoach(s){
+    coach.hidden=s.phase!=='running'&&s.phase!=='paused';
+    reflection.hidden=s.phase!=='finished';
+    if(!coach.hidden){
+      const suggested=boardSuggestions(s.target,s.found),root=Math.floor(Math.sqrt(s.target));
+      $('roundCoachCount').textContent=s.found.size+' of '+s.pairs.length+' pairs found';
+      const routes=suggested.choices.map(x=>x.teaser);
+      $('roundCoachText').textContent=s.mode==='timed'
+        ? 'A method is available when you need it; your timer pauses while you learn.'
+        : (s.found.size?'Reuse a pair you know. ':'Start with a quick divisibility test. ')+(routes.length?'Possible routes: '+routes.join(' · ')+'.':'Test divisors systematically, then prove you have found them all.');
+      $('roundCoachBoundary').textContent='Search boundary: '+root+'² = '+(root*root)+' ≤ '+s.target+' < '+((root+1)*(root+1))+' = '+(root+1)+'². Only test candidates up to '+root+'.';
+    }
+    if(!reflection.hidden){
+      const root=Math.floor(Math.sqrt(s.target)),missing=s.pairs.filter(([a,b])=>!s.found.has(a+'-'+b));
+      $('roundMathInsight').textContent=s.target+' has '+s.pairs.length+' distinct factor '+(s.pairs.length===1?'pair':'pairs')+'. To prove the list is complete, test divisors 1 to '+root+'. '+(missing.length?'You missed '+missing.length+' during play. Examine the outlined pairs, then try a new round.':'You found every pair. Now look for the faster routes between them.')+(Number.isInteger(Math.sqrt(s.target))?' Its square-root pair is counted once.':'');
+    }
+  }
   const playground=el('section',{id:'learnVisuals'});document.querySelector('.learning-layout').before(playground);
   const demo=createVisualTools(playground,{demo:true});demo.update({n:24,roundId:24,found:new Set(),finished:true});
   function applyReview(){
@@ -101,9 +138,12 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
     if(s.phase==='ready'){timer.cancel();visualRoot.hidden=true;roundIdentity=null;}
     else{
       const token=s.round+':'+s.target;
-      if(roundIdentity!==token)roundIdentity=token;
+      const newRound=roundIdentity!==token;
+      if(newRound)roundIdentity=token;
       visual.update({n:s.target,roundId:roundIdentity,found:s.found,finished:s.phase==='finished',paused:s.phase==='paused'});
+      if(newRound&&s.mode==='guided')visual.show('rainbow');
     }
+    updateCoach(s);
     if(s.phase==='finished')renderReview(s);
     environment();
   }

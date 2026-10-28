@@ -10,7 +10,7 @@ for(const[name,engine]of [['chromium',chromium],['webkit',webkit]]){
  try{for(const viewport of [{width:320,height:568},{width:390,height:844},{width:834,height:1194},{width:1194,height:834}]){
   const context=await browser.newContext({viewport,isMobile:true,hasTouch:true,serviceWorkers:'block'});
   await testNetwork(context,{base,apps:process.env.APPS_CHECKOUT||'Apps-shared'});
-  await context.addInitScript(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'practice',stage:'foundation',limit:128,sound:false}));});
+  await context.addInitScript(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-focus-immersive-opt-in-v2','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'practice',stage:'foundation',limit:128,sound:false}));});
   const page=await context.newPage(),errors=[];page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
   const label=`${name}-${viewport.width}x${viewport.height}${live?'-live':''}`;
   try{

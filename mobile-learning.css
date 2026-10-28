@@ -1,0 +1,62 @@
+/* Dol 2.11: learning stays visible, thumb actions stay predictable. */
+.round-coach,.round-math-reflection{border:1px solid #52665f;border-radius:16px;background:linear-gradient(135deg,#15211f,#161a20);padding:16px;margin:12px 0;color:#f0f7f3}
+.round-coach-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.round-coach-heading .eyebrow{margin:0;color:#a2dcc4;font-size:10px}
+.round-coach-heading strong{font-size:12px;color:#d4eee0}
+.round-coach p,.round-math-reflection p{font-size:14px;line-height:1.5;margin:9px 0}
+.round-coach #roundCoachBoundary{color:#adc2b8;font-size:12px}
+.round-coach-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.round-coach-actions button{flex:1 1 145px;min-height:44px;padding:8px 10px;line-height:1.35;border-color:#657a6f}
+.round-coach-actions #roundCoachHint{background:#dcf4e8;color:#10251b;border-color:#dcf4e8}
+.round-math-reflection h3{font-size:18px;margin:0}
+.round-math-reflection button{min-height:44px}
+.round-math-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.round-math-actions button{flex:1 1 165px;padding:10px}
+#roundVisuals{scroll-margin-top:20px}
+#roundVisuals .factor-arc{stroke-dasharray:1600;stroke-dashoffset:1600;animation:dolArcDraw .8s ease-out forwards}
+@keyframes dolArcDraw{to{stroke-dashoffset:0}}
+#pairSlots .slot.solved.pair-discovery,.layout-pair-chip.credited.pair-discovery{animation:dolPairDiscovery .85s ease-out both}
+@keyframes dolPairDiscovery{0%{transform:scale(.89);box-shadow:0 0 0 3px #bdf8cd;background:#285943}55%{transform:scale(1.05);box-shadow:0 0 0 5px #a4ffbd70}100%{transform:scale(1);box-shadow:none}}
+@media(prefers-reduced-motion:reduce){#roundVisuals .factor-arc,#pairSlots .slot.solved.pair-discovery,.layout-pair-chip.credited.pair-discovery{animation:none!important;stroke-dasharray:none;stroke-dashoffset:0}}
+@media(max-width:700px){
+ body:not(.focus-mode) .topbar{height:auto;min-height:84px;display:flex;flex-wrap:wrap;gap:8px;padding:10px 0}
+ body:not(.focus-mode) .topbar nav{order:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:4px}
+ body:not(.focus-mode) .topbar nav .nav{font-size:12px;padding:9px 2px;min-height:44px}
+ body:not(.focus-mode) .topbar .brand{gap:7px;min-width:0}
+ body:not(.focus-mode) .topbar .brandmark{width:34px;height:34px;font-size:22px}
+ body:not(.focus-mode) .topbar .brand strong{font-size:15px}
+ body:not(.focus-mode) .topbar .header-actions{margin-left:auto;gap:6px}
+ body:not(.focus-mode) .topbar .header-actions .version{font-size:10px}
+ body:not(.focus-mode) #playView{padding-top:12px}
+ body:not(.focus-mode) #playView .page-head>div:first-child{flex:1 1 100%}
+ body:not(.focus-mode) #playView .page-head h1{font-size:clamp(26px,7vw,34px);letter-spacing:-1px;line-height:1.07}
+ body:not(.focus-mode) #playView .page-head h1 span{color:#b5c2bc}
+ body:not(.focus-mode) #playView .page-head .eyebrow{font-size:10px;margin:0 0 5px}
+ body:not(.focus-mode) #playView .scoreboard{margin-right:0!important;margin-left:auto}
+ #playView .mode-tabs{gap:6px;margin-bottom:10px}
+ #playView .mode{min-height:66px;padding:9px 7px;border-radius:11px}
+ #playView .mode strong{font-size:12px;line-height:1.25;margin-bottom:4px}
+ #playView .mode small{font-size:10px;line-height:1.3}
+ #playView .controls{gap:9px;padding:11px;margin-bottom:12px}
+ #playView .controls>label:not(.check){flex:1 1 120px;min-width:0}
+ #playView .controls select{max-width:100%;width:100%}
+ #playView .controls #adaptiveLevelUp{min-height:44px}
+ #playView .round-coach{margin:5px 0 8px;padding:12px;border-radius:13px}
+ #playView .round-coach-heading strong{font-size:11px}
+ #playView .round-coach p{font-size:12px;margin:6px 0}
+ #playView .round-coach #roundCoachBoundary{font-size:11px}
+ #playView .round-coach-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+ #playView .round-coach-actions button{min-height:45px;white-space:normal;font-size:12px;padding:7px 5px}
+ #playView .round-coach-actions #roundCoachHint{grid-column:1 / -1}
+ body:not(.focus-mode) #playView #helpToggle{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;margin:0!important;box-shadow:none!important;min-height:44px}
+ #playView .round-math-reflection{padding:12px}
+ #playView .round-math-reflection p{font-size:13px}
+ #roundVisuals{scroll-margin-top:10px}
+ #roundVisuals .visual-tools{margin-top:12px}
+}
+@media(max-width:380px){body:not(.focus-mode) .topbar .header-actions{width:100%;justify-content:space-between}.round-coach-heading{gap:3px}}
+/* Immersive focus is opt-in. Even there, guided controls may be reopened via the menu. */
+body.focus-mode #roundCoachPanel{display:none!important}
+
+/* The Pair Board phone layout is a CSS grid: give the tutor its own full-width row. */
+body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-section #roundCoachPanel{grid-area:auto;grid-column:1 / -1;grid-row:3;min-width:0;width:100%}

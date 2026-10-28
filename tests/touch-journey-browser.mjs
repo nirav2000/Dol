@@ -11,7 +11,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   const phone=scenario.width===390;
   const context=await browser.newContext({viewport:{width:scenario.width,height:scenario.height},hasTouch:true,isMobile:phone,serviceWorkers:'block'});
   await context.addInitScript(({layout})=>{
-   localStorage.setItem('dol-focus-mode-v1','true');
+   localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-focus-immersive-opt-in-v2','true');
    localStorage.setItem('dol-auto-difficulty-v1','false');
    localStorage.setItem('dol-tablet-keypad-v1','true');
    localStorage.setItem('dol-layout-preferences-v1',JSON.stringify({layout,palette:'mono'}));

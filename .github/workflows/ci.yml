@@ -23,6 +23,8 @@ jobs:
           node --check logic.mjs
           node --check adaptive.mjs
           node --check learning-app.mjs
+          node --check learning-insights.mjs
+          node --check difficulty-profile.mjs
           node --check dol-account.mjs
           node --check strategy-model.mjs
           node --check strategy-coach.mjs
@@ -73,6 +75,7 @@ jobs:
           node tests/square-studio-browser.mjs
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
+          APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
           node tests/mobile-dock-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
           if grep -q 'diagnostic-recipe:tablet-factor-visibility-v1' ui/pairboard-tablet.css; then APPS_CHECKOUT=Apps-shared node tests/diagnostic-25-browser.mjs; fi

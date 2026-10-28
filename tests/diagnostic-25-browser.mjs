@@ -14,7 +14,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   await testNetwork(context,{base});
   await context.addInitScript(({seed,layout,focus})=>{
    Math.random=()=>seed;
-   localStorage.setItem('dol-focus-mode-v1',String(focus));
+   localStorage.setItem('dol-focus-mode-v1',String(focus));localStorage.setItem('dol-focus-immersive-opt-in-v2',String(focus));
    localStorage.setItem('dol-auto-difficulty-v1','false');
    localStorage.setItem('dol-layout-preferences-v1',JSON.stringify({layout,palette:'slate'}));
    localStorage.setItem('dol-tablet-keypad-v1','true');

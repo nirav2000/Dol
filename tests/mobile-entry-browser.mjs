@@ -8,7 +8,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 fs.mkdirSync('artifacts',{recursive:true});
 try{
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
- await context.addInitScript(seed=>{Math.random=()=>seed;localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false}));localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'foundation',limit:64,duration:60,sound:false,showCount:true}));},seed);
+ await context.addInitScript(seed=>{Math.random=()=>seed;localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-focus-immersive-opt-in-v2','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false}));localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'foundation',limit:64,duration:60,sound:false,showCount:true}));},seed);
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.TEST_BASE_URL||'http://127.0.0.1:8000/',{waitUntil:'networkidle'});

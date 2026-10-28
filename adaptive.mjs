@@ -33,8 +33,12 @@ export function describeDifficulty(n){
 export function stageCandidates(stageId='foundation',maxOverride=1024){
   const stage=STAGES.find(x=>x.id===stageId)||STAGES[0];
   const max=Math.min(stage.max,maxOverride);
+  // Keep challenging numbers substantial when the learner has earned an advanced level.
+  // Respect a deliberately small manual cap by falling back to the usual pair count.
+  const floor={systematic:36,strategic:144,expert:256}[stageId]||2;
+  const minimum=max>=floor*2?floor:2;
   const out=[];
-  for(let n=2;n<=max;n++){
+  for(let n=minimum;n<=max;n++){
     const count=factorPairs(n).length;
     if(count>=stage.minPairs && (stageId!=='foundation'||count<=5) && (stageId!=='fluency'||multiplicationFacts(n).length>0))out.push(n);
   }

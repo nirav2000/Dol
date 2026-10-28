@@ -14,10 +14,11 @@ const $=id=>document.getElementById(id);
 let roundTools,insights,mobileEntry,strategySupport,layoutOptions;
 let improvement=null,improvementLoading=null,improvementUser=null;
 const focusKey='dol-focus-mode-v1';
+const focusOptInKey='dol-focus-immersive-opt-in-v2'; // Explicit choice, not the old default-on preference.
 let focusMode=readFocus();
-function readFocus(){try{const value=localStorage.getItem(focusKey);return value===null?true:value==='true';}catch{return true;}}
+function readFocus(){try{return localStorage.getItem(focusOptInKey)==='true';}catch{return false;}}
 function applyFocus(){if(!focusMode){document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}document.body.classList.toggle('focus-mode',focusMode);$('focusToggle').setAttribute('aria-pressed',String(focusMode));$('focusToggle').textContent=focusMode?'Exit focus':'Focus mode';$('focusSetting').checked=focusMode;}
-function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
+function setFocus(value){focusMode=!!value;try{localStorage.setItem(focusKey,String(focusMode));localStorage.setItem(focusOptInKey,String(focusMode));}catch{}applyFocus();if(state.view==='play'&&state.phase==='running')focusAnswer();}
 function focusAnswer(){if(document.body.classList.contains('focus-menu-revealed'))return;if(document.body.dataset.dolLayout==='pairboard'&&['phone','tablet'].includes(document.body.dataset.dolProfile))return;if(mobileEntry?.isMobile()){mobileEntry.focus();return;}if(state.view==='play'&&state.phase==='running'&&!document.hidden&&document.activeElement!==$('pairInput'))$('pairInput').focus({preventScroll:true});}
 const accountId=activeAccount();
 const scoped=key=>accountId==='guest'?key:key+':account:'+accountId;
@@ -186,6 +187,17 @@ function recordPair(pair,correct,hints=0){
   if(a<=12&&b<=12)learning.record({concept:'fact:'+a+'x'+b,correct,hints,mode:state.mode,context});
   if(a<=12)learning.record({concept:'div:'+a,correct,hints,mode:state.mode,context});
 }
+function animateDiscoveredPair(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const pairBoard=document.body.dataset.dolLayout==='pairboard';
+  const tiles=[...document.querySelectorAll(pairBoard?'#layoutPairGrid .layout-pair-chip.credited':'#pairSlots .slot.solved')];
+  const tile=tiles.at(-1);
+  if(!tile)return;
+  tile.classList.remove('pair-discovery');
+  void tile.offsetWidth;
+  tile.classList.add('pair-discovery');
+  tile.addEventListener('animationend',event=>{if(event.target===tile)tile.classList.remove('pair-discovery');},{once:true});
+}
 function answer(event){
   event.preventDefault();if(state.phase!=='running')return;
   tick();if(state.phase!=='running')return;
@@ -212,7 +224,7 @@ function answer(event){
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
   // A fully revealed visual board remains assisted for this round; private coach hints are pair-specific.
   persist();
-  if(state.found.size===state.pairs.length)finish('complete');else{render();focusAnswer();}
+  if(state.found.size===state.pairs.length)finish('complete');else{render();animateDiscoveredPair();focusAnswer();}
 }
 function finish(reason){
   if(state.phase!=='running'&&state.phase!=='paused')return;
@@ -544,7 +556,8 @@ document.querySelector('.topbar').addEventListener('focusin',reveal);
 document.querySelector('.topbar').addEventListener('focusout',e=>{if(!e.currentTarget.contains(e.relatedTarget)&&e.relatedTarget!==$('menuReveal'))hide();});
 roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:render,
   markAssisted:()=>{tick();if(state.phase==='running'){insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);}},
-  fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});}
+  fillPair:pair=>{tick();if(state.phase!=='running')return;insights?.help();state.visualHelp=true;state.hintsUsed=Math.max(1,state.hintsUsed);$('pairInput').value=pair.join('x');$('pairInput').focus({preventScroll:true});},
+  openHint:()=>strategySupport?.openHint(),exitFocus:()=>setFocus(false)
 });
 layoutOptions=createLayoutOptions({getState:()=>state});
 applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render,onRecord:event=>improvement?.record(event)});

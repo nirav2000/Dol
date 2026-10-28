@@ -21,6 +21,7 @@ async function scenario(name,fn){
    }
  },{seed});
  if(name!=='focus-first layout, input focus and Enter next')await context.addInitScript(()=>localStorage.setItem('dol-focus-mode-v1','false'));
+  else await context.addInitScript(()=>localStorage.setItem('dol-focus-immersive-opt-in-v2','true'));
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.stack||e.message));
  try{

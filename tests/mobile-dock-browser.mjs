@@ -7,7 +7,7 @@ const same=(a,b,label)=>{assert.ok(a&&b,label+' visible');for(const k of ['x','y
 try{
  for(const viewport of [{width:320,height:568},{width:390,height:844},{width:430,height:932},{width:640,height:900},{width:844,height:390}]){
   const ctx=await browser.newContext({viewport,isMobile:true,hasTouch:true,deviceScaleFactor:2});
-  await ctx.addInitScript(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'systematic',limit:128,sound:false,showCount:true}));localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false}));});
+  await ctx.addInitScript(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-focus-immersive-opt-in-v2','true');localStorage.setItem('dol-auto-difficulty-v1','false');localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'systematic',limit:128,sound:false,showCount:true}));localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false}));});
   const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8000/',{waitUntil:'networkidle'});
   assert.ok(await page.locator('#startButton').isVisible(),'Start visible');

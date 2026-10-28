@@ -24,6 +24,14 @@ Run tests: node --test tests/*.test.mjs.
 
 No multiplayer, authentication, cloud sync, validated learning diagnostics, or production offline support yet. Hints count against unassisted performance; learning estimates are heuristic. A complete browser smoke and accessibility audit should accompany release.
 
+## v2.11.0 — learning-first mobile restoration (28 October 2026)
+
+Immersive Focus mode was enabled by default in v2.2.0 and hid the original factor rainbow and array tools, even after richer teaching arrived in v2.6.x–v2.10.x. The phone stylesheet further hid visuals in v2.7.16. Focus is now explicitly opt-in; existing data, scores and cloud sync are preserved.
+
+Guided rounds now show a live board-aware "Your next discovery" card, square-root search boundary, a safe entry into interactive hints, and one-tap visual rainbow/array exploration. The rainbow follows only discovered pairs until the learner chooses to reveal the complete answer. Per-pair success animations complement full-round prime/square celebrations; reduced-motion preference is respected. The review explains how to prove completeness and why square middle pairs count once.
+
+Automatic difficulty resumes using successful round history where available, avoids trivial single-pair targets at advanced levels, and treats helped correct answers as successful learning rather than failures. The learner can choose a harder level. Phone navigation, controls, and coaching are responsive without changing the established touch keypad or score accounting.
+
 ## v2.1.0 — interactive visuals and round review
 
 Large tappable factor-pair review tiles recalculate score and completion bonus. Review corrections do not alter mastery evidence. Opt-in automatic next question offers 3/5/8/12-second review intervals, with hold/resume, visibility protection and manual next. In-round rainbows initially show only discovered pairs; revealing all or using arrays marks subsequent answers assisted. The Learn page includes a factor-rainbow and array playground for 1–1024, with remainders, rotation and grouped counters. Pure model tests and browser smoke tests cover these interactions.

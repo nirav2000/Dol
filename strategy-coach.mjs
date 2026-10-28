@@ -76,7 +76,7 @@ export function createStrategySupport({getState,setView,pause,focusAnswer,learni
   // Preserve the existing touch-safe Hint position, independently of the teaching dialog.
   function placeMobileHint(){
     const hint=$('helpToggle');if(!hint)return;
-    if(innerWidth<=700&&matchMedia('(pointer:coarse)').matches){
+    if(innerWidth<=700&&matchMedia('(pointer:coarse)').matches&&document.body.classList.contains('focus-mode')){
       const vv=window.visualViewport;const top=Math.max(8,(vv?.offsetTop||0)+(vv?.height||innerHeight)-54);
       hint.style.setProperty('top',top+'px','important');hint.style.setProperty('bottom','auto','important');
     }else{hint.style.removeProperty('top');hint.style.removeProperty('bottom');}
