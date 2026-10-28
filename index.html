@@ -5,7 +5,7 @@
 (()=>{
   const key='dol-startup-recovery-attempt-v1';
   const read=()=>{try{return sessionStorage.getItem(key)}catch{return null}};
-  const save=value=>{try{if(value===null)sessionStorage.removeItem(key);else sessionStorage.setItem(key,value)}catch{}};
+  const save=value=>{try{if(value===null)sessionStorage.removeItem(key);else sessionStorage.setItem(key,value);return true}catch{return false}};
   const ready=()=>document.body?.dataset.dolReady==='true';
   let fired=false;
   function promptRetry(){
@@ -24,7 +24,7 @@
   function check(){
     if(ready()){save(null);document.getElementById('dolStartupRecovery')?.remove();return;}
     if(fired)return;fired=true;
-    if(read()!=='retried'&&navigator.onLine!==false){save('retried');location.reload();return;}
+    if(read()!=='retried'&&navigator.onLine!==false&&save('retried')){location.reload();return;}
     promptRetry();
   }
   addEventListener('error',event=>{
