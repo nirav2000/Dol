@@ -1,3 +1,9 @@
+## v2.12.5 — iPhone factor target typography (28 October 2026)
+
+- Increase the target-number size proportionately on narrow and modern iPhones so a three-digit factor challenge remains prominent inside the full-width target tile.
+- Preserve the target's vertical fit alongside the layout selector, safe area, touch keypad and round actions.
+- Chromium/WebKit tests check the real 441 scenario across 320px, 390px and 430px widths and Focus/normal presentation.
+
 ## v2.12.4 — correct mobile-input detection and protect desktop resizing (28 October 2026)
 
 - Hide duplicate Next/Start controls only when the actual mobile keypad is enabled, not merely because a browser window is narrow.

@@ -242,7 +242,7 @@ body.focus-mode #playView .challenge-overview,body.focus-mode #playView .challen
  }
  #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.number-tile #numberValue{
    display:block!important;position:relative!important;flex:none!important;
-   max-width:100%;font-size:clamp(52px,16vw,82px)!important;
+   max-width:100%;font-size:clamp(60px,19vw,92px)!important;
    font-weight:850;line-height:1;letter-spacing:-.035em!important;
    text-align:center;white-space:nowrap;overflow:visible;
  }
