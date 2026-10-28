@@ -26,6 +26,9 @@ No multiplayer, authentication, cloud sync, validated learning diagnostics, or p
 
 ## v2.11.1 — reliable iPhone PWA start (28 October 2026)
 
+- Existing installed PWAs now check for service-worker updates at launch and whenever the app returns to the foreground. When a new worker takes control, a visible update button appears rather than silently replacing the page during a round.
+- Cache warming is bounded to four parallel resources and tolerates individual HTTP errors. Also removed the overly broad \`/Dol/\` network-first match (which affected all static modules and could return a 503 even when a module was cached). Navigations remain network-first automatically; app code/assets are now cache-first. A single temporary hosting 503 no longer aborts the entire service-worker installation.
+
 A published WebKit regression run observed intermittent GitHub Pages HTTP 503 responses for a module dependency. Dol's boot script now automatically retries one incomplete app startup (never a ready game), then offers a visible, accessible manual Retry control if the second attempt fails. This preserves local progress and prevents a stranded standalone PWA. Automated Chromium/WebKit tests simulate a first-load 503 and verify recovery.
 
 ## v2.11.0 — learning-first mobile restoration (28 October 2026)
