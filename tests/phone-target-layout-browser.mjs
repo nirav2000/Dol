@@ -8,9 +8,14 @@ import {chooseAdaptiveNumber} from '../adaptive.mjs';
 import {testNetwork} from './browser-network.mjs';
 const base=process.env.DOL_BASE_URL||'http://127.0.0.1:8000/';
 fs.mkdirSync('artifacts',{recursive:true});
-let low=0,high=1;
-for(let i=0;i<24;i++){const seed=(low+high)/2;const target=chooseAdaptiveNumber({stage:'strategic',limit:512,random:()=>seed});if(target<441)low=seed;else high=seed;}
-const seed=(low+high)/2;
+// Find the midpoint of 441's entire selection probability interval, not
+// the boundary between 440 and 441 (which selects 440 when rounded).
+function firstRandomSelectingAtLeast(target){
+ let low=0,high=1;
+ for(let i=0;i<26;i++){const value=(low+high)/2;const picked=chooseAdaptiveNumber({stage:'strategic',limit:512,random:()=>value});if(picked<target)low=value;else high=value;}
+ return high;
+}
+const seed=(firstRandomSelectingAtLeast(441)+firstRandomSelectingAtLeast(442))/2;
 assert.equal(chooseAdaptiveNumber({stage:'strategic',limit:512,random:()=>seed}),441,'deterministic square with five distinct pairs');
 for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
  const browser=await engine.launch({headless:true,args:engineName==='chromium'?['--no-sandbox']:[]});
