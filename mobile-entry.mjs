@@ -45,7 +45,12 @@ export function createMobileEntry({getState,submit}){
  function updateInput(){if(isMobile())input.value=parts[0]&&parts[1]?parts.join('x'):parts[0]?parts[0]+'x':'';}
  function sync(){
    const state=getState(),finished=state.phase==='finished';
+   const mobileSurface=isMobile();
    play.dataset.mobilePhase=state.phase;
+   // The compact review has its own Next Question. Keep the generic Start
+   // button out of sight but available to the shared startNext callback.
+   const launcher=document.getElementById('startButton');
+   if(launcher&&mobileSurface)launcher.hidden=finished||state.phase==='running'||state.phase==='paused';
    const destination=finished?reviewNextSlot:play;
    if(wrap.parentElement!==destination)destination.append(wrap);
    reviewNextSlot.hidden=!finished||!isMobile()||state.view!=='play';
@@ -67,7 +72,9 @@ export function createMobileEntry({getState,submit}){
    const roundKey=state.round+':'+state.target;
    if(isMobile()&&enabled()&&roundKey!==lastRound){
      lastRound=roundKey;
-     if(document.body.dataset.dolLayout!=='pairboard')requestAnimationFrame(()=>{if(enabled())window.scrollTo({top:play.offsetTop,behavior:'auto'});});
+     // Always position the target near the viewport top. Pair Board
+     // previously skipped this, leaving the keypad over the factor board.
+     requestAnimationFrame(()=>{if(enabled()&&!document.body.classList.contains('dol-visuals-open'))window.scrollTo({top:play.offsetTop,behavior:'auto'});});
    }
  }
  const reset=()=>{parts=['',''];active=0;updateInput();sync();};

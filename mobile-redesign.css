@@ -220,3 +220,92 @@ body.focus-mode #playView .challenge-overview,body.focus-mode #playView .challen
 @media(prefers-reduced-motion:reduce){
  #layoutPairGrid .review-pair.credited.pair-discovery,#answerReview .review-pair.credited.pair-discovery{animation:none!important}
 }
+
+/* v2.12.3: Target-first mobile play. Do not use the Pair Board's old
+   "target / controls" grid: an auto-sized right track can squeeze a
+   3- or 4-digit number into a sliver when timer and coach are present. */
+@media(max-width:700px){
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section{
+   display:flex!important;flex-flow:column nowrap!important;align-items:stretch!important;
+   grid-template-columns:none!important;grid-template-areas:none!important;
+   width:100%!important;max-width:100%!important;min-width:0!important;
+   gap:7px!important;
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.number-tile{
+   grid-area:auto!important;order:0!important;
+   display:flex!important;flex-direction:column;justify-content:center;align-items:center;
+   width:100%!important;min-width:0!important;max-width:100%!important;
+   flex:0 0 auto!important;
+   height:clamp(102px,14dvh,132px)!important;min-height:102px!important;
+   padding:7px!important;gap:4px;overflow:hidden;
+   border-radius:16px!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.number-tile #numberValue{
+   display:block!important;position:relative!important;flex:none!important;
+   max-width:100%;font-size:clamp(52px,16vw,82px)!important;
+   font-weight:850;line-height:1;letter-spacing:-.035em!important;
+   text-align:center;white-space:nowrap;overflow:visible;
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.number-tile .layout-switcher{
+   position:static!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+   transform:none!important;flex:0 0 auto!important;max-width:100%!important;
+   margin:0!important;padding:1px 7px!important;align-self:center
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.action-row{
+   order:1!important;grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;
+   display:flex!important;flex-flow:row nowrap!important;justify-content:center!important;align-items:center!important;
+   width:100%!important;min-width:0!important;max-width:100%!important;
+   margin:0!important;gap:8px!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) .number-section>.action-row>button:not([hidden]){
+   flex:1 1 0!important;min-width:0!important;width:auto!important;max-width:50%;
+   min-height:44px!important;white-space:nowrap!important;font-size:13px!important;
+   padding:8px 9px!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.layout-pair-board{
+   order:2!important;grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;
+   width:100%!important;min-width:0!important;max-width:100%!important;
+   margin:0!important;padding:9px!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.timer-line{
+   order:3!important;grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;
+   width:100%!important;min-width:0!important;max-width:100%!important;
+   margin:4px 0!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>#roundLearningBar{
+   order:4!important;grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;
+   width:100%!important;margin:3px 0!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>#roundCoachPanel{
+   grid-area:auto!important;grid-column:auto!important;grid-row:auto!important;order:5!important;
+   display:none!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>#difficultyDetail,
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>#challengeLabel{
+   order:6!important;display:none!important
+ }
+ #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>#autoNextStatus{
+   order:7!important;grid-area:auto!important;grid-column:auto!important;grid-row:auto!important
+ }
+ /* One small row of actionable teaching choices replaces the permanently
+    expanded coaching card; no teaching or visual tool is removed. */
+ body:not(.focus-mode) #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) #roundLearningBar:not([hidden]){
+   display:flex!important
+ }
+ body:not(.focus-mode) #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) .challenge-overview,
+ body:not(.focus-mode) #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) .challenge-configurator,
+ body:not(.focus-mode) #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) .page-head>div:first-child{
+   display:none!important
+ }
+ body:not(.focus-mode) #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) .page-head{
+   justify-content:flex-end!important;align-items:center!important;
+   min-height:43px;margin:0 0 8px!important
+ }
+ body:not(.focus-mode) #playView:is([data-mobile-phase=running],[data-mobile-phase=paused]) .scoreboard{
+   margin:0!important;gap:7px
+ }
+ /* Review uses its own Next control in document flow; never show a duplicate
+    start/next button in the compact action row. */
+ #playView[data-mobile-phase=finished] .number-section>.action-row{display:none!important}
+ #playView[data-mobile-phase=finished] #startButton{display:none!important}
+}

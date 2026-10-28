@@ -1,3 +1,11 @@
+## v2.12.3 — full-width mobile target and regression guard (28 October 2026)
+
+- Fixed the real iPhone Pair Board regression where the target number, including 441, collapsed into a thin strip beside Pause and Finish. The target now uses a full-width, minimum-readable area above the round controls and factor board, in normal and Focus modes.
+- Phone gameplay uses a compact Explain/Rainbow/Arrays toolbar rather than a permanently expanded coaching panel. Teaching features remain available in both modes.
+- Hide duplicate next-round controls on compact reviews, preserve the persistent thumb keypad and scroll to the visible target at the start of each Pair Board round.
+- Added an automated real-browser geometry test of 441 in Chromium and WebKit across small and large phones and Focus/normal modes. Check target width, clipping, control and board order, keypad bounds, no horizontal overflow, and review navigation.
+- GitHub Pages remains gated on the full suite; installed PWA assets use a bumped versioned offline cache.
+
 ## v2.12.2 — stable review continuation (28 October 2026)
 
 Move the same mobile Next Question action into a dedicated review-footer slot after the main play grid, avoiding ancestors hidden by legacy Classic or Pair Board phase styling. Keep it non-overlay, thumb-accessible and available in Focus Mode. Cover the correct DOM placement in browser tests and animate the final discovered pair in review.
