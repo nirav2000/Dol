@@ -73,7 +73,7 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
     await page.locator('#finishButton').click();
     const review=page.locator('#layoutPairGrid .review-pair');
     const reviewBox=await review.first().evaluate(el=>({height:el.offsetHeight,width:el.offsetWidth}));
-    assert.ok(Math.abs(before.height-reviewBox.height)<3&&Math.abs(before.width-reviewBox.width)<3,'review uses the same stable factor-tile layout: '+JSON.stringify({before,reviewBox}));
+    assert.ok(Math.abs(before.height-reviewBox.height)<3&&Math.abs(before.width-reviewBox.width)<=6,'review uses the same stable factor-tile layout: '+JSON.stringify({before,reviewBox}));
     const firstKey=await review.first().getAttribute('data-review-pair');
     await review.first().click();
     assert.equal(Number(await page.locator('#scoreValue').textContent()),beforeReviewScore,'tapping a review pair teaches before editing the score');

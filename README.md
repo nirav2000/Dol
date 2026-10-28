@@ -1,3 +1,11 @@
+## v2.12.8 — reliable mobile keypad across pointer profiles (28 October 2026)
+
+- Apply compact phone keypad styling based on viewport, regardless of whether a touch-capable browser reports a coarse pointer; the JavaScript still controls whether the keypad is actually shown.
+- Fix touch-profile transitions that could leave the entry controls hidden after advancing to the next question.
+- Keep active and review pair tiles visually consistent, allowing a small responsive width variation without changing their heights.
+- Ensure WebKit desktop/tablet review checks measure the board after returning to the top of the page rather than after a user-action scroll.
+- Maintain the full 441 iPhone target-width Chromium/WebKit checks and retain all learning and history data.
+
 ## v2.12.7 — stable factor tiles on tablets (28 October 2026)
 
 - Unify active Pair Board and completed-round tiles to the same minimum height and padding on tablets and desktop as well as phones.

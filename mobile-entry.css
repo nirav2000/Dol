@@ -1,7 +1,9 @@
 /* Mobile play and review share ONE dock geometry. Only content above the action
    key changes; no phase-specific positioning, resizing or invisible keypad rows. */
 .mobile-entry{display:none}
-@media (max-width:700px) and (pointer:coarse), (max-width:1000px) and (max-height:500px) and (pointer:coarse){
+/* The JS decides whether the phone keypad is enabled; styling it must not depend
+   on a sometimes incorrect pointer:coarse report after a viewport/profile change. */
+@media (max-width:700px), (max-width:1000px) and (max-height:500px) and (pointer:coarse){
  :root{
   --mobile-safe-left:env(safe-area-inset-left,0px);
   --mobile-safe-right:env(safe-area-inset-right,0px);

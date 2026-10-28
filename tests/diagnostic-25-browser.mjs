@@ -36,6 +36,9 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    await page.waitForSelector('#finishedPanel',{state:'visible'});
    const after=await action.boundingBox();
    if(phone){assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'reviewNextSlot');assert.ok(after.height>=50);}else for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
+   // A native touch click can scroll to Finish. Re-check the complete desktop
+   // or tablet board after returning to its initial review position.
+   if(!phone){await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:'instant'}));await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));}
    const selectors=['.number-tile',layout==='pairboard'?'#layoutPairGrid [data-review-pair]':'#answerReview [data-review-pair]'];
    const measurement=await page.evaluate(selectors=>{
     const v=visualViewport||{offsetTop:0,offsetLeft:0,width:innerWidth,height:innerHeight};
