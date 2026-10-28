@@ -1,3 +1,10 @@
+## v2.12.4 — correct mobile-input detection and protect desktop resizing (28 October 2026)
+
+- Hide duplicate Next/Start controls only when the actual mobile keypad is enabled, not merely because a browser window is narrow.
+- Restore a normal Start/Next button in resized desktop browsers and maintain one review action on real touch phones.
+- Run the screenshot-reproduction target geometry test first in CI to block any unreadable target regressions before longer app checks.
+- Increment version and service-worker cache together without changing gameplay or learning evidence.
+
 ## v2.12.3 — full-width mobile target and regression guard (28 October 2026)
 
 - Fixed the real iPhone Pair Board regression where the target number, including 441, collapsed into a thin strip beside Pause and Finish. The target now uses a full-width, minimum-readable area above the round controls and factor board, in normal and Focus modes.

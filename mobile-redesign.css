@@ -306,6 +306,6 @@ body.focus-mode #playView .challenge-overview,body.focus-mode #playView .challen
  }
  /* Review uses its own Next control in document flow; never show a duplicate
     start/next button in the compact action row. */
- #playView[data-mobile-phase=finished] .number-section>.action-row{display:none!important}
- #playView[data-mobile-phase=finished] #startButton{display:none!important}
+ #playView[data-mobile-phase=finished][data-mobile-input=true] .number-section>.action-row{display:none!important}
+ #playView[data-mobile-phase=finished][data-mobile-input=true] #startButton{display:none!important}
 }

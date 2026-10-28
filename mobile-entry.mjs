@@ -50,7 +50,8 @@ export function createMobileEntry({getState,submit}){
    // The compact review has its own Next Question. Keep the generic Start
    // button out of sight but available to the shared startNext callback.
    const launcher=document.getElementById('startButton');
-   if(launcher&&mobileSurface)launcher.hidden=finished||state.phase==='running'||state.phase==='paused';
+   play.dataset.mobileInput=String(mobileSurface);
+   if(launcher)launcher.hidden=mobileSurface?(finished||state.phase==='running'||state.phase==='paused'):(state.phase==='running'||state.phase==='paused');
    const destination=finished?reviewNextSlot:play;
    if(wrap.parentElement!==destination)destination.append(wrap);
    reviewNextSlot.hidden=!finished||!isMobile()||state.view!=='play';

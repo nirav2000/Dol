@@ -69,8 +69,8 @@ jobs:
         run: |
           python3 -m http.server 8000 > /tmp/dol-server.log 2>&1 &
           sleep 2
-          node tests/browser-smoke.mjs
           APPS_CHECKOUT=Apps-shared node tests/phone-target-layout-browser.mjs
+          node tests/browser-smoke.mjs
           # Run the user's phone/interface regressions first so a layout failure
           # doesn't waste minutes on unrelated curriculum journeys.
           node tests/mobile-entry-browser.mjs
