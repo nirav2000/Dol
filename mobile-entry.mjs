@@ -32,7 +32,13 @@ export function createMobileEntry({getState,submit}){
    if(wrap.parentElement!==destination)destination.append(wrap);
    wrap.hidden=!isMobile()||state.view!=='play'||state.phase==='ready';
    wrap.classList.toggle('is-finished',finished);
-   if(finished){wrap.style.removeProperty('top');wrap.style.removeProperty('bottom');}
+   // The keypad normally lives directly under #playView. In review it moves
+   // inside #finishedPanel, where the old direct-child CSS no longer applies.
+   // Set its visibility explicitly so the same accessible Next button remains usable.
+   if(finished){
+     wrap.style.removeProperty('top');wrap.style.removeProperty('bottom');
+     wrap.style.setProperty('display',wrap.hidden?'none':'block','important');
+   }else wrap.style.removeProperty('display');
    const status=wrap.querySelector('#mobileEntryStatus');status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:'ENTER A FACTOR PAIR';status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
    first.textContent=parts[0]||'\u2014';second.textContent=parts[1]||'\u2014';
    first.setAttribute('aria-pressed',String(active===0));second.setAttribute('aria-pressed',String(active===1));
