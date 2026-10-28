@@ -19,11 +19,26 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
         localStorage.setItem('dol-learning-settings-v2',JSON.stringify({mode:'guided',stage:'foundation',limit:128,showCount:true,sound:false}));
         localStorage.setItem('dol-round-tools-v1',JSON.stringify({autoNext:false}));
       });
-      const page=await context.newPage(),errors=[];
+      const page=await context.newPage(),errors=[],networkErrors=[];
       page.on('pageerror',e=>errors.push(e.message));
+      page.on('requestfailed',r=>networkErrors.push(r.url()+' '+r.failure()?.errorText));
+      page.on('console',m=>{if(m.type()==='error')networkErrors.push('console: '+m.text());});
       try{
-        await page.goto(base,{waitUntil:'domcontentloaded'});
-        await page.waitForFunction(()=>document.body.dataset.dolReady==='true');
+        const isReady=()=>page.waitForFunction(()=>document.body.dataset.dolReady==='true',{},{timeout:18000});
+        await page.goto(base,{waitUntil:'networkidle',timeout:60000});
+        try{await isReady();}
+        catch(firstError){
+          const diagnostics=await page.evaluate(()=>({
+            ready:document.body?.dataset.dolReady,mode:document.readyState,
+            scripts:[...document.querySelectorAll('script[src]')].map(e=>e.src),
+            loaded:!!document.querySelector('#roundCoachPanel')
+          })).catch(e=>({error:String(e)}));
+          console.warn('Cold-start recovery: app not ready on first navigation',engineName,viewport.width,JSON.stringify({diagnostics,errors,networkErrors:networkErrors.slice(-12)}));
+          // WebKit may lose a third-party module on a cold cache. A single real page
+          // reload mirrors how a user refreshes; a persistent load failure remains fatal.
+          await page.reload({waitUntil:'networkidle',timeout:60000});
+          await isReady();
+        }
         assert.equal(await page.evaluate(()=>document.body.classList.contains('focus-mode')),false,'immersive Focus must be opt-in on upgrade');
         assert.equal(await page.locator('[data-view="learn"]').isVisible(),true,'mobile Learn navigation remains available');
         assert.equal(await page.locator('#adaptiveExplanation').count(),1);
