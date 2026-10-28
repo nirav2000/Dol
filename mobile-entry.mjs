@@ -28,6 +28,7 @@ export function createMobileEntry({getState,submit}){
    if(!isMobile()||wrap.hidden)return;
    const vv=window.visualViewport,visibleHeight=vv?.height||innerHeight;
    const bottom=innerWidth>innerHeight&&visibleHeight<=500?12:Math.max(64,Math.min(104,visibleHeight*.1));
+   play.style.setProperty('--dol-fixed-dock-bottom',bottom+'px');
    const finished=getState().phase==='finished';
    const height=finished?pad.querySelector('[data-key="action"]').getBoundingClientRect().height:wrap.getBoundingClientRect().height;
    const top=Math.max(4,(vv?.offsetTop||0)+visibleHeight-bottom-height);

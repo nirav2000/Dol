@@ -110,28 +110,25 @@
  body.focus-mode #playView[data-mobile-input=true] #layoutPairGrid .layout-pair-chip.empty .pair-number{
    background:#3e4741!important;color:#d7e6dd!important;border-color:#81988a!important
  }
- /* The keypad is intentionally a little lower so it does not waste a large
-    blank strip at the foot of standalone iPhones. */
- #playView[data-mobile-input=true]{
-   --mobile-dock-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important
- }
+ /* Review decoration follows the actual VisualViewport keypad position,
+    not a separate CSS estimate; otherwise the footer slides away on iOS. */
  /* Review Next is a deliberate opaque footer, not a loose button over text.
     Keep the original Enter-key position for easy thumb access. */
  #playView[data-mobile-input=true]>.mobile-entry.is-finished:not([hidden]){isolation:isolate}
  #playView[data-mobile-input=true]>.mobile-entry.is-finished::before{
    content:'';position:fixed;left:0;right:0;
-   bottom:calc(var(--mobile-dock-bottom) - 12px);
+   bottom:calc(var(--dol-fixed-dock-bottom,var(--mobile-dock-bottom)) - 12px);
    height:calc(var(--mobile-key-height) + 24px);
    background:#101711;border-top:1px solid #648773;box-shadow:0 -12px 25px #000b;
    z-index:-1;pointer-events:none
  }
  #playView[data-mobile-input=true]>.mobile-entry.is-finished::after{
    content:attr(data-review-summary);position:fixed;
-   bottom:calc(var(--mobile-dock-bottom) + 16px);left:14px;width:55vw;
+   bottom:calc(var(--dol-fixed-dock-bottom,var(--mobile-dock-bottom)) + 16px);left:14px;width:55vw;
    color:#bfe6cf;font-size:13px;font-weight:800;z-index:0;pointer-events:none
  }
  #playView[data-mobile-input=true]>.mobile-entry.is-finished .mobile-keypad{position:relative;z-index:1}
  #playView[data-mobile-phase=finished][data-mobile-input=true] #finishedPanel{
-   padding-bottom:calc(var(--mobile-dock-bottom) + var(--mobile-key-height) + 34px)!important;
+   padding-bottom:calc(var(--dol-fixed-dock-bottom,var(--mobile-dock-bottom)) + var(--mobile-key-height) + 34px)!important;
  }
 }

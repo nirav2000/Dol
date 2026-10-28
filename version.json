@@ -1,5 +1,5 @@
 {
-  "version": "2.12.12",
+  "version": "2.12.13",
   "name": "Factor Frenzy",
-  "description": "Restore prime rainbow, square and factor-pair celebrations; stabilise Focus countdown and scrollable board."
+  "description": "Full prime, square and correct-pair celebrations with Focus viewport and dedicated browser regressions."
 }
