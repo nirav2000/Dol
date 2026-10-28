@@ -126,7 +126,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]) {
     await page.locator('#sqNext').click();
     assert.equal(await page.locator('#sqComplete').isVisible(),true);
     assert.equal(await page.locator('#scoreValue').innerText(),score);
-    await page.evaluate(()=>localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-focus-immersive-opt-in-v2','true'));
+    await page.evaluate(()=>{localStorage.setItem('dol-focus-mode-v1','true');localStorage.setItem('dol-focus-immersive-opt-in-v2','true');});
     await page.reload({waitUntil:'networkidle'});
     assert.equal(await page.locator('#readySquareLesson').isVisible(),true,'Square course entry remains visible with Focus mode on');
     await page.locator('#readySquareLesson').click();
