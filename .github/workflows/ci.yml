@@ -135,12 +135,24 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Confirm exact tested commit and version
         env:
           TESTED_SHA: ${{ github.sha }}
         run: |
           test "$(git rev-parse HEAD)" = "$TESTED_SHA"
           node scripts/release-version.mjs --check
+      - name: Check out shared Version Labs history builder
+        uses: actions/checkout@v5
+        with:
+          repository: nirav2000/Apps
+          ref: main
+          path: Apps-shared
+          persist-credentials: false
+      - name: Build complete release history from immutable Git revisions
+        run: |
+          node Apps-shared/version-lab/tooling/build-version-history.mjs
+          node -e "const r=require('./version-lab-data/releases.json');const v=require('./version.json').version;if(r.publishedVersion!==v||r.releases[0].productVersion!==v)process.exit(1)"
       - name: Stage immutable Pages artifact
         run: |
           mkdir -p _pages
