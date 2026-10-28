@@ -1,4 +1,5 @@
 import {createLayoutOptions} from './layout-options.mjs';
+import {createChallengeControls} from './challenge-controls.mjs';
 import {factorPairs,assessPair,formatTime} from './logic.mjs';
 import {STAGES,chooseAdaptiveNumber,describeDifficulty,factorHints,TECHNIQUES,requiredConcepts} from './adaptive.mjs';
 import {createLearningStore,conceptPriority} from 'https://nirav2000.github.io/Apps/learning/v1/index.js';
@@ -11,7 +12,7 @@ import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
 const $=id=>document.getElementById(id);
-let roundTools,insights,mobileEntry,strategySupport,layoutOptions;
+let roundTools,insights,mobileEntry,strategySupport,layoutOptions,challengeControls;
 let improvement=null,improvementLoading=null,improvementUser=null;
 const focusKey='dol-focus-mode-v1';
 const focusOptInKey='dol-focus-immersive-opt-in-v2'; // Explicit choice, not the old default-on preference.
@@ -33,7 +34,7 @@ let learningSync=null;
 try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});if(accountId==='guest')learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
 const state={
   phase:'ready',view:'play',mode:prefs.mode||'guided',stage:prefs.stage||'foundation',
-  limit:[64,128,256,512,1024].includes(prefs.limit)?prefs.limit:128,
+  limit:[24,36,48,64,96,128,144,192,256,384,512,768,1024].includes(prefs.limit)?prefs.limit:128,
   duration:[30,60,90].includes(prefs.duration)?prefs.duration:60,
   showCount:prefs.showCount!==false,sound:prefs.sound!==false,
   round:ledger.data.round,score:ledger.data.score,
@@ -122,7 +123,8 @@ function render(){
   $('stageSelect').value=state.stage;$('limitSelect').value=state.limit;$('durationSelect').value=state.duration;
   $('timerSetting').hidden=state.mode!=='timed';
   $('showCount').checked=state.showCount;$('sound').checked=state.sound;
-  document.querySelectorAll('.controls select,[data-mode]').forEach(el=>el.disabled=active);
+  $('durationSelect').disabled=active;
+  document.querySelectorAll('[data-mode]').forEach(el=>el.disabled=active);
   document.querySelectorAll('[data-mode]').forEach(el=>el.classList.toggle('active',el.dataset.mode===state.mode));
   renderClock();
   slots(); // Keep canonical solved-pair DOM in sync on automatic completion too.
@@ -143,6 +145,7 @@ function render(){
   if(finished&&state.result)review();
   roundTools?.render(state);
   insights?.render();
+  challengeControls?.render();
   mobileEntry?.sync();
   strategySupport?.render();
   layoutOptions?.sync();
@@ -187,11 +190,13 @@ function recordPair(pair,correct,hints=0){
   if(a<=12&&b<=12)learning.record({concept:'fact:'+a+'x'+b,correct,hints,mode:state.mode,context});
   if(a<=12)learning.record({concept:'div:'+a,correct,hints,mode:state.mode,context});
 }
-function animateDiscoveredPair(){
+function animateDiscoveredPair(key){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const pairBoard=document.body.dataset.dolLayout==='pairboard';
-  const tiles=[...document.querySelectorAll(pairBoard?'#layoutPairGrid .layout-pair-chip.credited':'#pairSlots .slot.solved')];
-  const tile=tiles.at(-1);
+  const tile=pairBoard
+    ? [...document.querySelectorAll('#layoutPairGrid [data-pair-key],#layoutPairGrid [data-review-pair]')].find(node=>node.dataset.pairKey===key||node.dataset.reviewPair===key)
+    : [...document.querySelectorAll('#pairSlots .slot.solved')].at(-1)||
+      [...document.querySelectorAll('#answerReview [data-review-pair]')].find(node=>node.dataset.reviewPair===key);
   if(!tile)return;
   tile.classList.remove('pair-discovery');
   void tile.offsetWidth;
@@ -224,7 +229,7 @@ function answer(event){
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
   // A fully revealed visual board remains assisted for this round; private coach hints are pair-specific.
   persist();
-  if(state.found.size===state.pairs.length)finish('complete');else{render();animateDiscoveredPair();focusAnswer();}
+  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{render();animateDiscoveredPair(check.key);focusAnswer();}
 }
 function finish(reason){
   if(state.phase!=='running'&&state.phase!=='paused')return;
@@ -372,7 +377,7 @@ function testSelectedFactor(){
   state.feedback=a+' × '+b+' = '+n+'. You found this pair using the factor checker.';
   state.feedbackType='success';tone(true);
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;persist();
-  if(state.found.size===state.pairs.length)finish('complete');else render();
+  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(key);}else{render();animateDiscoveredPair(key);}
 }
 function resetRounds(){
   if(['running','paused'].includes(state.phase)&&!confirm('End the current round and restart the round count at 1? Learning history and score will be kept.'))return;
@@ -519,8 +524,18 @@ function renderProgress(){
 }
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{setView(b.dataset.view);document.body.classList.remove('focus-menu-revealed');$('menuReveal').setAttribute('aria-expanded','false');}));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{if(['running','paused'].includes(state.phase))return;state.mode=b.dataset.mode;state.helpOpen=state.mode==='guided';persist();render();}));
-$('stageSelect').addEventListener('change',e=>{state.stage=e.target.value;persist();render();});
-$('limitSelect').addEventListener('change',e=>{state.limit=Number(e.target.value);persist();render();});
+$('stageSelect').addEventListener('change',e=>{
+  insights?.setManual();
+  state.stage=e.target.value;
+  const max=STAGES.find(item=>item.id===state.stage)?.max||1024;
+  if(state.limit>max||state.limit<Math.min(max,36))state.limit=max;
+  persist();render();
+});
+$('limitSelect').addEventListener('change',e=>{
+  insights?.setManual();
+  state.limit=Number(e.target.value);
+  persist();render();
+});
 $('durationSelect').addEventListener('change',e=>{state.duration=Number(e.target.value);state.remainingMs=state.duration*1000;persist();render();});
 $('showCount').addEventListener('change',e=>{state.showCount=e.target.checked;persist();render();});
 $('sound').addEventListener('change',e=>{state.sound=e.target.checked;persist();render();});
@@ -561,6 +576,7 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
 });
 layoutOptions=createLayoutOptions({getState:()=>state});
 applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render,onRecord:event=>improvement?.record(event)});
+challengeControls=createChallengeControls({getState:()=>state,isAdaptive:()=>insights?.auto});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
 strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason),onLearningRecord:()=>{try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Square learning cloud sync deferred',error));}catch(error){console.warn('Square learning saved in the learning store; cloud capture deferred',error);}}});
 $('readySquareLesson')?.addEventListener('click',()=>strategySupport?.openSquareStudio());

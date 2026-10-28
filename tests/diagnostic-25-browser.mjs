@@ -35,7 +35,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    const before=await action.boundingBox();await page.locator('#finishButton').click();
    await page.waitForSelector('#finishedPanel',{state:'visible'});
    const after=await action.boundingBox();
-   for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
+   if(phone){assert.equal(await page.locator('#mobileEntry').evaluate(e=>e.parentElement?.id),'finishedPanel');assert.ok(after.height>=50);}else for(const k of ['x','y','width','height'])assert.ok(Math.abs(before[k]-after[k])<1,'action position '+k+JSON.stringify({before,after}));
    const selectors=['.number-tile',layout==='pairboard'?'#layoutPairGrid [data-review-pair]':'#answerReview [data-review-pair]'];
    const measurement=await page.evaluate(selectors=>{
     const v=visualViewport||{offsetTop:0,offsetLeft:0,width:innerWidth,height:innerHeight};
@@ -47,7 +47,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     });
    },selectors);
    assert.equal(measurement.length,5,'target plus all four factor pairs');
-   assert.ok(measurement.every(m=>m.inside&&m.overlap<1),JSON.stringify(measurement));
+   assert.ok(measurement.every(m=>(phone||m.inside)&&m.overlap<1),JSON.stringify(measurement));
    const dataBefore=await page.evaluate(()=>localStorage.getItem('apps-learning-v1:dol:local'));
    await page.locator(layout==='pairboard'?'#layoutPairGrid [data-review-pair="11-21"]':'#answerReview [data-review-pair="11-21"]').click();
    assert.equal(await page.evaluate(()=>localStorage.getItem('apps-learning-v1:dol:local')),dataBefore,'review preserves learner evidence');

@@ -24,6 +24,7 @@ jobs:
           node --check adaptive.mjs
           node --check learning-app.mjs
           node --check learning-insights.mjs
+          node --check challenge-controls.mjs
           node --check difficulty-profile.mjs
           node --check dol-account.mjs
           node --check strategy-model.mjs
@@ -76,6 +77,7 @@ jobs:
           node tests/round-tools-browser.mjs
           node tests/mobile-entry-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
+          APPS_CHECKOUT=Apps-shared node tests/learning-first-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/startup-recovery-browser.mjs
           node tests/mobile-dock-browser.mjs
           APPS_CHECKOUT=Apps-shared node tests/diagnostics-ui-browser.mjs
@@ -124,6 +126,8 @@ jobs:
           test -s _pages/index.html
           test -s _pages/version.json
           test -s _pages/learning-app.mjs
+          test -s _pages/challenge-controls.mjs
+          test -s _pages/mobile-redesign.css
           test -s _pages/improvement/ui.mjs
           test -s _pages/teaching-coach.mjs
           test -s _pages/square-workshop.mjs

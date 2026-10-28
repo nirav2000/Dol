@@ -42,21 +42,21 @@ export function createLayoutOptions({getState}){
  function setLayout(value,announce=true){if(!choices.includes(value)||layout===value)return;layout=value;apply(announce);}
  function setPalette(value){if(!palettes.includes(value)||palette===value)return;palette=value;apply(false);}
  function chip(a,b,credited,finished,key){
-   const el=document.createElement(finished?'button':'div');
-   el.className='layout-pair-chip'+(credited?' credited':finished?' missed':'');
-   const aSpan=document.createElement('span');aSpan.textContent=a;
-   const times=document.createElement('span');times.className='times';times.textContent='×';
-   const bSpan=document.createElement('span');bSpan.textContent=b;
-   el.append(aSpan,times,bSpan);
+   const node=document.createElement(finished?'button':'div');
+   node.className='layout-pair-chip'+(credited?' credited':finished?' missed':'');
+   node.dataset.pairKey=key;
+   node.setAttribute('aria-label',a+' times '+b+' equals '+getState().target);
+   for(const [value,cls] of [[a,'pair-number'],['×','times'],[b,'pair-number']]){
+     const part=document.createElement('span');part.className=cls;part.textContent=value;node.append(part);
+   }
    if(finished){
-     el.type='button';el.dataset.pairKey=key;el.setAttribute('aria-pressed',String(credited));
-     el.setAttribute('aria-label',a+' times '+b+'. '+(credited?'Credited, tap to remove point':'Not credited, tap to award point'));
-     el.addEventListener('click',()=>{
-       const original=Array.from(document.querySelectorAll('#answerReview [data-review-pair]')).find(button=>button.dataset.reviewPair===key);
-       if(original){original.click();sync();}
+     node.type='button';
+     node.setAttribute('aria-pressed',String(credited));
+     node.addEventListener('click',()=>{
+       document.querySelector('#layoutPairGrid [data-review-pair="'+key+'"]')?.click();
      });
    }
-   return el;
+   return node;
  }
  function sync(){
    const s=getState();
@@ -84,7 +84,11 @@ export function createLayoutOptions({getState}){
    }
    for(let i=items.length;i<visible;i++){
      const blank=document.createElement('div');blank.className='layout-pair-chip empty';
-     blank.textContent='? × ?';blank.setAttribute('aria-label','Pair not found');items.push(blank);
+     blank.setAttribute('aria-label','Factor pair '+(i+1)+' not yet discovered');
+     for(const [value,cls] of [['?','pair-number'],['×','times'],['?','pair-number']]){
+       const span=document.createElement('span');span.className=cls;span.textContent=value;blank.append(span);
+     }
+     items.push(blank);
    }
    grid.replaceChildren(...items);
    if(retained)grid.querySelector('[data-pair-key="'+retained+'"]')?.focus({preventScroll:true});

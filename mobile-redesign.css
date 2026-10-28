@@ -1,0 +1,178 @@
+/* Dol v2.12.0: one play-first interface, same maths and learning engine. */
+.challenge-overview{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;border-radius:15px;background:#18221f;border:1px solid #385249;margin:10px 0}
+.challenge-overview>div{display:grid;gap:4px;min-width:0}
+.challenge-overview-label{font-size:10px;font-weight:800;letter-spacing:1.35px;color:#a8cebe}
+.challenge-overview strong{font-size:15px;font-weight:760;letter-spacing:-.2px;line-height:1.3}
+.challenge-overview button{flex:none;min-height:44px;background:#203c32;border-color:#6b9987}
+.challenge-change-note{font-size:11px;color:#abc6b8}
+.challenge-change-note:empty{display:none}
+.challenge-configurator{border-radius:16px;border:1px solid #343d39;background:#101714;padding:12px;margin:0 0 14px}
+.challenge-configurator .mode-tabs{margin-bottom:10px}
+.challenge-configurator .controls{margin:0;padding:12px;background:#151c18}
+.challenge-configurator .controls #adaptiveLevelUp{min-height:44px}
+.challenge-configurator .controls #adaptiveToggle{width:19px;height:19px}
+.challenge-configurator .controls>label:not(.check){min-width:140px;flex:1}
+.challenge-configurator .controls select{min-height:44px;font-size:14px}
+.challenge-configurator .controls select:disabled{opacity:.65}
+.challenge-configurator[hidden]{display:none!important}
+.round-learning-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 10px;border-radius:13px;border:1px solid #4c6658;background:#17281f;margin:8px 0}
+.round-learning-bar strong{font-size:12px;margin-right:auto;color:#bff1d5}
+.round-learning-bar button{min-height:44px;padding:7px 11px;border-radius:10px;border-color:#708b7a;background:#21392d;white-space:nowrap;flex:1 1 auto}
+body:not(.focus-mode) #roundLearningBar{display:none!important}
+.round-visual-dismiss{display:block;min-height:44px;margin:2px 2px 0 auto;border-color:#749583}
+#roundVisuals{scroll-margin-top:12px}
+#reviewAdjustScore{font-size:13px;min-height:44px;margin:8px 0}
+#reviewAdjustScore[aria-pressed="true"]{background:#d8f4e5;color:#11231a;border-color:#d8f4e5}
+#reviewInstructions{font-size:13px;color:#d3e5dc;line-height:1.45}
+#roundMathReflection{scroll-margin-top:10px}
+#numberStatus{pointer-events:none}
+body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip,
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair{
+  box-sizing:border-box;position:relative;min-width:0;display:flex;gap:5px;align-items:center;justify-content:center;
+  background:#161b1a;border:2px dashed #59635e;border-radius:13px;padding:8px 5px;min-height:76px;color:#f7f9f7
+}
+body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip.credited,
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair.credited{
+  background:#223b30;border-style:solid;border-color:#7cba9a
+}
+body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip .pair-number,
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair .pair-number{
+  display:inline-flex;align-items:center;justify-content:center;min-width:0;
+  font-size:clamp(18px,3.2vw,29px);font-weight:850;line-height:1.1;letter-spacing:-.35px;
+  padding:7px 8px;border-radius:8px;background:#e8ece8;color:#152016;border:1px solid #fff;
+  box-shadow:0 3px 0 #839288;font-variant-numeric:tabular-nums
+}
+body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip.empty .pair-number{
+  background:#333b36;color:#aabdb3;border:1px dashed #697e72;box-shadow:none
+}
+body[data-dol-layout=pairboard] #layoutPairGrid .times,
+body[data-dol-layout=pairboard] #layoutPairGrid .pair-times{font-size:17px;flex-shrink:0;color:#c0d1c6}
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair{cursor:pointer;touch-action:manipulation}
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair:hover{background:#304a3c;border-color:#b8e7c9}
+body[data-dol-layout=pairboard] #layoutPairGrid .review-pair:focus-visible{outline:3px solid #bdf5d5;outline-offset:2px}
+body[data-dol-layout=pairboard] #layoutPairGrid .pair-mark{top:4px;right:7px;font-size:12px}
+body[data-dol-layout=pairboard] #layoutPairGrid.unified-pair-review{gap:7px}
+body[data-dol-layout=pairboard] #layoutPairGrid:not(.unified-pair-review){gap:7px}
+/* Focus remains minimal, but the learner must never lose all teaching tools. */
+body.focus-mode #roundLearningBar:not([hidden]){display:flex!important}
+body.focus-mode.dol-visuals-open #playView #roundVisuals{
+ display:block!important;position:fixed!important;inset:auto 9px calc(12px + env(safe-area-inset-bottom,0px)) 9px;
+ z-index:120!important;max-height:75dvh;overflow-y:auto;overscroll-behavior:contain;
+ border:2px solid #94bda6;border-radius:18px;background:#101714;
+ box-shadow:0 0 0 100vmax #000b,0 8px 40px #000d
+}
+body.focus-mode.dol-visuals-open #roundVisuals .visual-tools{margin:0!important;border:0;padding:13px;background:transparent}
+body.focus-mode.dol-visuals-open #roundVisuals .visual-heading h2{font-size:20px}
+body.focus-mode.dol-visuals-open #roundVisuals .visual-tabs button{min-height:44px}
+body.focus-mode.dol-visuals-open #roundVisuals .rainbow-svg{min-width:390px}
+/* Reduce visual motion only when requested by the device. */
+@media(prefers-reduced-motion:reduce){
+ body[data-dol-layout=pairboard] #layoutPairGrid .pair-discovery{animation:none!important}
+}
+@media(max-width:700px){
+ body:not(.focus-mode) #playView .page-head{align-items:center;margin:4px 0 8px!important}
+ body:not(.focus-mode) #playView .page-head>div:first-child{flex:1 1 auto;min-width:130px}
+ body:not(.focus-mode) #playView .page-head .eyebrow{font-size:10px;margin-bottom:3px}
+ body:not(.focus-mode) #playView .page-head h1{font-size:clamp(21px,5.5vw,28px);letter-spacing:-.8px;line-height:1.12}
+ body:not(.focus-mode) #playView .page-head h1 br{display:none}
+ body:not(.focus-mode) #playView .page-head h1 span{display:none}
+ body:not(.focus-mode) #playView .page-head .scoreboard{flex:0 0 auto;margin:0!important}
+ .challenge-overview{padding:10px 11px;margin:7px 0;gap:8px}
+ .challenge-overview strong{font-size:12px}
+ .challenge-overview-label{font-size:9px}
+ .challenge-overview button{font-size:12px;min-height:44px;padding:7px 9px}
+ .challenge-configurator{padding:9px;margin-bottom:10px}
+ .challenge-configurator .controls{display:flex;gap:9px;flex-wrap:wrap;margin:0}
+ .challenge-configurator .controls>label:not(.check){flex:1 1 125px;min-width:0}
+ .challenge-configurator .controls select{font-size:13px}
+ body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip,
+ body[data-dol-layout=pairboard] #layoutPairGrid .review-pair{min-height:71px!important;padding:7px 3px!important;border-radius:12px}
+ body[data-dol-layout=pairboard] #layoutPairGrid .layout-pair-chip .pair-number,
+ body[data-dol-layout=pairboard] #layoutPairGrid .review-pair .pair-number{font-size:clamp(19px,5.2vw,27px)!important;padding:6px 5px!important;border-radius:7px}
+ body[data-dol-layout=pairboard] #layoutPairGrid .times,
+ body[data-dol-layout=pairboard] #layoutPairGrid .pair-times{font-size:15px}
+ body[data-dol-layout=pairboard] #layoutPairGrid.unified-pair-review,
+ body[data-dol-layout=pairboard] #layoutPairGrid:not(.unified-pair-review){--board-columns:2!important;gap:6px}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-section{
+   grid-template-areas:'target controls' 'board board' 'learning learning';
+   grid-template-columns:minmax(0,1fr) auto;gap:6px
+ }
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-tile{
+   padding:0 8px!important;height:clamp(90px,12dvh,110px)!important;overflow:visible
+ }
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .number-tile strong{
+   font-size:clamp(54px,14vw,78px)!important;letter-spacing:-.04em
+ }
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .layout-switcher{
+   right:3px!important;top:auto!important;bottom:3px!important;transform:none!important;
+   max-width:63%;padding:2px 5px;border:1px solid #5c6a60
+ }
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .layout-switcher .layout-switch-label{font-size:9px}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .layout-switcher button{min-height:26px;min-width:26px;font-size:18px}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .action-row{align-items:start;justify-content:flex-end;max-width:115px;gap:6px}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .action-row button{min-width:108px;min-height:46px;font-size:12px}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView .layout-pair-board{grid-area:board;margin:0;padding:9px}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView #roundCoachPanel,
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView #roundLearningBar{
+   grid-area:learning;grid-column:1/-1;grid-row:3;margin:2px 0 0;min-width:0
+ }
+ #playView .round-coach{padding:9px 10px!important}
+ #playView .round-coach .round-coach-heading .eyebrow{font-size:9px}
+ #playView .round-coach #roundCoachText{font-size:12px;line-height:1.3;margin:5px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ #playView .round-coach #roundCoachBoundary{font-size:10px;margin:4px 0}
+ #playView .round-coach .round-coach-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}
+ #playView .round-coach-actions #roundCoachHint{grid-column:auto}
+ #playView .round-coach-actions button{min-width:0;min-height:42px;font-size:11px;padding:4px 3px}
+ #playView .round-learning-bar{padding:6px;gap:5px}
+ #playView .round-learning-bar strong{display:none}
+ #playView .round-learning-bar button{flex:1;min-width:0;min-height:45px;padding:5px 4px;font-size:12px}
+ #playView #numberStatus{display:none!important}
+ #playView[data-mobile-phase=ready] .number-section>.action-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;max-width:none}
+ #playView[data-mobile-phase=ready] #startButton{grid-column:1/-1;width:100%;order:-1}
+ #playView[data-mobile-phase=ready] #readyQuickSquares,#playView[data-mobile-phase=ready] #readySquareLesson{
+  min-height:44px;width:100%;font-size:12px;white-space:normal;padding:7px
+ }
+ #playView[data-mobile-phase=finished]{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
+ #playView #finishedPanel #mobileEntry.is-finished{
+   display:block;position:static!important;top:auto!important;bottom:auto!important;
+   left:auto!important;right:auto!important;width:100%;max-width:none;margin:16px 0 0!important;
+   z-index:30;padding:6px 0 0;background:#111;box-shadow:none;pointer-events:auto;border-top:1px solid #4b6b58
+ }
+ #playView #finishedPanel #mobileEntry.is-finished .mobile-keypad{display:block;grid-template-rows:none}
+ #playView #finishedPanel #mobileEntry.is-finished .mobile-keypad button[data-key=action]{
+  display:block;width:100%;min-height:55px;grid-column:1;grid-row:auto;font-size:17px;border-radius:13px;background:#d7f4e4;
+ }
+ #playView #finishedPanel{position:relative}
+ #playView #finishMessage{font-size:13px;line-height:1.45}
+ #playView #reviewEvidence{font-size:11px;line-height:1.4}
+ #playView #roundMathReflection{padding:12px;margin:12px 0 0}
+ #playView #roundMathReflection h3{font-size:19px}
+ #playView #roundMathReflection p{font-size:12px;line-height:1.45}
+ #playView #roundMathReflection button{font-size:12px;min-height:44px}
+ body.focus-mode #playView #roundLearningBar:not([hidden]){display:flex!important}
+ body.focus-mode.dol-visuals-open #roundVisuals{top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:76dvh}
+}
+/* Phone use of the learning panel must not be obscured by an invisible focus overlay. */
+body.focus-mode #roundCoachPanel{display:none!important}
+
+/* A selected Pair Board must not squeeze the Ready launcher into the play grid. */
+@media(max-width:700px){
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=ready] .number-section{display:flex!important;flex-direction:column!important;gap:9px!important}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=ready] .number-tile{width:100%!important;min-height:95px!important}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=ready] .number-section>.action-row{
+  width:100%!important;max-width:none!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-area:auto!important
+ }
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=ready] #startButton{grid-column:1/-1;min-height:56px!important;font-size:17px!important}
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=ready] #readyQuickSquares,
+ body[data-dol-profile=phone][data-dol-layout=pairboard] #playView[data-mobile-phase=ready] #readySquareLesson{min-width:0!important;max-width:none!important;width:100%;font-size:12px!important}
+ #playView[data-mobile-phase=finished] #mobileEntry.is-finished{max-height:100px}
+}
+
+@media(max-width:1000px) and (max-height:500px) and (pointer:coarse){
+ #playView #finishedPanel #mobileEntry.is-finished{display:block;position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%;margin:14px 0!important;background:#111;box-shadow:none;pointer-events:auto}
+ #playView #finishedPanel #mobileEntry.is-finished .mobile-keypad{display:block}
+ #playView #finishedPanel #mobileEntry.is-finished .mobile-keypad button[data-key=action]{display:block;width:100%;min-height:54px}
+}
+
+/* Focus hides setup chrome only, never the running-round teaching toolbar. */
+body.focus-mode #playView .challenge-overview,body.focus-mode #playView .challenge-configurator{display:none!important}

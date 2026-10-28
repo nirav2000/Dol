@@ -39,8 +39,11 @@ try{
  await page.locator('#mobileKeypad [data-key="action"]').waitFor({state:'visible'});
  assert.equal(await page.locator('#mobileKeypad [data-key="action"]').isVisible(),true);
  assert.match(await page.locator('#mobileKeypad [data-key="action"]').textContent(),/Next question/);
+ assert.equal(await page.locator('#mobileEntry').evaluate(el=>el.parentElement?.id),'finishedPanel','review action stays in the reading flow');
+ assert.notEqual(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed');
+ await page.locator('#mobileKeypad [data-key="action"]').scrollIntoViewIfNeeded();
  const actionBox=await page.locator('#mobileKeypad [data-key="action"]').boundingBox();
- assert.ok(actionBox && actionBox.y+actionBox.height<=844 && actionBox.y>600,'Next question must remain visible near bottom of viewport');
+ assert.ok(actionBox && actionBox.y>=0 && actionBox.y+actionBox.height<=844,'Next remains accessible below the review');
  assert.equal(await page.locator('#startButton').isVisible(),false);
  await page.locator('#mobileKeypad [data-key="action"]').click();
  assert.equal(await page.locator('#activePanel').isVisible(),true,'Next question must start from mobile button');

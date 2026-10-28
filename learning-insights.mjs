@@ -95,7 +95,14 @@ export function createInsights({getState,refresh,storageScope=k=>k,onRecord=()=>
  if(dueNumbers.length){const fresh=dueNumbers.filter(n=>!seen.includes(n));const pool=fresh.length?fresh:dueNumbers;return {number:pool[Math.floor(Math.random()*pool.length)],reason:'Revisiting multiplication facts due for retention or correction.'};}
  if(preferred&&candidates.length){const fresh=candidates.filter(n=>!seen.includes(n));const list=fresh.length?fresh:candidates;return {number:list[Math.floor(Math.random()*list.length)],reason:'Revisiting the '+preferred+' times table with '+(level<=1?'simpler':'appropriate')+' factor pairs.'};}
  return null;}
- function render(){harder.hidden=!auto||['running','paused'].includes(getState().phase)||level>=4;config.querySelector('input').checked=auto;const state=getState(),running=['running','paused'].includes(state.phase);config.querySelector('input').disabled=running;if(auto&&!running){state.stage=stages[level][0];state.limit=stages[level][1];document.getElementById('stageSelect').value=state.stage;document.getElementById('limitSelect').value=state.limit;}document.getElementById('stageSelect').disabled=running||auto;document.getElementById('limitSelect').disabled=running||auto;}
+ function render(){harder.hidden=!auto||['running','paused'].includes(getState().phase)||level>=4;config.querySelector('input').checked=auto;const state=getState(),running=['running','paused'].includes(state.phase);config.querySelector('input').disabled=running;if(auto&&!running){state.stage=stages[level][0];state.limit=stages[level][1];document.getElementById('stageSelect').value=state.stage;document.getElementById('limitSelect').value=state.limit;}document.getElementById('stageSelect').disabled=running;document.getElementById('limitSelect').disabled=running;}
  config.querySelector('input').onchange=e=>{auto=e.target.checked;save(storageScope(PREF),auto);render();refresh();};
- return {start,answer,help,finish,choose,render,summary,record,resetEvidence,holdTime,releaseTime,mergeEvents,activeRoundMs:()=>roundClock.elapsed(),roundInput:()=>inputMethods.size===1?[...inputMethods][0]:'mixed',get events(){return events;},get auto(){return auto;},get level(){return level;}};
+ function setManual(){
+  if(!auto)return;
+  auto=false;
+  save(storageScope(PREF),false);
+  reason='Custom challenge selected. New difficulty and number limit apply on the next question.';
+  config.querySelector('input').checked=false;
+ }
+ return {start,answer,help,finish,choose,render,setManual,summary,record,resetEvidence,holdTime,releaseTime,mergeEvents,activeRoundMs:()=>roundClock.elapsed(),roundInput:()=>inputMethods.size===1?[...inputMethods][0]:'mixed',get events(){return events;},get auto(){return auto;},get level(){return level;}};
 }

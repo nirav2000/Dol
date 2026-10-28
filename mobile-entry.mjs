@@ -12,7 +12,7 @@ export function createMobileEntry({getState,submit}){
  const enabled=()=>getState().phase==='running'&&getState().view==='play';
  const nextQuestion=()=>{if(getState().phase==='finished'&&getState().view==='play')document.getElementById('startButton').click();};
  function placeDock(){
-   if(!isMobile()||wrap.hidden)return;
+   if(!isMobile()||wrap.hidden||getState().phase==='finished')return;
    const vv=window.visualViewport,visibleHeight=vv?.height||innerHeight;
    const bottom=innerWidth>innerHeight&&visibleHeight<=500?12:Math.max(64,Math.min(104,visibleHeight*.1));
    const top=Math.max(4,(vv?.offsetTop||0)+visibleHeight-bottom-wrap.getBoundingClientRect().height);
@@ -20,7 +20,7 @@ export function createMobileEntry({getState,submit}){
    wrap.style.setProperty('bottom','auto','important');
  }
  function reserveSpace(){
-   const height=isMobile()&&!wrap.hidden?Math.ceil(wrap.getBoundingClientRect().height):0;
+   const height=isMobile()&&!wrap.hidden&&getState().phase!=='finished'?Math.ceil(wrap.getBoundingClientRect().height):0;
    const value=height+'px';
    if(play.style.getPropertyValue('--mobile-dock-height')!==value)play.style.setProperty('--mobile-dock-height',value);
  }
@@ -28,8 +28,11 @@ export function createMobileEntry({getState,submit}){
  function sync(){
    const state=getState(),finished=state.phase==='finished';
    play.dataset.mobilePhase=state.phase;
+   const destination=finished?document.getElementById('finishedPanel'):play;
+   if(wrap.parentElement!==destination)destination.append(wrap);
    wrap.hidden=!isMobile()||state.view!=='play'||state.phase==='ready';
    wrap.classList.toggle('is-finished',finished);
+   if(finished){wrap.style.removeProperty('top');wrap.style.removeProperty('bottom');}
    const status=wrap.querySelector('#mobileEntryStatus');status.textContent=state.feedback&&state.feedbackType==='error'?state.feedback:'ENTER A FACTOR PAIR';status.classList.toggle('has-error',!!state.feedback&&state.feedbackType==='error');
    first.textContent=parts[0]||'\u2014';second.textContent=parts[1]||'\u2014';
    first.setAttribute('aria-pressed',String(active===0));second.setAttribute('aria-pressed',String(active===1));

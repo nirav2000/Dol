@@ -1,3 +1,13 @@
+## v2.12.0 — learning-first responsive interface (28 October 2026)
+
+- A compact challenge summary replaces the crowded phone launcher; "Change challenge" reveals the full guided/practice/timed options and settings.
+- Difficulty and number-limit selectors are editable whenever a round is not running. Selecting either automatically switches from Adaptive to Custom. All selectable number-limit values are represented, including 144; active-round settings are locked with an explanation.
+- Pair Board placeholders and solved tiles share the same large mathematical number-card design across play and review, with stable geometry and discovery animations, including final-pair completion.
+- A compact focus toolbar restores Explain, Factor Rainbow and Arrays while remaining in Focus. Visualisations open in a dismissible sheet rather than silently exiting Focus.
+- Round review opens interactive "how to discover this pair" lessons on tap. "Correct the score" explicitly opts into manual score adjustments and cannot rewrite learning evidence.
+- On phones, Next Question is placed after the round review in document flow, not over the mathematics, while the same thumb keypad remains in use during play.
+- Full regression checks added for challenge selection, board sizing and animation, focus learning, review scoring, and mobile navigation; retain previous math and Firebase sync code.
+
 # Factor Frenzy — Dol v2.10.2
 
 A solo maths learning app with three modes: guided learning (no timer), independent practice (no timer), and timed challenge (30/60/90 seconds). Uses a responsive black/grey/white design, progressive factor hints, a selectable divisor grid, 23 documented techniques and adaptive target selection.

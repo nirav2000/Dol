@@ -44,6 +44,10 @@ try{
    await submit(p,'1x112');assert.equal(await p.locator('#pairSlots .pair-number').count(),2);
    await p.locator('#finishButton').click();const before=await learningData(p);
    assert.equal(await p.locator('.review-pair').count(),5);assert.equal(await score(p),11);
+   await p.locator('[data-review-pair="2-56"]').click();
+   assert.equal(await score(p),11,'review explanations never change points');
+   assert.match(await p.locator('#patternDetail').textContent(),/2 × 56/);
+   await p.locator('#reviewAdjustScore').click();
    for(const key of ['2-56','4-28','7-16','8-14'])await p.locator(`[data-review-pair="${key}"]`).click();
    assert.equal(await score(p),17);assert.match(await p.locator('#reviewSummary').textContent(),/bonus/);
    for(let i=0;i<3;i++){await p.locator('[data-review-pair="8-14"]').click();assert.equal(await score(p),14);await p.locator('[data-review-pair="8-14"]').click();assert.equal(await score(p),17);}

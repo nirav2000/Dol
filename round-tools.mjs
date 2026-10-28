@@ -11,7 +11,7 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE))||{};}catch{}
   const preferences={autoNext:saved.autoNext===true,delay:[3,5,8,12].includes(saved.delay)?saved.delay:8};
   const save=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(preferences));}catch{}};
-  let reviewIdentity=null,selected=new Set(),roundIdentity=null;
+  let reviewIdentity=null,selected=new Set(),roundIdentity=null,scoreEditing=false;
   const controls=el('div',{class:'auto-settings'});
   controls.innerHTML='<label class="check"><input type="checkbox" id="autoNext"> Auto next question</label><label class="auto-delay-label" for="autoNextDelay">Review time <select id="autoNextDelay"><option value="3">3 seconds</option><option value="5">5 seconds</option><option value="8">8 seconds</option><option value="12">12 seconds</option></select></label>';
   document.querySelector('.controls').append(controls);
@@ -49,15 +49,32 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   document.querySelectorAll('.controls select:not(#autoNextDelay),[data-mode]').forEach(e=>e.addEventListener('change',()=>timer.hold('review')));
   document.querySelectorAll('[data-mode]').forEach(e=>e.addEventListener('click',()=>{if(getState().phase==='finished')timer.hold('review');}));
   const summary=el('div',{id:'reviewSummary',class:'review-summary','aria-live':'polite'});
-  const instruction=el('p',{class:'small muted',id:'reviewInstructions'},'Tap a pair to give or take away its point. Completing the set adds the +2 bonus.');
+  const instruction=el('p',{class:'small muted',id:'reviewInstructions'},'Tap any pair to learn a method. Your played score stays unchanged.');
   const evidence=el('p',{class:'small muted',id:'reviewEvidence'});
   const restore=el('button',{type:'button',class:'text-button',id:'restoreReview'},'Restore played result');
-  $('answerReview').after(instruction,summary,evidence,restore);
+  const scoreEditor=el('button',{type:'button',class:'secondary',id:'reviewAdjustScore','aria-pressed':'false'},'Correct the score');
+  $('answerReview').after(instruction,summary,evidence,scoreEditor,restore);
+  scoreEditor.addEventListener('click',()=>{
+    if(getState().phase!=='finished')return;
+    scoreEditing=!scoreEditing;
+    scoreEditor.setAttribute('aria-pressed',String(scoreEditing));
+    scoreEditor.textContent=scoreEditing?'Done correcting score':'Correct the score';
+    timer.hold('review');
+    renderReview(getState());
+  });
   for(const p of $('finishedPanel').querySelectorAll('p.muted'))if(p!==instruction&&p!==evidence)p.hidden=true;
   restore.addEventListener('click',()=>{if(getState().phase!=='finished')return;selected=new Set(getState().found);timer.hold('review');applyReview();renderReview(getState());});
   const visualRoot=el('section',{id:'roundVisuals',hidden:''});
   document.querySelector('.play-grid').after(visualRoot);
   const visual=createVisualTools(visualRoot,{onAssist:markAssisted,onInteract:()=>timer.hold('review'),onUsePair:fillPair});
+  const dismissVisual=el('button',{type:'button',class:'secondary round-visual-dismiss',id:'roundVisualDismiss'},'Close visual');
+  visualRoot.prepend(dismissVisual);
+  const toolbar=el('div',{id:'roundLearningBar',class:'round-learning-bar',hidden:''});
+  toolbar.innerHTML='<strong>Understand this number</strong><button id="roundBarHint" type="button" class="secondary">💡 Explain</button><button id="roundBarRainbow" type="button" class="secondary">🌈 Rainbow</button><button id="roundBarArray" type="button" class="secondary">▦ Arrays</button>';
+  document.querySelector('.number-section .action-row').after(toolbar);
+  $('roundBarHint').addEventListener('click',()=>{if(['running','paused'].includes(getState().phase))openHint();else if(getState().phase==='finished'){$('roundMathPatterns')?.click();}});
+  $('roundBarRainbow').addEventListener('click',()=>openVisual('rainbow'));
+  $('roundBarArray').addEventListener('click',()=>openVisual('arrays'));
   // Guided factor reasoning follows the live board. It never reveals or scores a missing pair.
   const coach=el('section',{id:'roundCoachPanel',class:'round-coach',hidden:''});
   coach.innerHTML='<div class="round-coach-heading"><span class="eyebrow">YOUR NEXT DISCOVERY</span><strong id="roundCoachCount"></strong></div><p id="roundCoachText" role="status" aria-live="polite"></p><p id="roundCoachBoundary" class="small muted"></p><div class="round-coach-actions"><button type="button" class="secondary" id="roundCoachHint">Work it out with me</button><button type="button" class="secondary" id="roundCoachRainbow">Factor rainbow</button><button type="button" class="secondary" id="roundCoachArray">Build an array</button></div>';
@@ -66,10 +83,18 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   function openVisual(kind){
     const s=getState();
     if(!['running','paused','finished'].includes(s.phase))return;
-    if(document.body.classList.contains('focus-mode'))exitFocus();
+    visualRoot.hidden=false;
     visual.show(kind);
-    visualRoot.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    document.body.classList.toggle('dol-visuals-open',document.body.classList.contains('focus-mode'));
+    if(!document.body.classList.contains('focus-mode'))visualRoot.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   }
+  function closeVisual(){
+    visual.hide();
+    visualRoot.hidden=true;
+    document.body.classList.remove('dol-visuals-open');
+  }
+  dismissVisual.addEventListener('click',closeVisual);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('dol-visuals-open')){e.preventDefault();e.stopPropagation();closeVisual();}},true);
   $('roundCoachRainbow').addEventListener('click',()=>openVisual('rainbow'));
   $('roundCoachArray').addEventListener('click',()=>openVisual('arrays'));
   const reflection=el('section',{id:'roundMathReflection',class:'round-math-reflection',hidden:''});
@@ -79,6 +104,8 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   $('roundMathPatterns').addEventListener('click',()=>{const toggle=$('patternToggle');if(!toggle)return;if(toggle.getAttribute('aria-expanded')!=='true')toggle.click();toggle.scrollIntoView({behavior:'smooth',block:'start'});});
   function updateCoach(s){
     coach.hidden=s.phase!=='running'&&s.phase!=='paused';
+    toolbar.hidden=s.phase!=='running'&&s.phase!=='paused'&&s.phase!=='finished';
+    $('roundBarHint').textContent=s.phase==='finished'?'💡 Learn the pairs':'💡 Explain';
     reflection.hidden=s.phase!=='finished';
     if(!coach.hidden){
       const suggested=boardSuggestions(s.target,s.found),root=Math.floor(Math.sqrt(s.target));
@@ -103,7 +130,7 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
   }
   function renderReview(s){
     if(!s.result)return;
-    if(reviewIdentity!==s.result){reviewIdentity=s.result;selected=new Set(s.found);arm();}
+    if(reviewIdentity!==s.result){reviewIdentity=s.result;selected=new Set(s.found);scoreEditing=false;scoreEditor.setAttribute('aria-pressed','false');scoreEditor.textContent='Correct the score';arm();}
     const score=reviewScore(s.pairs,selected),onBoard=document.body.dataset.dolLayout==='pairboard',host=onBoard?$('layoutPairGrid'):$('answerReview'),other=onBoard?$('answerReview'):$('layoutPairGrid');
     const focusKey=document.activeElement?.dataset?.reviewPair;
     $('finishHeading').textContent='Check the pairs';
@@ -112,17 +139,29 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
     other.replaceChildren();other.hidden=true;host.hidden=false;host.className=onBoard?'layout-pair-grid unified-pair-review':'pair-review-grid';if(onBoard)host.style.setProperty('--board-columns','3');host.setAttribute('aria-describedby','reviewInstructions');host.replaceChildren();
     for(const [a,b] of s.pairs){
       const key=pairKey(a,b),checked=selected.has(key);
-      const button=el('button',{type:'button',class:'review-pair'+(checked?' credited':''),'data-review-pair':key,'aria-pressed':checked,'aria-label':`${a} times ${b}. ${checked?'Credited; remove':'Not credited; award'} its point.`});
+      const button=el('button',{type:'button',class:'review-pair'+(checked?' credited':''),'data-review-pair':key,'aria-pressed':checked,'aria-label':`${a} times ${b}. ${scoreEditing?(checked?'Remove score credit':'Award score credit'):'Explain how to find this pair'}.`});
       pairContent(button,a,b);
       button.append(el('span',{class:'pair-mark','aria-hidden':'true'},checked?'✓':'○'));
-      button.addEventListener('click',()=>{if(getState().phase!=='finished')return;timer.hold('review');if(document.body.dataset.dolPatternMode==='true'){document.dispatchEvent(new CustomEvent('dol-pattern-select',{detail:{n:getState().target,a,b,key}}));return;}if(selected.has(key))selected.delete(key);else selected.add(key);applyReview();renderReview(getState());});
+      button.addEventListener('click',()=>{
+        if(getState().phase!=='finished')return;
+        timer.hold('review');
+        if(scoreEditing){
+          if(selected.has(key))selected.delete(key);else selected.add(key);
+          applyReview();renderReview(getState());
+          return;
+        }
+        const toggle=$('patternToggle');
+        if(toggle&&toggle.getAttribute('aria-expanded')!=='true')toggle.click();
+        document.dispatchEvent(new CustomEvent('dol-pattern-select',{detail:{n:getState().target,a,b,key}}));
+        $('patternDetail')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
+      });
       host.append(button);
     }
     if(onBoard)$('layoutPairStatus').textContent=`${score.count} / ${score.total} credited`;
-    instruction.textContent=document.body.dataset.dolPatternMode==='true'?'Explore mode: select a pair to learn its technique. Your score will not change.':'Tap a pair to give or take away its point. Completing the set adds the +2 bonus.';
+    instruction.textContent=scoreEditing?'Score correction mode: tap pairs to adjust points. Your learning history remains unchanged.':'Tap any pair to discover the fastest way to find it. These taps do not change your score.';
     summary.replaceChildren(el('strong',{},`${score.count} of ${score.total} pairs credited`),el('strong',{},`${score.points} points${score.bonus?' · +2 bonus included':''}`));
     const changed=selected.size!==s.found.size||[...selected].some(key=>!s.found.has(key));
-    evidence.textContent=(changed?'Score adjusted manually. ':'Played result. ')+`${s.result.correct-s.result.assisted} unassisted, ${s.result.assisted} assisted during play. Review taps change the game score, not mastery or recorded learning results.`;
+    evidence.textContent=(changed?'Score adjusted manually. ':'Played result. ')+`${s.result.correct-s.result.assisted} unassisted, ${s.result.assisted} assisted during play. Explanations and score corrections do not rewrite mastery evidence.`;
     restore.hidden=!changed;
     document.dispatchEvent(new CustomEvent('dol-review-rendered',{detail:{target:s.target}}));
     if(focusKey)host.querySelector(`[data-review-pair="${focusKey}"]`)?.focus({preventScroll:true});
@@ -135,7 +174,7 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
     $('numberValue').dataset.digits=String(s.target||'?').length;
     let badge=$('numberStatus');if(!badge){badge=el('span',{id:'numberStatus',class:'number-status'});document.querySelector('.number-tile').append(badge);}
     badge.hidden=s.phase!=='finished';badge.textContent=s.result?.reason==='time'?"TIME'S UP":'ROUND COMPLETE';
-    if(s.phase==='ready'){timer.cancel();visualRoot.hidden=true;roundIdentity=null;}
+    if(s.phase==='ready'){timer.cancel();visualRoot.hidden=true;document.body.classList.remove('dol-visuals-open');roundIdentity=null;}
     else{
       const token=s.round+':'+s.target;
       const newRound=roundIdentity!==token;
@@ -147,5 +186,5 @@ export function createRoundTools({getState,persist,startNext,refresh,markAssiste
     if(s.phase==='finished')renderReview(s);
     environment();
   }
-  return {render,renderReview,beforeStart(){timer.cancel();reviewIdentity=null;visual.reset();},viewChanged(){environment();},reset(){timer.cancel();reviewIdentity=null;visual.reset();},holdReview(){timer.hold('review');}};
+  return {render,renderReview,beforeStart(){timer.cancel();reviewIdentity=null;scoreEditing=false;closeVisual();visual.reset();},viewChanged(){environment();},reset(){timer.cancel();reviewIdentity=null;scoreEditing=false;closeVisual();visual.reset();},holdReview(){timer.hold('review');}};
 }
