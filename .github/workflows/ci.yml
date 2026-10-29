@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
@@ -55,7 +57,14 @@ jobs:
           node --check improvement/ui.mjs
           node --check learning-app.mjs
           node --check tests/celebration-regressions-browser.mjs
+          node --check animation-history.mjs
+          node --check scripts/build-animation-history.mjs
+          node --check tests/animation-history-browser.mjs
           node --check tablet-keypad.mjs
+      - name: Build complete animation archive from Git
+        run: |
+          node scripts/build-animation-history.mjs
+          test -s animation-history-data/history.json
       - name: Unit tests
         run: node --test tests/*.test.mjs
       - name: Install browser test dependencies
@@ -87,6 +96,7 @@ jobs:
           run_case node tests/mobile-dock-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/focus-animations-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/celebration-regressions-browser.mjs
+          run_case node tests/animation-history-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/focus-journey-browser.mjs
           run_case node tests/round-tools-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/mobile-tutor-browser.mjs
@@ -152,6 +162,7 @@ jobs:
       - name: Build complete release history from immutable Git revisions
         run: |
           node Apps-shared/version-lab/tooling/build-version-history.mjs
+          node scripts/build-animation-history.mjs
           node -e "const r=require('./version-lab-data/releases.json');const v=require('./version.json').version;if(r.publishedVersion!==v||r.releases[0].productVersion!==v)process.exit(1)"
       - name: Stage immutable Pages artifact
         run: |
@@ -159,6 +170,8 @@ jobs:
           rsync -a --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='Apps-shared/' --exclude='artifacts/' --exclude='_pages/' --exclude='tests/' --exclude='scripts/' --exclude='_release-candidate/' --exclude='.firebase-test/' --exclude='browser-desktop.png' --exclude='browser-mobile.png' ./ _pages/
           test -s _pages/index.html
           test -s _pages/version-lab-data/releases.json
+          test -s _pages/animation-history-data/history.json
+          test -s _pages/animation-history.html
           test -s _pages/version.json
           test -s _pages/learning-app.mjs
           test -s _pages/challenge-controls.mjs

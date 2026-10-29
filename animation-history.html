@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e0c">
+<meta name="description" content="Replay authentic Dol factor-card celebration effects across the complete Git history.">
+<title>Animation History Lab · Dol</title>
+<link rel="stylesheet" href="./animation-history.css?v=2.13.3">
+<script type="module" src="./animation-history.mjs?v=2.13.3"></script>
+</head>
+<body>
+<header class="masthead">
+  <a class="back" href="./index.html">← Factor Frenzy</a>
+  <span class="mast-title">DOL / ARCHIVES</span>
+  <span class="build">ANIMATION HISTORY LAB · v2.13.3</span>
+</header>
+<main>
+<section class="hero">
+  <p class="eyebrow">EVERY VERSION. EVERY COMMIT. ORIGINAL CSS.</p>
+  <h1>Find the celebration <em>you remember.</em></h1>
+  <p class="intro">Compare factor-card animations built from the original styles and triggers found in Dol's Git history. Replay different versions side by side, including the <strong>v2.5.10 Prime Celebration Lab</strong>. Your current game is not changed by anything on this page.</p>
+  <div class="stats" id="historyStats" role="status" aria-live="polite"><span>Reading Git animation archive…</span></div>
+</section>
+<section class="workspace">
+  <aside class="history">
+    <div class="history-title">
+      <div><p class="eyebrow">VERSION EXPLORER</p><h2>History</h2></div>
+      <span id="historyCount" class="counter">—</span>
+    </div>
+    <label class="search-label" for="historySearch">Find a version, commit or change</label>
+    <input id="historySearch" type="search" placeholder="e.g. 2.5.11, rainbow, square…" autocomplete="off">
+    <fieldset class="switcher">
+      <legend>Browse</legend>
+      <label><input name="historyMode" type="radio" value="versions" checked> Versions</label>
+      <label><input name="historyMode" type="radio" value="commits"> All commits</label>
+    </fieldset>
+    <label class="toggle"><input id="changesOnly" type="checkbox"> Only animation changes</label>
+    <p class="tip">Select any row to add its exact Git revision to the comparison. An unchanged version will show the same effect as its predecessor.</p>
+    <div id="historyList" class="history-list" aria-label="All archived Dol revisions"></div>
+  </aside>
+  <section class="compare">
+    <div class="compare-title">
+      <div><p class="eyebrow">SIDE-BY-SIDE PLAYBACK</p><h2>Compare original effects</h2></div>
+      <button id="replayAll" type="button" class="btn filled">↻ Replay all</button>
+    </div>
+    <div class="global-controls">
+      <label for="eventSelect">What did you discover?</label>
+      <select id="eventSelect">
+        <option value="prime">Prime · 1 × 7</option>
+        <option value="square">Perfect square · 7 × 7</option>
+        <option value="correct">Correct pair · 3 × 8</option>
+        <option value="power">Power of two · 2 × 4</option>
+        <option value="complete">All factor pairs · 3 × 8</option>
+      </select>
+      <button type="button" id="restoreDefaults" class="btn">Show key milestones</button>
+    </div>
+    <div id="comparisonGrid" class="comparison-grid" aria-live="polite"></div>
+    <p class="source-note"><strong>How faithful are these previews?</strong> Each card loads the original animation CSS captured from the labelled Git commit, using the original class names, star coordinates and timings where present. The static factor-card markup is rebuilt in an isolated frame; these are source-faithful animation reconstructions, not complete historical app sessions. Historic revisions with no special celebration are displayed as such. Old app scripts, accounts and saved progress are never loaded.</p>
+    <p class="source-note">The archive is rebuilt from <strong>every reachable Git commit</strong> during deployment. If a version introduced no animation change, it intentionally reuses its existing effect. The original seven experimental Prime Lab designs are preserved and selectable on their historical versions.</p>
+  </section>
+</section>
+</main>
+<footer><span>Dol · Animation History Lab · v2.13.3</span><a href="./prime-animation-lab.html">Original Prime Celebration Lab</a></footer>
+</body></html>

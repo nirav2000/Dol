@@ -1,3 +1,5 @@
 Dol uses main branch only. Run node --test tests/*.test.mjs and browser smoke checks before a release. Increment version.json and footer. Preserve existing local learner scores. Version Lab is developer-only: https://nirav2000.github.io/Apps/version-lab/AI_AGENT_CONTRACT.md . The shared Learning SDK is owned by nirav2000/Apps/learning/v1 and must not be copied into Dol. Never auto-install shared changes into other apps.
 
 UI changes must run tests/diagnostics-ui-browser.mjs in Chromium and WebKit with APPS_CHECKOUT pointing to the Apps checkout. Keep phone/tablet Pair Board rules scoped in ui/. Diagnostics are off by default; no learner/account state or raw typed text. Never publish raw media automatically.
+
+Dol Animation History Lab is archival-only: scripts/build-animation-history.mjs rebuilds every Git commit into script-free replay snapshots for animation-history.html. Preserve original CSS and version/commit provenance. Do not apply a historical animation to live play without explicit user choice. CI and Pages deployment must regenerate and test the archive from full Git history.

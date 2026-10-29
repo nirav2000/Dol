@@ -36,6 +36,7 @@ jobs:
           node tests/learning-first-browser.mjs
           node tests/focus-animations-browser.mjs
           node tests/celebration-regressions-browser.mjs
+          node tests/animation-history-browser.mjs
           node tests/focus-journey-browser.mjs
           node tests/startup-recovery-browser.mjs
       - uses: actions/upload-artifact@v5
