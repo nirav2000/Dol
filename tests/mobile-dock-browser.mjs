@@ -47,9 +47,36 @@ try{
    await page.locator('#finishButton').tap();
    await page.setViewportSize(viewport.width===844?{width:390,height:700}:{width:844,height:390});
    assert.equal(await page.locator('#mobileEntry').evaluate(el=>getComputedStyle(el).position),'fixed');
-   const turned=await action.boundingBox();
    const turnedHeight=viewport.width===844?700:390;
-   assert.ok(turned&&turned.y>=0&&turned.y+turned.height<=turnedHeight+1,'Next stays on-screen after rotation');
+   // Synthetic viewport rotation dispatches CSS media-query, VisualViewport and
+   // ResizeObserver updates asynchronously. Require the same stable, reachable
+   // geometry a real user sees after the browser finishes its layout frames.
+   // This is a condition check, not a blind timeout, and still fails if Next
+   // remains off-screen or hidden.
+   await page.waitForFunction(visibleHeight=>{
+     const action=document.querySelector('#mobileKeypad [data-key="action"]');
+     if(!action)return false;
+     const r=action.getBoundingClientRect(),style=getComputedStyle(action);
+     return r.width>=50&&r.height>=56&&r.top>=0&&r.bottom<=visibleHeight+1&&
+       style.visibility!=='hidden'&&style.display!=='none';
+   },turnedHeight,{timeout:6000}).catch(async error=>{
+     const diagnostics=await page.evaluate(()=>({
+       width:innerWidth,height:innerHeight,viewport:window.visualViewport?.height,
+       phase:document.querySelector('#playView').dataset.mobilePhase,
+       mobileInput:document.querySelector('#playView').dataset.mobileInput,
+       focus:document.body.classList.contains('focus-mode'),
+       dock:document.querySelector('#mobileEntry').getBoundingClientRect().toJSON(),
+       next:document.querySelector('#mobileKeypad [data-key="action"]').getBoundingClientRect().toJSON(),
+       dockTop:document.querySelector('#mobileEntry').style.top,
+       dockBottom:getComputedStyle(document.querySelector('#mobileEntry')).bottom,
+       dockHidden:document.querySelector('#mobileEntry').hidden
+     }));
+     console.error('ROTATION NEXT GEOMETRY',JSON.stringify(diagnostics));
+     throw error;
+   });
+   const turned=await action.boundingBox();
+   assert.ok(turned&&turned.y>=0&&turned.y+turned.height<=turnedHeight+1,
+     'Next stays on-screen after rotation: '+JSON.stringify(turned));
    assert.equal(await action.isEnabled(),true,'Next remains tappable after orientation change');
    await action.tap();
    await page.locator('#finishButton').tap();
