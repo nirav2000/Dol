@@ -85,7 +85,9 @@ function renderCards(){
   if(r.manifestVersion&&r.manifestVersion!==r.version)meta.append(child('span',null,'File metadata at commit: v'+r.manifestVersion));
   card.append(meta);
   const frame=document.createElement('iframe');frame.className='preview-frame';
-  frame.setAttribute('sandbox','');frame.setAttribute('loading','eager');
+  // Block all archived scripts; retain the same origin so browser/PWA
+  // instrumentation does not throw SecurityError inside an opaque frame.
+  frame.setAttribute('sandbox','allow-same-origin');frame.setAttribute('loading','eager');
   frame.title='Archived factor-card animation v'+r.version+' at commit '+r.sha.slice(0,10);
   card.append(frame);
   const controls=child('div','controls');

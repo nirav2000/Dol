@@ -16,6 +16,8 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
    try{
     await page.goto(new URL('animation-history.html',base).href,{waitUntil:'domcontentloaded',timeout:55000});
     await page.waitForFunction(()=>document.querySelectorAll('.version-card').length===4,{},{timeout:30000});
+    assert.equal(await page.locator('.preview-frame').first().evaluate(el=>el.sandbox.contains('allow-scripts')),false,
+      'archived apps must never be allowed to execute scripts');
     const stats=await page.locator('#historyStats').textContent();
     const archive=await page.evaluate(()=>fetch('./animation-history-data/history.json',{cache:'no-store'}).then(r=>r.json()));
     assert.ok(archive.totalCommits>200,'full Git commit audit, not a selected list: '+archive.totalCommits);
@@ -71,6 +73,7 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     assert.match(await page.locator('.version-card').last().textContent(),/Number-type factor-card celebrations/);
     const previewSrc=await page.locator('.version-card').last().locator('iframe').getAttribute('srcdoc');
     assert.ok(!/firebase|importScripts\(/i.test(previewSrc||''),'no archived app auth scripts are executed');
+    assert.ok(!/<script\b/i.test(previewSrc||''),'archived comparison frame contains no executable scripts');
     await page.locator('#historySearch').fill('');
     await page.locator('#changesOnly').check();
     const filtered=await page.locator('.history-row').count();
