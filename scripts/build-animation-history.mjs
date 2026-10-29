@@ -56,11 +56,28 @@ const history=git('log','--reverse','--format=%H%x1f%cI%x1f%s','HEAD').trim().sp
 });
 fs.mkdirSync(effectRoot,{recursive:true});
 for(const file of fs.readdirSync(effectRoot))if(file.endsWith('.json'))fs.unlinkSync(path.join(effectRoot,file));
-const commits=[],snapshots=new Map();let previous='';
+// Some historical releases used a series of single-file Git commits. Their
+// version.json metadata could lag the release-labelled JS and CSS commits.
+ // Keep both facts: effective release attribution and the immutable version
+ // manifest actually present at the commit. Never silently relabel its SHA.
+const commits=[],snapshots=new Map();let previous='',activeVersion='unversioned';
+function higherVersion(a,b){
+ if(!a||a==='unversioned')return false;
+ if(!b||b==='unversioned')return true;
+ const x=a.split('.').map(Number),y=b.split('.').map(Number);
+ for(let i=0;i<3;i++){if(x[i]>y[i])return true;if(x[i]<y[i])return false;}
+ return false;
+}
 for(const item of history){
  const blobs=treeFiles(item.commit),read=p=>readBlob(blobs[p]);
- let version='unversioned';
- try{version=String(JSON.parse(read('version.json')||'{}').version||'unversioned').replace(/^v/,'');}catch{}
+ let manifestVersion='unversioned';
+ try{manifestVersion=String(JSON.parse(read('version.json')||'{}').version||'unversioned').replace(/^v/,'');}catch{}
+ const titleVersion=item.message.match(/(?:^|[^\d.])v?(\d+\.\d+\.\d+)(?![\d.])/i)?.[1]||null;
+ if(higherVersion(manifestVersion,activeVersion))activeVersion=manifestVersion;
+ if(higherVersion(titleVersion,activeVersion))activeVersion=titleVersion;
+ // A documented rollback can legitimately restore a lower release.
+ if(/\brollback\b/i.test(item.message)&&manifestVersion!=='unversioned'&&higherVersion(activeVersion,manifestVersion))activeVersion=manifestVersion;
+ const version=activeVersion;
  const script={};for(const name of names)script[name]=functionSource(read('learning-app.mjs'),name);
  const effectKind=kind(script,read('prime-animation-lab.css'));
  const original={
@@ -76,7 +93,7 @@ for(const item of history){
   fs.writeFileSync(path.join(effectRoot,renderId+'.json'),JSON.stringify(original));
   snapshots.set(renderId,true);
  }
- commits.push({sha:item.commit,version,date:item.date,message:item.message,renderId,variantId,
+ commits.push({sha:item.commit,version,manifestVersion,versionEvidence:titleVersion?'commit title':manifestVersion===version?'version.json':'prior release title',date:item.date,message:item.message,renderId,variantId,
   kind:effectKind,kindLabel:labels[effectKind],changed,labAvailable:!!read('prime-animation-lab.css'),
   changedFrom:previous||null});
  previous=variantId;
@@ -95,7 +112,8 @@ const catalog={schemaVersion:1,generatedAt:new Date().toISOString(),source:'Git 
  totalAnimationSignatures:new Set(commits.map(x=>x.variantId)).size,totalRenderSnapshots:snapshots.size,
  versions:[...versions.values()].reverse(),commits:commits.slice().reverse()};
 if(catalog.versions[0].version!==current)throw Error('History missing current release '+current);
-if(!catalog.versions.some(x=>x.version==='2.5.10'&&x.labAvailable))throw Error('v2.5.10 lab not found');
+if(!catalog.versions.some(x=>x.version==='2.5.10'&&x.kind==='prime-lab-only'))throw Error('v2.5.10 must preview the original Lab, not later game code');
+if(!catalog.versions.some(x=>x.version==='2.5.11'&&x.kind==='original-prime-ribbon'))throw Error('v2.5.11 must preview the in-game Rainbow Ribbon');
 if(!catalog.commits.some(x=>x.sha.startsWith('f745738e')&&x.kind==='original-prime-ribbon'))throw Error('Lost original prime trigger');
 if(!catalog.commits.some(x=>x.sha.startsWith('ee3c99b8')&&x.kind==='number-type'))throw Error('Lost generic number trigger');
 fs.writeFileSync(path.join(output,'history.json'),JSON.stringify(catalog));

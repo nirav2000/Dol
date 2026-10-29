@@ -82,6 +82,7 @@ function renderCards(){
   const meta=child('div','card-meta');
   meta.append(child('span',null,r.sha.slice(0,10)),child('span',null,r.changed?'Effect changed in this commit':'Inherited effect'));
   if(r.labAvailable)meta.append(child('span',null,'Prime Lab preserved'));
+  if(r.manifestVersion&&r.manifestVersion!==r.version)meta.append(child('span',null,'File metadata at commit: v'+r.manifestVersion));
   card.append(meta);
   const frame=document.createElement('iframe');frame.className='preview-frame';
   frame.setAttribute('sandbox','');frame.setAttribute('loading','eager');
@@ -173,14 +174,16 @@ function gameMarkup(src,evt){
  let overlay='',tileClass='',target='';
  if(evt==='prime'&&original){tileClass=' prime-rainbow-celebration';overlay=originalPrime(s);}
  if(s.complete&&numberType){overlay=genericEffect(s,!!f.celebrateTile,true);}
- if(!s.complete&&canPair)tileClass+=' pair-discovery';
+ if(!s.complete&&canPair)tileClass+=' layout-pair-chip pair-discovery';
  if(!s.complete&&!!f.celebrateTile)overlay=genericEffect(s,true,false);
  if(modern){
   target=targetOverlay(s,src);
   if(s.complete&&numberType&&f.celebrateTile)overlay=genericEffect(s,true,true);
   if(!s.complete&&f.celebrateTile)overlay=genericEffect(s,true,false);
  }
- const tile='<div id="answerReview"><button class="review-pair credited'+tileClass+'" data-review-pair="'+s.a+'-'+s.b+'" type="button" tabindex="-1"><span class="pair-number">'+s.a+'</span><span class="pair-times">×</span><span class="pair-number">'+s.b+'</span>'+overlay+'</button></div>';
+ const wrapper=!s.complete&&canPair?'layoutPairGrid':'answerReview';
+ if(overlay.includes('number-celebration'))tileClass+=' number-celebrating';
+ const tile='<div id="'+wrapper+'"><button class="review-pair credited'+tileClass+'" data-review-pair="'+s.a+'-'+s.b+'" data-pair-key="'+s.a+'-'+s.b+'" type="button" tabindex="-1"><span class="pair-number">'+s.a+'</span><span class="pair-times">×</span><span class="pair-number">'+s.b+'</span>'+overlay+'</button></div>';
  const notice=evt==='prime'&&original?'Original v2.5.11 prime result · Rainbow Ribbon':
    !s.complete&&!canPair?'This revision did not animate an individual correct answer':
    !s.complete?'Correct pair animation as defined at this commit':

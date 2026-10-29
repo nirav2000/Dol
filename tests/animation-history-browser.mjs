@@ -22,7 +22,8 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     assert.ok(archive.totalVersions>25,'all version records present: '+archive.totalVersions);
     assert.ok(archive.totalAnimationSignatures>=6,'preserved materially different animation states');
     assert.match(stats,/\d+ Git commits analysed/);
-    assert.ok(archive.versions.some(x=>x.version==='2.5.10'));
+    assert.equal(archive.versions.find(x=>x.version==='2.5.10')?.kind,'prime-lab-only','original Lab must be selected before 2.5.11 game port');
+    assert.equal(archive.versions.find(x=>x.version==='2.5.11')?.kind,'original-prime-ribbon','2.5.11 must include original live Ribbon');
     assert.ok(archive.commits.some(x=>x.sha.startsWith('ee3c99b8')&&x.kind==='number-type'));
     const servedVersion=await page.evaluate(()=>fetch('./version.json').then(r=>r.json()).then(x=>x.version));
     assert.equal(archive.release,servedVersion,'archive follows the exact deployed app version');
@@ -30,7 +31,14 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     assert.equal(await c2510.count(),1,'historical Prime Lab visible by default');
     assert.equal(await c2511.count(),1,'original in-game Rainbow Ribbon shown by default');
     const lframe=c2510.locator('iframe').contentFrame();
-    await lframe.locator('.card.rainbow.playing .outline').waitFor({state:'attached'});
+    await lframe.locator('.card.rainbow.playing .outline').waitFor({state:'attached',timeout:12000}).catch(async error=>{
+      console.error('ANIMATION-LAB-DIAGNOSTIC',JSON.stringify({
+        cards:await page.locator('.version-card').allTextContents(),
+        previewStatus:await c2510.locator('.context').textContent(),
+        srcdoc:(await c2510.locator('iframe').getAttribute('srcdoc'))?.slice(0,450),
+        errors
+      }));throw error;
+    });
     assert.match(await lframe.locator('.card.rainbow.playing .outline').evaluate(e=>getComputedStyle(e).animationName),/outlinePulse/,
       'original v2.5.10 Rainbow Ribbon keyframes run unmodified');
     assert.equal(await lframe.locator('.card.rainbow .star').count(),9,'original Lab has nine colour stars');
@@ -50,6 +58,8 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
     await page.locator('#eventSelect').selectOption('correct');
     await modernFrame.locator('.number-celebration--correct').waitFor({state:'attached'});
     assert.match(await modernFrame.locator('.number-celebration--correct').evaluate(e=>getComputedStyle(e).animationName),/numberCelebrate/);
+    assert.match(await modernFrame.locator('.layout-pair-chip.pair-discovery').evaluate(e=>getComputedStyle(e).animationName),/dolPairDiscovery/,
+      'per-pair pop animation follows the archived factor-board card class');
     await page.locator('#eventSelect').selectOption('prime');
     await modernFrame.locator('.prime-ribbon').waitFor({state:'attached'});
     assert.equal(await modernFrame.locator('.prime-ribbon .prime-star').count(),8);
