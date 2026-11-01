@@ -1,4 +1,5 @@
 import {makeFocusPlan} from './focus-learning-model.mjs';
+import {STANDARD_NUMPAD_KEYS} from './keypad-layout.mjs';
 // One persistent mobile dock: full keypad in play, the SAME action key in review.
 // Validation, scoring and auto-next remain owned by the existing application.
 export function createMobileEntry({getState,submit}){
@@ -140,7 +141,7 @@ export function createMobileEntry({getState,submit}){
    if(/^\d$/.test(key)){if(parts[active].length>=4)return;const value=String(Number(parts[active]+key));if(Number(value)>1024)return;parts[active]=value;updateInput();sync();}
  }
  let lastTouch=-Infinity;
- for(const key of ['1','2','3','4','5','6','7','8','9','clear','0','action']){
+ for(const key of STANDARD_NUMPAD_KEYS){
    const b=document.createElement('button');b.type='button';b.dataset.key=key;
    b.textContent=key==='clear'?'\u232b':key==='action'?'\u00d7':key;
    b.setAttribute('aria-label',key==='clear'?'Delete digit':key==='action'?'Next factor':'Digit '+key);
