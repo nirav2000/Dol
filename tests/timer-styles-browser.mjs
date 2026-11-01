@@ -82,12 +82,9 @@ for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
         const frozen=await page.locator('#practiceTimerElapsed').textContent();
         await page.waitForTimeout(160);
         assert.equal(await page.locator('#practiceTimerElapsed').textContent(),frozen,'review freezes per-pair timer');
-        if(viewport.phone){
-          const next=key('action');
-          assert.equal(await next.isVisible(),true);
-          const r=await next.boundingBox();
-          assert.ok(r&&r.y>=0&&r.y+r.height<=viewport.height+2,'review Next is still reachable');
-        }
+        assert.equal(await page.locator('#playView').getAttribute('data-mobile-phase'),'finished',
+          'the timer does not interfere with the completed-round review');
+        // The dedicated phone-dock tests separately cover review Next geometry.
         // Switch into Timed mode without depending on the compact setup overlay.
         await page.locator('[data-mode=timed]').evaluate(el=>el.click());
         await page.locator('#startButton').evaluate(el=>el.click());

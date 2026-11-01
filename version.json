@@ -1,5 +1,5 @@
 {
-  "version": "2.13.8",
+  "version": "2.13.9",
   "name": "Factor Frenzy",
-  "description": "Opt-in Gradient Ribbon elapsed-seconds timer with swipe-to-switch styles and light play surfaces."
+  "description": "Gradient Ribbon timer, style swipes and corrected review-phase browser validation."
 }
