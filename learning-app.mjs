@@ -10,9 +10,10 @@ import {createLearningSync} from 'https://nirav2000.github.io/Apps/learning-sync
 const activeAccount=()=>{try{return localStorage.getItem('dol-active-account-v1')||'guest'}catch{return 'guest'}};
 import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
+import {createTimerStyles} from './timer-styles.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
 const $=id=>document.getElementById(id);
-let roundTools,insights,mobileEntry,strategySupport,layoutOptions,challengeControls;
+let roundTools,insights,mobileEntry,strategySupport,layoutOptions,challengeControls,timerStyles;
 let improvement=null,improvementLoading=null,improvementUser=null;
 const focusKey='dol-focus-mode-v1';
 const focusOptInKey='dol-focus-immersive-opt-in-v2'; // Explicit choice, not the old default-on preference.
@@ -64,6 +65,7 @@ function setView(view){
   mobileEntry?.sync();
   strategySupport?.viewChanged();
   layoutOptions?.sync();
+  timerStyles?.sync();
   if(view==='play')focusAnswer();
 }
 function tone(ok){
@@ -151,6 +153,7 @@ function render(){
   mobileEntry?.sync();
   strategySupport?.render();
   layoutOptions?.sync();
+  timerStyles?.sync();
 }
 function stopTicker(){if(state.ticker!==null)clearInterval(state.ticker);state.ticker=null;}
 function tick(){
@@ -170,6 +173,7 @@ function start(){
   state.lastIncorrect=null;state.focusHintTargets=new Set();
   state.startedWithScore=state.score;state.startedAt=Date.now();state.roundId=crypto.randomUUID();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
+  timerStyles?.reset(); // UI-only timer, never a score or learning-record reset.
   $('pairInput').value='';
   mobileEntry?.reset();
   insights?.start();
@@ -340,7 +344,7 @@ function answer(event){
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
   // A fully revealed visual board remains assisted for this round; private coach hints are pair-specific.
   persist();
-  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{render();animateDiscoveredPair(check.key);roundTools?.animatePair?.(check.pair,previouslyFound);focusAnswer();}
+  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{timerStyles?.reset();render();animateDiscoveredPair(check.key);roundTools?.animatePair?.(check.pair,previouslyFound);focusAnswer();}
 }
 function finish(reason){
   if(state.phase!=='running'&&state.phase!=='paused')return;
@@ -666,6 +670,7 @@ roundTools=createRoundTools({getState:()=>state,persist,startNext:start,refresh:
   openHint:()=>strategySupport?.openHint(),exitFocus:()=>setFocus(false)
 });
 layoutOptions=createLayoutOptions({getState:()=>state});
+ timerStyles=createTimerStyles({getState:()=>state});
 applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render,onRecord:event=>improvement?.record(event)});
 challengeControls=createChallengeControls({getState:()=>state,isAdaptive:()=>insights?.auto});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});

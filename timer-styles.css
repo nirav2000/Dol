@@ -1,0 +1,82 @@
+/* Opt-in Gradient Ribbon from the first design concept. Default Classic stays untouched. */
+#playView .practice-timer-ribbon[hidden]{display:none!important}
+#playView .practice-timer-ribbon{
+  box-sizing:border-box;position:relative;display:block;min-width:0;width:100%;
+  margin:0 0 12px;padding:14px 19px 17px;border-radius:23px;
+  border:1px solid rgba(255,255,255,.92);
+  color:#132153;background:linear-gradient(120deg,#fffaff 0%,#f5f3ff 54%,#eceafd 100%);
+  box-shadow:0 10px 27px #0003,0 0 0 1px #b6b1e330 inset;
+  --ribbon-progress:0%;touch-action:pan-y;user-select:none;-webkit-user-select:none;
+}
+#playView .ribbon-timer-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 9px}
+#playView .ribbon-timer-heading>strong{font-size:10px;font-weight:800;letter-spacing:1.25px;color:#485082;white-space:nowrap}
+#playView .ribbon-timer-actions{display:flex;align-items:center;gap:10px;min-width:0}
+#playView #practiceTimerElapsed{color:#14205d;font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;min-width:50px;text-align:right;white-space:nowrap}
+#playView #ribbonTimerSwitch{border:1px solid #cfcbef;border-radius:25px;padding:5px 10px;background:#fff;color:#4e45a1;font-size:11px;font-weight:800;min-height:30px;white-space:nowrap;touch-action:manipulation}
+#playView #ribbonTimerSwitch:focus-visible,#playView .practice-timer-ribbon:focus-visible{outline:3px solid #493ee4;outline-offset:2px}
+#playView .ribbon-timer-scale{display:flex;align-items:center;justify-content:space-between;color:#484c87;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;margin:0 2px 8px}
+#playView .ribbon-timer-scale span{width:12px;text-align:center;position:relative}
+#playView .ribbon-timer-scale span::after{content:'';position:absolute;width:1px;height:7px;background:#5c62a6;top:100%;left:50%;transform:translate(-50%,2px);opacity:.85}
+#playView .ribbon-timer-track{position:relative;height:13px;border-radius:99px;background:#c2c0f0;box-shadow:inset 0 2px 3px #6265b830;isolation:isolate;margin:0 4px 1px}
+#playView .ribbon-timer-fill{height:100%;width:var(--ribbon-progress);border-radius:99px;background:linear-gradient(90deg,#c638f7 0%,#7360ff 42%,#319df9 80%,#48daf0 100%);box-shadow:0 0 10px #7262fe8a}
+#playView .ribbon-timer-thumb{position:absolute;top:50%;left:var(--ribbon-progress);width:29px;height:29px;transform:translate(-50%,-50%);border-radius:50%;background:white;border:6px solid #5cb4fd;box-shadow:0 0 0 4px #72b5ff50,0 3px 12px #507ee5a8;pointer-events:none}
+#playView .practice-timer-ribbon[data-over-range=true] .ribbon-timer-thumb{border-color:#746be3;box-shadow:0 0 0 3px #857ee44a}
+/* The lavender number tile and ivory keypad are cosmetic, leaving geometry unchanged. */
+body[data-dol-timer-style=ribbon] #playView .number-tile{background:linear-gradient(140deg,#f6f3ff,#e4e1fb)!important;border:1px solid #cbc7f2!important;box-shadow:0 7px 21px #0002;color:#0e194b}
+body[data-dol-timer-style=ribbon] #playView .number-tile #numberValue{color:#0e194b!important;text-shadow:none}
+body[data-dol-timer-style=ribbon] #playView .number-tile #pausedOverlay{color:#fff;background:#201e51e0}
+body[data-dol-timer-style=ribbon] #playView .number-section>.timer-line{display:none!important}
+body[data-dol-timer-style=ribbon][data-dol-timer-mode=timed] #playView .number-section>.timer-line{display:flex!important;justify-content:flex-end}
+body[data-dol-timer-style=ribbon] #playView .number-section>.timer-line .meter{display:none!important}
+body[data-dol-timer-style=ribbon] #playView .number-section>.timer-line>strong{font-size:16px;min-width:0;color:#c6d0ff}
+body[data-dol-timer-style=ribbon] #playView .number-section>.timer-line>strong::before{content:'Round left  ';font-size:11px;color:#99a7d5;font-weight:600}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished){background:#f4f1ff!important;box-shadow:0 -6px 18px #0005}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-entry-label{color:#414b76}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-factors span{color:#30315b}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-factors button{color:#142052!important;background:#fff!important;border:1px solid #d7d3f0!important}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-factors button[aria-pressed=true]{background:#e8e6ff!important;outline-color:#7268d4}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-keypad button{color:#111d53!important;background:#fff!important;border:1px solid #ddd9f1!important;box-shadow:0 3px 8px #50498f30}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-keypad button[data-key=clear]{color:#fff!important;background:#595695!important;border-color:#595695!important}
+body[data-dol-timer-style=ribbon] #playView .mobile-entry:not(.is-finished) .mobile-keypad button[data-key=action]{color:#fff!important;background:linear-gradient(135deg,#48dcb0,#009f9d)!important;border-color:#079f95!important}
+body[data-dol-timer-style=ribbon] #playView .tablet-pad:not(.is-finished){background:#f6f3ff;border-color:#d1cbea}
+body[data-dol-timer-style=ribbon] #playView .tablet-pad:not(.is-finished) .tablet-pad-fields button,
+body[data-dol-timer-style=ribbon] #playView .tablet-pad:not(.is-finished) .tablet-pad-grid button{color:#111d53!important;background:#fff!important;border:1px solid #ddd9f1!important;box-shadow:0 3px 8px #50498f30}
+body[data-dol-timer-style=ribbon] #playView .tablet-pad:not(.is-finished) .tablet-pad-grid button[data-tablet-key=clear]{color:#fff!important;background:#595695!important;border-color:#595695!important}
+body[data-dol-timer-style=ribbon] #playView .tablet-pad:not(.is-finished) .tablet-pad-grid button[data-tablet-key=action]{color:#fff!important;background:linear-gradient(135deg,#48dcb0,#009f9d)!important;border-color:#079f95!important}
+body[data-dol-timer-style=ribbon] #playView .tablet-pad:not(.is-finished) .tablet-pad-fields button[aria-pressed=true]{outline:2px solid #7568d0}
+.timer-style-settings{display:grid;gap:10px;padding:18px 0;border-top:1px solid #393939}
+.timer-style-settings h2{font-size:17px;line-height:1.4;margin:0;color:#fff}
+.timer-style-settings label{display:grid;gap:6px;color:#dedee6;font-size:13px}
+.timer-style-settings select{color:#fff;background:#242424;border:1px solid #555;border-radius:9px;padding:11px;min-height:44px}
+.timer-style-settings p{margin:2px 0;line-height:1.5}
+#timerStyleAnnouncement{color:#a7ecd6}
+.timer-style-preview{width:min(100%,340px);background:#f7f5ff;border:1px solid #e1dcf8;border-radius:13px;padding:13px 19px 19px;touch-action:pan-y;user-select:none}
+.timer-preview-scale{display:flex;justify-content:space-between;font-size:12px;color:#2e3674;font-weight:800;margin-bottom:11px}
+.timer-preview-track{position:relative;width:100%;height:11px;background:#d1cbeb;border-radius:15px}
+.timer-preview-fill{height:100%;width:42%;border-radius:15px;background:linear-gradient(90deg,#bd3bf7,#2fa8f9)}
+.timer-preview-marker{position:absolute;left:42%;top:50%;height:21px;width:21px;border:4px solid #58b2fb;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 3px #76bdff40}
+.timer-style-preview[data-style=classic]{background:#1b1b1b;border-color:#494949}
+.timer-style-preview[data-style=classic] .timer-preview-scale{color:#ddd}
+.timer-style-preview[data-style=classic] .timer-preview-track{background:#555}
+.timer-style-preview[data-style=classic] .timer-preview-fill{background:#eaeaea}
+.timer-style-preview[data-style=classic] .timer-preview-marker{display:none}
+@media(max-width:700px){
+  #playView .practice-timer-ribbon{padding:9px 12px 13px;margin:1px 0 6px;border-radius:17px;flex:none}
+  #playView .ribbon-timer-heading{margin-bottom:6px}
+  #playView .ribbon-timer-heading>strong{font-size:9px;letter-spacing:.65px}
+  #playView .ribbon-timer-actions{gap:6px}
+  #playView #practiceTimerElapsed{font-size:15px;min-width:48px}
+  #playView #ribbonTimerSwitch{padding:3px 8px;font-size:10px;min-height:28px}
+  #playView .ribbon-timer-scale{margin-bottom:7px;font-size:11px}
+  #playView .ribbon-timer-track{height:11px}
+  #playView .ribbon-timer-thumb{width:25px;height:25px;border-width:5px}
+  #playView:is([data-mobile-phase=running],[data-mobile-phase=paused],[data-mobile-phase=finished]) .number-section>.practice-timer-ribbon{order:-1!important;grid-area:auto!important;grid-column:1/-1!important;width:100%!important}
+}
+@media(max-width:700px) and (max-height:690px){
+  #playView .practice-timer-ribbon{padding:6px 11px 9px;margin:0 0 3px}
+  #playView .ribbon-timer-heading{margin-bottom:4px}
+  #playView .ribbon-timer-scale{margin-bottom:5px}
+}
+@media(prefers-reduced-motion:reduce){
+  #playView .ribbon-timer-fill,#playView .ribbon-timer-thumb{transition:none!important;animation:none!important}
+}
