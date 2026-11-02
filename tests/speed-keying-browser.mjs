@@ -41,6 +41,7 @@ for(const [engineName,engine,viewport] of [
    await page.locator('#speedLayout').selectOption('ttrs');
    await page.locator('#speedTtrs').fill('3.10');
    await page.locator('#speedStart').click();
+   assert.equal(await page.evaluate(()=>localStorage.getItem('dol-speed-keying-method-v1')),'touch');
    const keys=await page.locator('#speedPad button').evaluateAll(buttons=>buttons.map(x=>x.dataset.speedKey));
    assert.deepEqual(keys,['1','2','3','4','5','6','7','8','9','clear','0','action']);
    assert.equal(await page.locator('#speedPhase').textContent(),'WARM-UP · NOT SCORED');

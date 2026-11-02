@@ -1,5 +1,5 @@
 {
-  "version": "2.13.13",
+  "version": "2.13.14",
   "name": "Factor Frenzy",
-  "description": "Speed Keying Lab touchscreen detection and persistent input setup; verify hardware entry and checkpoint history."
+  "description": "Speed Keying Lab: persist automatically selected touch method on checkpoint start and verify it survives reload."
 }

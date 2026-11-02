@@ -141,6 +141,10 @@ function start(){
  const layout=method==='hardware'?'hardware':$('speedLayout').value;
  const technique=$('speedTechnique').value;
  const ref=Number($('speedTtrs').value);
+ // Save even when the user accepts the detected default without changing
+ // the selector; Safari and PWA device-mode detection can vary on reload.
+ writePreference(methodKey,method);
+ writePreference(techniqueKey,technique);
  saveReference();
  const targets=checkpointPlan(history.length);
  run={
