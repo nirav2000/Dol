@@ -1,5 +1,5 @@
 {
-  "version": "2.13.9",
+  "version": "2.13.10",
   "name": "Factor Frenzy",
-  "description": "Gradient Ribbon timer, style swipes and corrected review-phase browser validation."
+  "description": "Save timings for every submitted factor pair and offer selectable TTRS/physical keypad arrangements."
 }

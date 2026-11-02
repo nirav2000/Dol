@@ -11,6 +11,7 @@ const activeAccount=()=>{try{return localStorage.getItem('dol-active-account-v1'
 import {createInsights} from './learning-insights.mjs';
 import {createMobileEntry} from './mobile-entry.mjs';
 import {createTimerStyles} from './timer-styles.mjs';
+import {initKeypadPreference} from './keypad-layout.mjs';
 import {createStrategySupport} from './strategy-coach.mjs';
 const $=id=>document.getElementById(id);
 let roundTools,insights,mobileEntry,strategySupport,layoutOptions,challengeControls,timerStyles;
@@ -43,7 +44,7 @@ const state={
   chosenFactor:null,hintLevel:0,hintsUsed:0,helpOpen:false,mistakes:0,startedWithScore:0,startedAt:0,
   remainingMs:60000,deadline:0,ticker:null,feedback:'',feedbackType:'',strategy:'',result:null,
   numberHistory:read(scoped('dol-number-history-v2'),{}),
-  lastIncorrect:null,focusHintTargets:new Set()
+  lastIncorrect:null,focusHintTargets:new Set(),pairAttempts:[]
 };
 state.remainingMs=state.duration*1000;
 function persist(){
@@ -170,7 +171,7 @@ function start(){
   state.target=suggestion?.number||chooseAdaptiveNumber({stage:state.stage,limit:state.limit,history:state.numberHistory,learningState:learning.getState(),previous:state.previous});
   state.visualHelp=false;state.pairs=factorPairs(state.target);state.found=new Set();state.hintedPairs=new Set();state.attempted=new Set();
   state.chosenFactor=null;state.hintLevel=0;state.hintsUsed=0;state.helpOpen=state.mode==='guided';state.mistakes=0;state.feedback='';state.feedbackType='';state.strategy='';state.result=null;
-  state.lastIncorrect=null;state.focusHintTargets=new Set();
+  state.lastIncorrect=null;state.focusHintTargets=new Set();state.pairAttempts=[];
   state.startedWithScore=state.score;state.startedAt=Date.now();state.roundId=crypto.randomUUID();
   state.remainingMs=state.duration*1000;state.deadline=performance.now()+state.remainingMs;
   timerStyles?.reset(); // UI-only timer, never a score or learning-record reset.
@@ -318,6 +319,24 @@ function answer(event){
   event.preventDefault();if(state.phase!=='running')return;
   tick();if(state.phase!=='running')return;
   const input=$('pairInput'),check=assessPair(input.value,state.target,state.found);
+  // Every real submitted pair has an independent, active-time measurement,
+  // regardless of correctness, mode, screen layout or timer appearance.
+  const pairTime=Math.round(timerStyles?.elapsedMs()||0);
+  const submitted=input.value.trim();
+  const meaningful=/\d/.test(submitted);
+  if(meaningful){
+    const attempt={timestamp:Date.now(),roundId:state.roundId,round:state.round,target:state.target,
+      pair:submitted.slice(0,28),status:check.status,durationMs:pairTime,mode:state.mode,
+      assisted:state.hintsUsed>0||state.visualHelp||!!state.focusHintTargets.size};
+    state.pairAttempts.push(attempt);
+    try{
+      const stored=JSON.parse(localStorage.getItem(scoped('dol-pair-attempts-v1'))||'[]');
+      const history=Array.isArray(stored)?stored:[];
+      history.push(attempt);
+      localStorage.setItem(scoped('dol-pair-attempts-v1'),JSON.stringify(history.slice(-2000)));
+    }catch(error){console.warn('Local factor-pair timing storage unavailable',error);}
+    timerStyles?.reset();
+  }
   // Accidental, incomplete and duplicate submissions are not misconceptions.
   if(check.status==='invalid'||check.status==='duplicate'){
     state.feedback=input.value.trim()?check.message:'';state.feedbackType='';render();focusAnswer();return;
@@ -344,7 +363,7 @@ function answer(event){
   state.hintsUsed=0;state.hintLevel=0;state.chosenFactor=null;
   // A fully revealed visual board remains assisted for this round; private coach hints are pair-specific.
   persist();
-  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{timerStyles?.reset();render();animateDiscoveredPair(check.key);roundTools?.animatePair?.(check.pair,previouslyFound);focusAnswer();}
+  if(state.found.size===state.pairs.length){finish('complete');animateDiscoveredPair(check.key);}else{render();animateDiscoveredPair(check.key);roundTools?.animatePair?.(check.pair,previouslyFound);focusAnswer();}
 }
 function finish(reason){
   if(state.phase!=='running'&&state.phase!=='paused')return;
@@ -353,7 +372,7 @@ function finish(reason){
   if(correct===total)state.score+=2;
   const earned=state.score-state.startedWithScore;
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
-  const session={timestamp:Date.now(),mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
+  const session={timestamp:Date.now(),mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed),pairAttempts:state.pairAttempts.slice()};
   learning.session(session);
   ledger.finish();
   try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Learning cloud sync deferred',error));}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
@@ -605,6 +624,22 @@ function renderProgress(){
    $('statHistoryCoverage').textContent=sessions.length+' detailed session'+(sessions.length===1?'':'s')+' recorded'+(ledger.data.legacyRoundsIndicated?' · earlier round counter indicated '+ledger.data.legacyRoundsIndicated+' additional rounds suggested by the old counter (estimate; no detailed records)':'')+'.';
   $('statDue').textContent=summary.needsPractice.length;
   $('statIndependent').textContent=sessions.reduce((n,s)=>n+Math.max(0,s.correct-s.hints),0);
+  const attemptsBox=$('recentPairAttempts');if(attemptsBox){
+    attemptsBox.replaceChildren();
+    let records=[];try{records=JSON.parse(localStorage.getItem(scoped('dol-pair-attempts-v1'))||'[]');}catch{}
+    if(!Array.isArray(records))records=[];
+    const valid=records.filter(a=>a&&Number.isFinite(a.durationMs)&&a.pair);
+    const correct=valid.filter(a=>a.status==='correct');
+    const average=correct.length?correct.reduce((sum,a)=>sum+a.durationMs,0)/correct.length/1000:null;
+    $('pairAttemptSummary').textContent=valid.length+' recorded submissions · '+correct.length+' correct'+(average===null?'':' · average correct '+average.toFixed(2)+'s');
+    for(const a of valid.slice(-30).reverse()){
+      const d=document.createElement('div');d.className='session';
+      const label=document.createElement('span');label.textContent=a.pair.replace(/[xX*]/g,' × ')+' = '+a.target+' · '+a.status;
+      const timing=document.createElement('small');timing.textContent=(a.durationMs/1000).toFixed(2)+'s · '+new Date(a.timestamp).toLocaleString();
+      d.append(label,timing);attemptsBox.append(d);
+    }
+    if(!valid.length)attemptsBox.textContent='No factor-pair times recorded yet. Submit a pair in Play to begin.';
+  }
   const el=$('recentSessions');el.replaceChildren();
   for(const s of [...sessions].reverse().slice(0,12)){
     const d=document.createElement('div');d.className='session';const a=document.createElement('span');a.textContent=s.mode+' · '+s.target+' · '+s.correct+'/'+s.total+' pairs';const b=document.createElement('small');b.textContent=s.hints+' assisted · '+new Date(s.timestamp).toLocaleDateString();d.append(a,b);el.append(d);
@@ -638,7 +673,7 @@ $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListene
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
 $('resetProgress').addEventListener('click',()=>{if(accountId!=='guest'){alert('Cloud learning history cannot yet be deleted safely. Sign out to reset guest learning, or export your records first.');return;}if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();try{learningSync?.resetGuest();}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();try{improvement?.resetGuest();}catch(e){console.warn('Evidence reset deferred',e);}strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
-$('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export(),detailedEvidence:improvement?.export()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+$('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export(),detailedEvidence:improvement?.export(),pairAttemptTimings:(()=>{try{return JSON.parse(localStorage.getItem(scoped('dol-pair-attempts-v1'))||'[]');}catch{return [];}})()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});
 $('dolRetryCloud')?.addEventListener('click',async()=>{
@@ -674,6 +709,7 @@ layoutOptions=createLayoutOptions({getState:()=>state});
 applyFocus();insights=createInsights({storageScope:scoped,getState:()=>state,refresh:render,onRecord:event=>improvement?.record(event)});
 challengeControls=createChallengeControls({getState:()=>state,isAdaptive:()=>insights?.auto});
 mobileEntry=createMobileEntry({getState:()=>state,submit:()=>answer({preventDefault(){}})});
+initKeypadPreference();
 strategySupport=createStrategySupport({storageScope:scoped,getState:()=>state,setView,pause,focusAnswer,learning,holdTime:reason=>insights?.holdTime(reason),releaseTime:reason=>insights?.releaseTime(reason),onLearningRecord:()=>{try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Square learning cloud sync deferred',error));}catch(error){console.warn('Square learning saved in the learning store; cloud capture deferred',error);}}});
 $('readySquareLesson')?.addEventListener('click',()=>strategySupport?.openSquareStudio());
 $('readyQuickSquares')?.addEventListener('click',()=>strategySupport?.openSquareQuick());

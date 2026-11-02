@@ -1,5 +1,5 @@
 import {currentProfile} from './device-profile.mjs';
-import {STANDARD_NUMPAD_KEYS} from './keypad-layout.mjs';
+import {getKeypadKeys,reorderKeypad} from './keypad-layout.mjs';
 // Optional touch-tablet pad. The phone keypad is separate and never modified.
 export function initTabletKeypad(){
  const play=document.getElementById('playView'),form=document.getElementById('answerForm');
@@ -25,8 +25,9 @@ export function initTabletKeypad(){
  });
  pad.append(fields);
  const grid=document.createElement('div');grid.className='tablet-pad-grid';pad.append(grid);form.append(pad);
- const keys=STANDARD_NUMPAD_KEYS;
+ const keys=getKeypadKeys();
  const keyButtons=new Map();
+ document.addEventListener('dol-keypad-layoutchange',()=>reorderKeypad(grid,'data-tablet-key'));
  function finished(){return !play.hidden&&!finishedPanel.hidden;}
  function running(){return !play.hidden&&!activePanel.hidden;}
  function isEnabled(){return media.matches&&opened&&(running()||finished());}

@@ -108,5 +108,5 @@ export function createTimerStyles({getState}){
   choice.addEventListener('change',event=>setStyle(event.target.value));
   document.addEventListener('visibilitychange',sync);
   sync();
-  return {sync,reset,getStyle:()=>style};
+  return {sync,reset,elapsedMs:()=>clock.elapsedMs(),getStyle:()=>style};
 }

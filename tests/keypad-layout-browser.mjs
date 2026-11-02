@@ -26,7 +26,15 @@ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
       try{
         await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
         await page.waitForFunction(()=>document.body.dataset.dolReady==='true',{},{timeout:60000});
+        await page.locator('[data-view="settings"]').click();
+        await page.locator('#keypadLayoutChoice').selectOption('ttrs');
+        await page.locator('[data-view="play"]').click();
         await page.locator('#startButton').click();
+        const ttrsKeys=(scenario.phone?await page.locator('#mobileKeypad [data-key]').evaluateAll(xs=>xs.map(x=>x.dataset.key)):await page.locator('.tablet-pad-grid [data-tablet-key]').evaluateAll(xs=>xs.map(x=>x.dataset.tabletKey)));
+        assert.deepEqual(ttrsKeys,['1','2','3','4','5','6','7','8','9','clear','0','action']);
+        await page.locator('[data-view="settings"]').click();
+        await page.locator('#keypadLayoutChoice').selectOption('physical');
+        await page.locator('[data-view="play"]').click();
         const root=scenario.phone?'#mobileKeypad':'.tablet-pad-grid';
         const attr=scenario.phone?'data-key':'data-tablet-key';
         const key=k=>page.locator(root+' ['+attr+'="'+k+'"]');
