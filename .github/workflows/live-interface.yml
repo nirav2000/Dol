@@ -36,6 +36,7 @@ jobs:
           node tests/learning-first-browser.mjs
           node tests/keypad-layout-browser.mjs
           node tests/timer-styles-browser.mjs
+          node tests/pair-attempts-browser.mjs
           node tests/focus-animations-browser.mjs
           node tests/celebration-regressions-browser.mjs
           node tests/animation-history-browser.mjs

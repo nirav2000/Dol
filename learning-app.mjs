@@ -191,12 +191,21 @@ function pause(){
   render();
   if(state.phase==='running')focusAnswer();
 }
-function recordPair(pair,correct,hints=0){
+function recordPair(pair,correct,hints=0,attempt=null){
   const [a,b]=pair;
   const context={target:state.target,pair:a+'x'+b,stage:state.stage};
-  learning.record({concept:'factor:pair',correct,hints,mode:state.mode,context});
-  if(a<=12&&b<=12)learning.record({concept:'fact:'+a+'x'+b,correct,hints,mode:state.mode,context});
-  if(a<=12)learning.record({concept:'div:'+a,correct,hints,mode:state.mode,context});
+  if(attempt){
+    // The shared Learning SDK retains durationMs and context, not arbitrary
+    // fields on round summaries. Make valid attempts part of cloud learning sync.
+    context.attemptId=attempt.id;
+    context.submitted=attempt.pair;
+    context.status=attempt.status;
+    context.keypad=attempt.keypad;
+  }
+  const durationMs=attempt?.durationMs??0;
+  learning.record({concept:'factor:pair',correct,hints,durationMs,mode:state.mode,context});
+  if(a<=12&&b<=12)learning.record({concept:'fact:'+a+'x'+b,correct,hints,durationMs,mode:state.mode,context});
+  if(a<=12)learning.record({concept:'div:'+a,correct,hints,durationMs,mode:state.mode,context});
 }
 
 
@@ -324,9 +333,11 @@ function answer(event){
   const pairTime=Math.round(timerStyles?.elapsedMs()||0);
   const submitted=input.value.trim();
   const meaningful=/\d/.test(submitted);
+  let attempt=null;
   if(meaningful){
-    const attempt={timestamp:Date.now(),roundId:state.roundId,round:state.round,target:state.target,
+    attempt={id:crypto.randomUUID(),timestamp:Date.now(),roundId:state.roundId,round:state.round,target:state.target,
       pair:submitted.slice(0,28),status:check.status,durationMs:pairTime,mode:state.mode,
+      keypad:document.body.dataset.dolKeypadLayout||'physical',
       assisted:state.hintsUsed>0||state.visualHelp||!!state.focusHintTargets.size};
     state.pairAttempts.push(attempt);
     try{
@@ -335,7 +346,8 @@ function answer(event){
       history.push(attempt);
       localStorage.setItem(scoped('dol-pair-attempts-v1'),JSON.stringify(history.slice(-2000)));
     }catch(error){console.warn('Local factor-pair timing storage unavailable',error);}
-    timerStyles?.reset();
+    // The completed pair's final time stays on screen until the next round.
+    if(check.status!=='correct'||state.found.size+1<state.pairs.length)timerStyles?.reset();
   }
   // Accidental, incomplete and duplicate submissions are not misconceptions.
   if(check.status==='invalid'||check.status==='duplicate'){
@@ -349,14 +361,14 @@ function answer(event){
     }
     state.mistakes++;
     if(state.mistakes>=2&&state.mode==='practice')state.feedback+=' You can open a hint to work through this.';
-    if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false);}}
+    if(check.status==='incorrect'&&input.value){const m=input.value.match(/\d+/g);if(m?.length===2){const a=Number(m[0]),b=Number(m[1]);if(Number.isSafeInteger(a)&&Number.isSafeInteger(b)&&a>0&&b>0)recordPair([Math.min(a,b),Math.max(a,b)],false,0,attempt);}}
     tone(false);render();if(!(document.body.dataset.dolLayout==='pairboard'&&matchMedia('(pointer:coarse)').matches)){input.select();input.focus({preventScroll:true});}return;
   }
   const hints=Math.max(state.hintsUsed,state.visualHelp?1:0,strategySupport?.assistanceFor(check.pair)||0,state.focusHintTargets.has(check.key)?1:0);
   insights?.answer(check.pair,'correct',hints>0);
   const previouslyFound=new Set(state.found);
   state.mistakes=0;state.lastIncorrect=null;state.found.add(check.key);if(hints)state.hintedPairs.add(check.key);
-  state.score++;recordPair(check.pair,true,hints);strategySupport?.accepted(check.pair);
+  state.score++;recordPair(check.pair,true,hints,attempt);strategySupport?.accepted(check.pair);
   tone(true);input.value='';state.feedback='Correct — '+check.pair.join(' × ')+' = '+state.target;
   state.feedbackType='success';
   // Hints are attributed to their relevant pair and the next successful visual-tool use.
@@ -372,7 +384,7 @@ function finish(reason){
   if(correct===total)state.score+=2;
   const earned=state.score-state.startedWithScore;
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
-  const session={timestamp:Date.now(),mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed),pairAttempts:state.pairAttempts.slice()};
+  const session={timestamp:Date.now(),mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
   learning.session(session);
   ledger.finish();
   try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Learning cloud sync deferred',error));}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
@@ -631,7 +643,8 @@ function renderProgress(){
     const valid=records.filter(a=>a&&Number.isFinite(a.durationMs)&&a.pair);
     const correct=valid.filter(a=>a.status==='correct');
     const average=correct.length?correct.reduce((sum,a)=>sum+a.durationMs,0)/correct.length/1000:null;
-    $('pairAttemptSummary').textContent=valid.length+' recorded submissions · '+correct.length+' correct'+(average===null?'':' · average correct '+average.toFixed(2)+'s');
+    const fastest=correct.length?Math.min(...correct.map(a=>a.durationMs))/1000:null;
+    $('pairAttemptSummary').textContent=valid.length+' recorded submissions · '+correct.length+' correct'+(average===null?'':' · average correct '+average.toFixed(2)+'s · fastest '+fastest.toFixed(2)+'s');
     for(const a of valid.slice(-30).reverse()){
       const d=document.createElement('div');d.className='session';
       const label=document.createElement('span');label.textContent=a.pair.replace(/[xX*]/g,' × ')+' = '+a.target+' · '+a.status;
@@ -672,7 +685,7 @@ $('startButton').addEventListener('click',start);$('pauseButton').addEventListen
 $('hintNext').addEventListener('click',hintNext);$('testFactor').addEventListener('click',testSelectedFactor);$('hintBack').addEventListener('click',()=>{if(state.hintLevel>0){state.hintLevel--;renderHint();}});
 $('evenTip').addEventListener('click',()=>tip('even'));$('doubleTip').addEventListener('click',()=>tip('double'));$('stopTip').addEventListener('click',()=>tip('stop'));
 $('topicSearch').addEventListener('input',renderLearn);
-$('resetProgress').addEventListener('click',()=>{if(accountId!=='guest'){alert('Cloud learning history cannot yet be deleted safely. Sign out to reset guest learning, or export your records first.');return;}if(confirm('Delete this browser’s learning history? This cannot be undone.')){learning.reset();try{learningSync?.resetGuest();}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();try{improvement?.resetGuest();}catch(e){console.warn('Evidence reset deferred',e);}strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
+$('resetProgress').addEventListener('click',()=>{if(accountId!=='guest'){alert('Cloud learning history cannot yet be deleted safely. Sign out to reset guest learning, or export your records first.');return;}if(confirm('Delete this browser’s learning history? This cannot be undone.')){try{localStorage.removeItem(scoped('dol-pair-attempts-v1'));}catch{}learning.reset();try{learningSync?.resetGuest();}catch(error){console.warn('Learning Sync reset failed',error);}insights?.resetEvidence();try{improvement?.resetGuest();}catch(e){console.warn('Evidence reset deferred',e);}strategySupport?.resetProgress();resetRoundsAfterDataClear();renderProgress();}});
 $('exportProgress').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...JSON.parse(learning.export()),strategyHistory:strategySupport?.export(),detailedEvidence:improvement?.export(),pairAttemptTimings:(()=>{try{return JSON.parse(localStorage.getItem(scoped('dol-pair-attempts-v1'))||'[]');}catch{return [];}})()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='factor-frenzy-learning.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick();});
 document.addEventListener('keydown',e=>{if(document.querySelector('dialog[open]'))return;if(e.key==='Enter'&&state.view==='play'&&state.phase==='finished'&&!e.repeat&&!e.isComposing&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!e.shiftKey&&!['BUTTON','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)&&!document.activeElement?.closest?.('[contenteditable]')){e.preventDefault();start();return;}if(e.key==='Escape'&&state.mode==='timed'&&['running','paused'].includes(state.phase)){e.preventDefault();pause();}});

@@ -50,6 +50,7 @@ jobs:
           node --check timer-styles.mjs
           node --check timer-styles-model.mjs
           node --check tests/timer-styles-browser.mjs
+          node --check tests/pair-attempts-browser.mjs
           node --check device-profile.mjs
           node --check diagnostics.mjs
           node --check layout-options.mjs
@@ -99,6 +100,7 @@ jobs:
           run_case node tests/mobile-entry-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/keypad-layout-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/timer-styles-browser.mjs
+          run_case env APPS_CHECKOUT=Apps-shared node tests/pair-attempts-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/learning-first-browser.mjs
           run_case node tests/mobile-dock-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/focus-animations-browser.mjs
