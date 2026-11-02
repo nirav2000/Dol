@@ -8,6 +8,11 @@
       "path": "/",
       "readySelector": "#startButton",
       "minCount": 1
+    },
+    {
+      "path": "/speed-keying.html",
+      "readySelector": "#speedStart",
+      "minCount": 1
     }
   ],
   "releaseGate": {

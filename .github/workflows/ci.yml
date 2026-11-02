@@ -51,6 +51,9 @@ jobs:
           node --check timer-styles-model.mjs
           node --check tests/timer-styles-browser.mjs
           node --check tests/pair-attempts-browser.mjs
+          node --check speed-keying-model.mjs
+          node --check speed-keying.mjs
+          node --check tests/speed-keying-browser.mjs
           node --check device-profile.mjs
           node --check diagnostics.mjs
           node --check layout-options.mjs
@@ -101,6 +104,7 @@ jobs:
           run_case env APPS_CHECKOUT=Apps-shared node tests/keypad-layout-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/timer-styles-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/pair-attempts-browser.mjs
+          run_case env APPS_CHECKOUT=Apps-shared node tests/speed-keying-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/learning-first-browser.mjs
           run_case node tests/mobile-dock-browser.mjs
           run_case env APPS_CHECKOUT=Apps-shared node tests/focus-animations-browser.mjs
@@ -183,6 +187,10 @@ jobs:
           test -s _pages/animation-history.html
           test -s _pages/version.json
           test -s _pages/learning-app.mjs
+          test -s _pages/speed-keying.html
+          test -s _pages/speed-keying.mjs
+          test -s _pages/speed-keying-model.mjs
+          test -s _pages/speed-keying.css
           test -s _pages/challenge-controls.mjs
           test -s _pages/mobile-redesign.css
           test -s _pages/improvement/ui.mjs

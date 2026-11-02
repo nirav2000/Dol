@@ -1,5 +1,5 @@
 {
-  "version": "2.13.11",
+  "version": "2.13.12",
   "name": "Factor Frenzy",
-  "description": "Persist every factor-pair submission time, sync valid attempt timings through Learning SDK, and switch TTRS/physical keypads."
+  "description": "Standalone, repeatable 30-number Speed Keying Lab with reaction/entry timing, history, and matched setup comparisons."
 }

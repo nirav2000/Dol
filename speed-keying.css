@@ -1,0 +1,100 @@
+:root{color-scheme:dark;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#080b14;color:#f6f6fc;font-synthesis:none}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse 80% 430px at 50% -130px,#352d6d88,transparent 80%),#080b14}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8bdbea;outline-offset:3px}
+[hidden]{display:none!important}
+.speed-shell{max-width:1140px;margin:0 auto;padding:0 clamp(14px,3vw,28px)}
+.speed-topbar{display:flex;align-items:center;gap:14px;justify-content:space-between;padding:17px 0;border-bottom:1px solid #ffffff21}
+.speed-topbar .back{display:inline-flex;align-items:center;justify-content:center;min-width:90px;min-height:44px;border-radius:12px;border:1px solid #7c7a9b;background:#1b1a31;color:#f6f2ff;text-decoration:none;font-weight:800}
+.speed-brand{display:flex;align-items:center;gap:9px}.speed-brand .brand-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#dbd3ff;color:#12122a;font-size:30px;font-weight:900}
+.speed-brand strong{display:block;font-size:16px;letter-spacing:.1px}.speed-brand small{display:block;color:#a3abc6;font-size:11px;margin-top:2px}.speed-topbar>.version{font-size:12px;color:#adb4cb;font-variant-numeric:tabular-nums}
+main{max-width:875px;margin:0 auto;padding-bottom:40px}
+.speed-hero{padding:36px 0 28px}.eyebrow{font-size:11px;font-weight:850;letter-spacing:1.9px;color:#bcb2ff;margin:0 0 12px}
+.speed-hero h1{font-size:clamp(35px,5vw,58px);line-height:1.05;letter-spacing:-1.8px;margin:0 0 16px;font-weight:900}
+.speed-hero h1 em{font-style:normal;background:linear-gradient(110deg,#c59bff,#75d5f0);color:transparent;background-clip:text;-webkit-background-clip:text}
+.speed-hero>p:last-child{font-size:16px;line-height:1.6;color:#b7bad0;margin:0;max-width:700px}
+.setup-panel,.running-panel,.results-panel,.history-panel{border:1px solid #66618470;background:linear-gradient(155deg,#202139 0%,#141925 86%);border-radius:23px;padding:clamp(18px,3.8vw,32px);box-shadow:0 15px 44px #0005}
+.panel-heading,.results-heading{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px}
+.panel-heading h2,.results-heading h2{margin:0;font-size:clamp(24px,3vw,32px);letter-spacing:-.5px;line-height:1.15}
+.mini-pill{display:inline-flex;background:#342a5a;border:1px solid #675996;color:#e1d6ff;border-radius:30px;padding:8px 12px;font-size:12px;font-weight:750;white-space:nowrap}
+.muted{color:#aeb4cd}.setup-panel>.muted{margin:18px 0;line-height:1.6;font-size:14px}
+.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0}
+.setup-grid label{display:flex;flex-direction:column;gap:8px;color:#ced1e3;font-size:13px;font-weight:700}
+.setup-grid select,.setup-grid input{width:100%;max-width:100%;min-height:50px;border-radius:12px;border:1px solid #77738e;background:#0e1120;color:#fff;padding:0 13px;font-size:15px;font-weight:700}
+.setup-grid select:disabled{opacity:.6}
+.small{font-size:13px}.help-line{color:#bcb8d6;margin:0 0 16px;line-height:1.5}
+.primary-action,.secondary-action{min-height:54px;border-radius:14px;padding:11px 20px;font-weight:850}
+.primary-action{color:#141229;background:linear-gradient(110deg,#c7b3ff,#77d9e3);border:0;box-shadow:0 7px 20px #5c65c344}
+.primary-action span{padding-left:12px}
+.secondary-action{color:#f1edff;background:#24253d;border:1px solid #8680a1}
+.note{color:#9aa5c5;font-size:12px;line-height:1.6;margin:17px 0 0}
+.running-panel{max-width:540px;margin:20px auto;padding:clamp(13px,3vw,26px);background:linear-gradient(150deg,#272144,#101629)}
+.run-topline{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#dcd5ff;letter-spacing:.8px;font-variant-numeric:tabular-nums;font-size:12px}
+#speedPhase{font-size:11px;letter-spacing:1px}.progress-track{height:7px;border-radius:20px;background:#403959;overflow:hidden;margin:12px 0 17px}
+#speedProgressFill{width:0;height:100%;border-radius:20px;background:linear-gradient(90deg,#a678ff,#63d0ee)}
+.number-prompt{background:linear-gradient(135deg,#efeaff,#dcdfff);border:1px solid #d7d0ff;border-radius:20px;text-align:center;padding:14px 5px;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 23px #0003;color:#16144d}
+.number-prompt span,.entry-display span{font-size:11px;font-weight:850;letter-spacing:1.3px;opacity:.74}
+.number-prompt strong{display:block;font-size:clamp(70px,15vw,120px);line-height:1.05;letter-spacing:-5px;font-variant-numeric:tabular-nums;margin-top:7px}
+.entry-display{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;margin:10px 0 12px;border-radius:14px;background:#0e1220;border:1px solid #47445f;min-height:64px}
+.entry-display span{color:#a6b3d2}.entry-display output{min-width:0;font-size:34px;font-weight:850;color:#f5eaff;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.speed-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-width:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.speed-pad button{display:grid;place-items:center;height:clamp(58px,9dvh,75px);border-radius:15px;border:1px solid #c9c7e9;background:#f8f7ff;color:#171836;box-shadow:0 4px 9px #0004;font-size:clamp(25px,4vw,33px);font-weight:900;font-variant-numeric:tabular-nums;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.speed-pad button:active,.speed-pad button.pressed{transform:scale(.97);filter:brightness(.89)}
+.speed-pad button.erase{background:#494264;color:#fff;border-color:#777098}
+.speed-pad button.confirm{background:linear-gradient(120deg,#53e0b3,#70b7f0);color:#101a30;border:0}
+.hardware-note{font-size:16px;line-height:1.6;text-align:center;color:#bfc9e5;margin:25px 0;padding:30px;border:1px dashed #625c82;border-radius:15px}
+.inline-guidance{text-align:center;color:#b8c3df;font-size:12px;min-height:24px;margin:15px 0 5px}
+.text-action{display:block;min-height:44px;margin:0 auto;color:#b5abd7;background:transparent;border:0;text-decoration:underline;font-size:12px}
+.results-panel{margin-top:22px}.results-heading{display:block}.results-heading h2{margin-top:5px}.results-heading>p:last-child{margin:12px 0 21px;color:#aab7d2;line-height:1.5}
+.metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.metric{min-width:0;padding:16px;border:1px solid #4e4a6e;border-radius:15px;background:#121828}
+.metric span{display:block;font-size:12px;color:#b4b8d3;font-weight:700;line-height:1.4}
+.metric strong{display:block;font-size:clamp(25px,4.5vw,39px);letter-spacing:-1px;font-variant-numeric:tabular-nums;margin-top:9px;color:#e2d8ff}
+.quality-note{color:#f7d49e;background:#3f3227;border:1px solid #6b4a30;padding:13px;border-radius:11px;font-size:13px;line-height:1.5}
+.quality-note[data-good=true]{color:#bdf3dd;background:#18362f;border-color:#345a4b}
+.comparison,.digits-breakdown{margin-top:26px;padding-top:19px;border-top:1px solid #484461}
+.comparison h3,.digits-breakdown h3{font-size:19px;margin:0 0 12px}
+.comparison p{font-size:13px;color:#abb7d0;line-height:1.65}
+.comparison-row{display:grid;grid-template-columns:72px minmax(0,1fr) 63px;gap:12px;align-items:center;margin:14px 0;font-size:12px;font-variant-numeric:tabular-nums}
+.comparison-track{height:22px;border-radius:8px;background:#363955;overflow:hidden}
+.comparison-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#8175c9,#c6adff)}
+.comparison-fill.latest{background:linear-gradient(90deg,#5cbcf3,#64e2bf)}
+.comparison-row strong{text-align:right;color:#eee;font-size:14px}
+.length-row{display:grid;grid-template-columns:1fr 80px 82px;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #45435f;font-size:13px}
+.length-row strong{text-align:right;font-variant-numeric:tabular-nums;font-size:18px}.length-row small{text-align:right;color:#a6b3d0}
+.results-panel .primary-action{margin-top:20px;width:100%}
+.history-panel{margin:24px 0 40px;background:#141925}
+.history-panel>.muted{font-size:13px;line-height:1.6;margin:17px 0}
+.history-list{display:grid;gap:8px}
+.history-item{display:flex;justify-content:space-between;gap:12px;padding:14px 15px;background:#1c2033;border:1px solid #363e5a;border-radius:13px}
+.history-item strong{display:block;font-size:14px;font-weight:800}.history-item small{display:block;font-size:11px;color:#abb8cc;margin-top:5px;line-height:1.5}
+.history-results{text-align:right;white-space:nowrap}
+.history-results strong{font-size:20px;font-variant-numeric:tabular-nums;color:#cdb9ff}
+.history-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.history-actions button{flex:1;min-width:155px}
+footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 0 32px;color:#7e8ba9;font-size:12px;border-top:1px solid #ffffff15}
+footer a{color:#c5b8ff;font-weight:800}
+body.speed-testing .speed-hero,body.speed-testing #speedHistorySection{display:none!important}
+body.speed-testing .running-panel{margin-top:clamp(8px,2vh,26px)}
+@media(max-width:600px){
+ .speed-topbar{gap:8px;padding:12px 0}.speed-topbar .back{min-width:64px;font-size:13px}
+ .speed-brand .brand-icon{width:32px;height:32px;font-size:24px}
+ .speed-brand strong{font-size:13px}.speed-brand small{font-size:10px}
+ .speed-hero{padding:25px 0}.speed-hero h1{font-size:38px}
+ .setup-grid{grid-template-columns:1fr;gap:11px}
+ .running-panel{margin:8px auto;padding:14px;border-radius:18px}
+ .number-prompt{min-height:128px}.number-prompt strong{font-size:86px}
+ .speed-pad button{height:clamp(58px,8.8dvh,72px)}
+ .metric-grid{gap:8px}.metric{padding:12px}
+ .comparison-row{gap:7px}
+ .history-item{padding:12px}.history-item small{font-size:10px;white-space:normal}
+ footer{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:700px) and (max-height:690px){
+ .speed-topbar{padding:7px 0}.running-panel{padding:10px}
+ .progress-track{margin:8px 0}.number-prompt{min-height:86px;padding:7px}
+ .number-prompt strong{font-size:62px;letter-spacing:-2px}
+ .entry-display{min-height:52px;padding:5px 12px;margin:7px 0}.entry-display output{font-size:27px}
+ .speed-pad{gap:6px}.speed-pad button{height:56px;border-radius:11px}
+ .inline-guidance{margin:9px 0 2px}.text-action{min-height:34px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.speed-pad button{transition:none}}

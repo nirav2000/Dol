@@ -12,6 +12,12 @@ archive=archive.replace(/(\?v=)\d+\.\d+\.\d+/g,'$1'+version);
 archive=archive.replace(/(ANIMATION HISTORY LAB · v)\d+\.\d+\.\d+/g,'$1'+version);
 archive=archive.replace(/(Animation History Lab · v)\d+\.\d+\.\d+/g,'$1'+version);
 entries.set('animation-history.html',archive);
+// The separate Speed Keying Lab also carries release-pinned scripts and labels.
+let speedLab=fs.readFileSync('speed-keying.html','utf8');
+speedLab=speedLab.replace(/(\?v=)\d+\.\d+\.\d+/g,'$1'+version);
+speedLab=speedLab.replace(/(Speed Keying Lab · v)\d+\.\d+\.\d+/g,'$1'+version);
+speedLab=speedLab.replace(/(<span class="version">v)\d+\.\d+\.\d+/g,'$1'+version);
+entries.set('speed-keying.html',speedLab);
 let worker=fs.readFileSync('service-worker.js','utf8').replace(/apps-pwa-dol-v\d+-\d+-\d+/,'apps-pwa-dol-v'+version.replaceAll('.','-')).replace(/(\?v=)\d+\.\d+\.\d+/g,'$1'+version);
 entries.set('service-worker.js',worker);
 const labels=[...html.matchAll(/data-dol-version[^>]*>([^<]*)/g)].map(x=>x[1]);
