@@ -36,6 +36,7 @@ for(const [engineName,engine,viewport] of [
   try{
    await page.goto(new URL('speed-keying.html',base).href,{waitUntil:'domcontentloaded',timeout:60000});
    assert.equal(await page.locator('#speedSetup').isVisible(),true);
+   await page.locator('#speedMethod').selectOption('touch');
    assert.match(await page.locator('#speedDeviceLabel').textContent(),/touchscreen|Touchscreen/i);
    await page.locator('#speedLayout').selectOption('ttrs');
    await page.locator('#speedTtrs').fill('3.10');
@@ -68,6 +69,8 @@ for(const [engineName,engine,viewport] of [
    assert.equal(after[1].summary.correct,30);
    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
    assert.equal(await page.locator('#speedHistory .history-item').count(),2,'history survives reload');
+   assert.equal(await page.locator('#speedMethod').inputValue(),'touch','touch method survives reload');
+   assert.equal(await page.locator('#speedLayout').isEnabled(),true,'saved touch method leaves the keypad selectable');
    assert.equal(await page.locator('#speedLayout').inputValue(),'ttrs','setting is saved in Dol');
    await page.locator('#speedLayout').selectOption('physical');
    await page.locator('#speedStart').click();
@@ -77,6 +80,19 @@ for(const [engineName,engine,viewport] of [
    page.once('dialog',dialog=>dialog.accept());
    await page.locator('#speedCancel').click();
    assert.equal(await page.locator('#speedSetup').isVisible(),true,'cancel avoids saving incomplete checkpoint');
+   // Hardware entry remains usable without clicking or tapping an on-screen pad.
+   await page.locator('#speedMethod').selectOption('hardware');
+   await page.locator('#speedStart').click();
+   assert.equal(await page.locator('#speedPad').isVisible(),false,'physical keyboard mode hides the touch keys');
+   const warmup=await page.locator('#speedTarget').textContent();
+   await page.keyboard.type(warmup);
+   assert.equal(await page.locator('#speedTyped').textContent(),warmup);
+   await page.keyboard.press('Enter');
+   assert.equal(await page.locator('#speedCounter').textContent(),'2 of 5');
+   page.once('dialog',dialog=>dialog.accept());
+   await page.locator('#speedCancel').click();
+   assert.equal(await page.locator('#speedSetup').isVisible(),true);
+   assert.equal(await page.locator('#speedHistory .history-item').count(),2,'partial hardware test is not saved');
    assert.deepEqual(errors,[],'no browser errors');
    console.log('PASS speed keying baseline',engineName,viewport.width);
   }finally{await context.close();}

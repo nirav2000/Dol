@@ -1,5 +1,5 @@
 {
-  "version": "2.13.12",
+  "version": "2.13.13",
   "name": "Factor Frenzy",
-  "description": "Standalone, repeatable 30-number Speed Keying Lab with reaction/entry timing, history, and matched setup comparisons."
+  "description": "Speed Keying Lab touchscreen detection and persistent input setup; verify hardware entry and checkpoint history."
 }

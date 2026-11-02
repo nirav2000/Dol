@@ -9,6 +9,14 @@ const $=id=>document.getElementById(id);
 const account=(()=>{try{return localStorage.getItem('dol-active-account-v1')||'guest';}catch{return 'guest';}})();
 const key=storageKey(account);
 const referenceKey='dol-speed-keying-ttrs-v1'+(account==='guest'?'':':account:'+account);
+const methodKey='dol-speed-keying-method-v1'+(account==='guest'?'':':account:'+account);
+const techniqueKey='dol-speed-keying-technique-v1'+(account==='guest'?'':':account:'+account);
+function readPreference(storageKey,allowed,fallback){
+ try{const value=localStorage.getItem(storageKey);return allowed.includes(value)?value:fallback;}catch{return fallback;}
+}
+function writePreference(storageKey,value){
+ try{localStorage.setItem(storageKey,value);}catch{}
+}
 const readHistory=()=>{
  try{return normaliseCheckpoints(JSON.parse(localStorage.getItem(key)||'[]'));}catch{return [];}
 };
@@ -17,12 +25,18 @@ let run=null;
 let lastResult=null;
 let couldSave=true;
 
+function supportsTouch(){
+ return navigator.maxTouchPoints>0||matchMedia('(pointer:coarse), (any-pointer:coarse)').matches;
+}
 function deviceInfo(){
- const touch=navigator.maxTouchPoints>0||matchMedia('(any-pointer:coarse)').matches;
- return {
-  device:innerWidth<=700?'phone':innerWidth<=1100&&touch?'tablet':'desktop',
-  orientation:innerWidth>innerHeight?'landscape':'portrait'
- };
+ const touch=supportsTouch();
+ const ua=navigator.userAgent||'';
+ const applePhone=/iPhone|iPod/i.test(ua);
+ const appleTablet=/iPad/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+ const shortSide=Math.min(innerWidth,innerHeight);
+ const device=applePhone?'phone':appleTablet?'tablet':touch?
+  (shortSide<=700?'phone':'tablet'):'desktop';
+ return {device,orientation:innerWidth>innerHeight?'landscape':'portrait'};
 }
 function seconds(ms){return Number.isFinite(ms)?(ms/1000).toFixed(2)+'s':'—';}
 function dateLabel(timestamp){return new Date(timestamp).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});}
@@ -86,10 +100,15 @@ function setMethod(){
  $('speedDeviceLabel').textContent=deviceInfo().device+' · '+deviceInfo().orientation+' · '+label;
 }
 $('speedLayout').value=currentLayout();
-$('speedMethod').value=matchMedia('(any-pointer:coarse)').matches?'touch':'hardware';
-$('speedTechnique').value=innerWidth<=700?'thumbs':'index';
+$('speedMethod').value=readPreference(methodKey,['touch','hardware'],supportsTouch()?'touch':'hardware');
+$('speedTechnique').value=readPreference(techniqueKey,['index','thumbs','two-fingers','other'],
+ deviceInfo().device==='phone'?'thumbs':'index');
 $('speedTtrs').value=readReference();
-$('speedMethod').addEventListener('change',setMethod);
+$('speedMethod').addEventListener('change',()=>{
+ writePreference(methodKey,$('speedMethod').value);
+ setMethod();
+});
+$('speedTechnique').addEventListener('change',()=>writePreference(techniqueKey,$('speedTechnique').value));
 $('speedLayout').addEventListener('change',()=>{
  try{localStorage.setItem(KEYPAD_STORAGE_KEY,$('speedLayout').value);}catch{}
 });
@@ -297,7 +316,7 @@ $('speedCancel').addEventListener('click',()=>{
 });
 document.addEventListener('keydown',event=>{
  if(!run||$('speedRunning').hidden||run.method!=='hardware')return;
- if(event.altKey||event.metaKey||event.ctrlKey||event.isComposing)return;
+ if(event.repeat||event.altKey||event.metaKey||event.ctrlKey||event.isComposing)return;
  if(event.target instanceof HTMLElement&&event.target.matches('input,select,textarea'))return;
  const key=event.key;
  if(/^\d$/.test(key)){event.preventDefault();press(key,'hardware');}
