@@ -60,12 +60,21 @@ for(const [engineName,engine,viewport] of [
    assert.ok(state[0].trials.every(t=>t.source==='touch'));
    assert.equal(state[0].ttrsAvgSec,3.10);
    assert.equal(await page.locator('#speedHistory .history-item').count(),1);
-   await page.screenshot({path:'artifacts/speed-keying-'+engineName+'-'+viewport.width+'.png',fullPage:true});
+   await page.screenshot({path:'artifacts/speed-keying-'+engineName+'-'+viewport.width+'.png',fullPage:false});
+   // Browser full-page captures can temporarily alter the viewport and
+   // thereby switch the detected device/orientation between checkpoints.
+   await page.setViewportSize(viewport);
    await page.locator('#speedAgain').click();
+   await page.setViewportSize(viewport);
+   assert.equal(await page.locator('#speedMethod').inputValue(),'touch');
+   assert.equal(await page.locator('#speedLayout').inputValue(),'ttrs');
    await page.locator('#speedStart').click();
    await doCheckpoint(page);
-   assert.match(await page.locator('#speedComparisonText').textContent(),/2 matching checkpoints/);
    const after=await page.evaluate(()=>JSON.parse(localStorage.getItem('dol-speed-keying-checkpoints-v1')));
+   const setupRows=after.map(({version,device,orientation,method,layout,technique})=>({version,device,orientation,method,layout,technique}));
+   assert.deepEqual(setupRows[1],setupRows[0],
+    'two identical input setups must be compared; actual saved metadata: '+JSON.stringify(setupRows));
+   assert.match(await page.locator('#speedComparisonText').textContent(),/2 matching checkpoints/);
    assert.equal(after.length,2);
    assert.equal(after[1].summary.correct,30);
    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
