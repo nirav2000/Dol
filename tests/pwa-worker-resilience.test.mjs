@@ -28,7 +28,7 @@ test('PWA cache warm-up survives an HTTP 503 and limits request concurrency',asy
   };
   vm.runInNewContext(source,context,{filename:'service-worker.js'});
   const config=context.self.APPS_PWA_CONFIG;
-  assert.equal(config.cacheName,'apps-pwa-dol-v'+cacheSlug);
+  assert.equal(config.cacheName,'apps-pwa-dol-v'+cacheSlug+'-maths-bridge');
   assert.equal(config.precache.length,0,'shared worker cannot use all-or-nothing addAll');
   assert.equal(config.networkFirstPaths.length,0,'static assets must be cache-first; navigation is already network-first');
   assert.ok(listeners.has('install'));
@@ -44,4 +44,5 @@ test('PWA cache warm-up survives an HTTP 503 and limits request concurrency',asy
   assert.ok(peak<=4&&peak>=2,'avoid a burst of dozens of concurrent requests');
   assert.ok(stored.has(scope+'index.html'),'cache the app shell for offline launch');
   assert.ok(stored.has(scope+'learning-app.mjs'),'cache the app entry module');
+  assert.ok(stored.has(scope+'maths-bridge.mjs'),'cache the optional Beyond 100 maths link for offline use');
 });

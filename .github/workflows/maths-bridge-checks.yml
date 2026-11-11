@@ -1,0 +1,33 @@
+name: Dol maths bridge checks
+on:
+  push:
+    paths:
+      - 'maths-bridge.mjs'
+      - 'diagnostics.mjs'
+      - 'service-worker.js'
+      - 'tests/pwa-worker-resilience.test.mjs'
+      - '.github/workflows/maths-bridge-checks.yml'
+  pull_request:
+    paths:
+      - 'maths-bridge.mjs'
+      - 'diagnostics.mjs'
+      - 'service-worker.js'
+      - 'tests/pwa-worker-resilience.test.mjs'
+      - '.github/workflows/maths-bridge-checks.yml'
+permissions:
+  contents: read
+jobs:
+  dol-bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: |
+          node --check maths-bridge.mjs
+          node --check diagnostics.mjs
+          node --check service-worker.js
+      - name: Dol maths regression suite
+        run: node --test tests/*.test.mjs
