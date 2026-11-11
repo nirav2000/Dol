@@ -5,12 +5,14 @@ on:
       - 'maths-bridge.mjs'
       - 'diagnostics.mjs'
       - 'service-worker.js'
+      - 'tests/pwa-worker-resilience.test.mjs'
       - '.github/workflows/maths-bridge-checks.yml'
   pull_request:
     paths:
       - 'maths-bridge.mjs'
       - 'diagnostics.mjs'
       - 'service-worker.js'
+      - 'tests/pwa-worker-resilience.test.mjs'
       - '.github/workflows/maths-bridge-checks.yml'
 permissions:
   contents: read
