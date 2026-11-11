@@ -24,9 +24,10 @@ function setup(){
  if(!number||!play||!learn||document.getElementById('dolExploreMathLink'))return;
  const active=link('Explore the maths behind this','dol-maths-explore');active.id='dolExploreMathLink';
  active.setAttribute('aria-label','Explore the mathematical thinking behind this factor challenge in Beyond 100');
- const tile=play.querySelector('.number-tile');
- const wrap=document.createElement('div');wrap.style.cssText='display:flex;justify-content:center;max-width:100%;margin:10px 0 14px';wrap.appendChild(active);
- if(tile)tile.after(wrap);else play.prepend(wrap);
+ // Keep the target tile and round controls untouched: geometry tests depend on them.
+ const footer=document.querySelector('#playView .bottom-bar');
+ const wrap=document.createElement('div');wrap.style.cssText='display:flex;justify-content:center;max-width:100%;margin:10px 0';wrap.appendChild(active);
+ if(footer)footer.appendChild(wrap);else play.appendChild(wrap);
  const guide=link('Explore more maths techniques in Beyond 100','dol-maths-guide');guide.id='dolMathsGuideLink';
  guide.href=urlFor(null,'double-half');
  const guideWrap=document.createElement('div');guideWrap.style.cssText='margin:13px 0 16px';
