@@ -7,6 +7,7 @@ on:
       - '.github/workflows/shared-validation.yml'
       - 'index.html'
       - 'learning-app.mjs'
+      - 'shared-learning-evidence.mjs'
       - 'adaptive.mjs'
   workflow_dispatch:
 concurrency:
