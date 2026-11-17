@@ -17,7 +17,7 @@ concurrency:
 jobs:
   investigate:
     if: vars.DIAGNOSTIC_AUTOFIX_PAUSED != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -58,7 +58,7 @@ jobs:
     name: Diagnostic ${{ needs.investigate.outputs.key }}
     needs: investigate
     if: needs.investigate.outputs.selected == 'true' && vars.DIAGNOSTIC_AUTOFIX_PAUSED != 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: write
