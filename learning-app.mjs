@@ -34,23 +34,6 @@ const ledger=createRoundLedger({storage:localStorage,key:scoped('dol-round-ledge
 // Stage 1: durable guest learning evidence. Cloud/login remain disabled until secure Auth, rules and migration gates pass.
 let learningSync=null;
 try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});if(accountId==='guest')learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
-// Optional evidence bridge: parent-entered checks can travel through Dol's already
-// authenticated Learning Sync ledger. Stable evidence IDs prevent duplicate cloud rows.
-window.addEventListener('dol-shared-evidence-recorded',async e=>{
-  const row=e.detail;
-  if(!row||row.appId!=='dol'||row.accountId!==accountId||
-    row.learnerId!==(accountId==='guest'?'local':accountId))return;
-  if((learning.getState().events||[]).some(x=>x.context?.learningEvidenceV1?.id===row.id))return;
-  try{
-    const {toLearningEvent}=await import('https://nirav2000.github.io/Apps/learning-evidence/v1/index.js');
-    // The learning SDK is an event transport; it does not replace the four-metric summary.
-    learning.record(toLearningEvent(row));
-    learningSync?.capture(learning.getState());
-    if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Evidence cloud sync deferred',error));
-    window.dispatchEvent(new Event('dol-learning-evidence-updated'));
-  }catch(error){console.warn('Learning evidence saved locally; cloud bridge deferred',error);}
-});
-
 const state={
   phase:'ready',view:'play',mode:prefs.mode||'guided',stage:prefs.stage||'foundation',
   limit:[24,36,48,64,96,128,144,192,256,384,512,768,1024].includes(prefs.limit)?prefs.limit:128,

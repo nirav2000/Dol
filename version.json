@@ -1,5 +1,5 @@
 {
-  "version": "2.13.16",
+  "version": "2.13.17",
   "name": "Factor Frenzy",
-  "description": "Optional shared learning evidence dashboard: independent accuracy, delayed recall and transfer."
+  "description": "Shared Learning Evidence separated from legacy mastery and de-duplicated factor-pair checks."
 }
