@@ -55,6 +55,8 @@ async function bootstrap() {
     }
   }
   capture();
+  // Retry a parent-entered check that was saved before the cloud bridge loaded.
+  retryUnmirrored();
   // Let the main game finish initialising before attempting any cloud bridge.
   window.addEventListener('dol-learning-evidence-updated',capture);
   window.addEventListener('storage',e=>{if(e.key===key)capture();});
