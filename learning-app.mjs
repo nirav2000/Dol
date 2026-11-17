@@ -34,6 +34,23 @@ const ledger=createRoundLedger({storage:localStorage,key:scoped('dol-round-ledge
 // Stage 1: durable guest learning evidence. Cloud/login remain disabled until secure Auth, rules and migration gates pass.
 let learningSync=null;
 try{learningSync=createLearningSync({appId:'dol',learnerId:'local',accountId});if(accountId==='guest')learningSync.capture(learning.getState());}catch(error){console.warn('Optional Learning Sync unavailable; original learning store remains active.',error);}
+// Optional evidence bridge: parent-entered checks can travel through Dol's already
+// authenticated Learning Sync ledger. Stable evidence IDs prevent duplicate cloud rows.
+window.addEventListener('dol-shared-evidence-recorded',async e=>{
+  const row=e.detail;
+  if(!row||row.appId!=='dol'||row.accountId!==accountId||
+    row.learnerId!==(accountId==='guest'?'local':accountId))return;
+  if((learning.getState().events||[]).some(x=>x.context?.learningEvidenceV1?.id===row.id))return;
+  try{
+    const {toLearningEvent}=await import('https://nirav2000.github.io/Apps/learning-evidence/v1/index.js');
+    // The learning SDK is an event transport; it does not replace the four-metric summary.
+    learning.record(toLearningEvent(row));
+    learningSync?.capture(learning.getState());
+    if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Evidence cloud sync deferred',error));
+    window.dispatchEvent(new Event('dol-learning-evidence-updated'));
+  }catch(error){console.warn('Learning evidence saved locally; cloud bridge deferred',error);}
+});
+
 const state={
   phase:'ready',view:'play',mode:prefs.mode||'guided',stage:prefs.stage||'foundation',
   limit:[24,36,48,64,96,128,144,192,256,384,512,768,1024].includes(prefs.limit)?prefs.limit:128,
@@ -386,6 +403,7 @@ function finish(reason){
   const elapsed=state.mode==='timed'?state.duration*1000-state.remainingMs:Date.now()-state.startedAt;
   const session={timestamp:Date.now(),mode:state.mode,target:state.target,correct,total,hints:state.hintedPairs.size,durationMs:Math.max(0,elapsed)};
   learning.session(session);
+  window.dispatchEvent(new Event('dol-learning-evidence-updated'));
   ledger.finish();
   try{learningSync?.capture(learning.getState());if(accountId!=='guest')learningSync?.sync()?.catch(error=>console.warn('Learning cloud sync deferred',error));}catch(error){console.warn('Learning Sync capture failed; original learning store remains active.',error);}
   const prev=state.numberHistory[state.target]||{attempts:0,correct:0};
@@ -728,7 +746,7 @@ $('readySquareLesson')?.addEventListener('click',()=>strategySupport?.openSquare
 $('readyQuickSquares')?.addEventListener('click',()=>strategySupport?.openSquareQuick());
 $('statConcepts').closest('.stats-grid > div')?.addEventListener('click',()=>{document.getElementById('conceptList')?.scrollIntoView({behavior:'smooth',block:'start'});});
 $('statConcepts').closest('.stats-grid > div')?.setAttribute('title','Select to view the concepts practised');
-render();setView('play');
+render();setView('play');window.dispatchEvent(new Event('dol-learning-evidence-ready'));
 document.body.dataset.dolReady='true';
 loadImprovement();
 
@@ -748,7 +766,7 @@ import('./dol-account.mjs').then(({initAccountUI,transport,preferencesStore,evid
       if(syncState.working)message.textContent='Synchronising your saved learning history...';
       else if(syncState.pending)message.textContent='Saved locally · '+syncState.pending+' cloud batch(es) awaiting synchronisation';
     },onSnapshot:merged=>{
-      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);service.adoptSnapshot(merged);ledger.updateHistory(merged.sessions.length);renderProgress();}
+      if(merged.sessions.length>=learning.getState().sessions.length){learning.import(merged);service.adoptSnapshot(merged);ledger.updateHistory(merged.sessions.length);renderProgress();window.dispatchEvent(new Event('dol-learning-evidence-updated'));}
     }});
     // Keep an authenticated transport even when the first cloud attempt fails.
     // Otherwise all later rounds incorrectly stay on the local-only instance.

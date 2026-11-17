@@ -1,0 +1,29 @@
+name: Shared learning evidence integration
+on:
+  pull_request:
+    paths:
+      - 'shared-learning-evidence.mjs'
+      - 'learning-app.mjs'
+      - 'version.json'
+      - 'index.html'
+      - '.github/workflows/shared-learning-evidence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'shared-learning-evidence.mjs'
+      - 'learning-app.mjs'
+      - '.github/workflows/shared-learning-evidence.yml'
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check shared-learning-evidence.mjs
+          node --check learning-app.mjs
+          node scripts/release-version.mjs --check
+          node --test tests/*.test.mjs
+      - run: grep -q 'shared-learning-evidence.mjs' index.html
